@@ -18,7 +18,7 @@ export interface CreateFetchHandlerOptions {
 
 export function createFetchHandler(options: CreateFetchHandlerOptions) {
   const { api, createContext, serveFrontend, projectRoot } = options;
-  const webDist = join(projectRoot, "packages", "web", "dist");
+  const webDist = join(projectRoot, "packages", "app-public", "dist");
   const adminDist = join(projectRoot, "packages", "app-admin", "dist");
 
   return async (

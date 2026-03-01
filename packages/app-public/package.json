@@ -1,0 +1,29 @@
+{
+  "name": "@satyrsmc/app-public",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts"
+  },
+  "dependencies": {
+    "@satyrsmc/api": "workspace:*",
+    "@tanstack/react-query": "^5.90.21",
+    "@trpc/client": "^11.0.0-rc.0",
+    "@trpc/react-query": "^11.0.0-rc.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-markdown": "^10.1.0",
+    "react-photo-album": "^3.0.0",
+    "react-router-dom": "^7.13.0",
+    "remark-gfm": "^4.0.1",
+    "yet-another-react-lightbox": "^3.16.3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "bun-plugin-tailwind": "^0.1.2",
+    "tailwindcss": "^4.1.11"
+  }
+}

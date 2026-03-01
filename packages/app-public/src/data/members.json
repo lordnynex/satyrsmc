@@ -1,0 +1,84 @@
+{
+  "officers": [
+    {
+      "id": "brandon-beveridge",
+      "name": "Brandon Beveridge",
+      "title": "President",
+      "image": "https://satyrsmc.org/Images/Members/BrandonBeveridge.png",
+      "bio": "Brandon has been with the Satyrs since joining as a member and has served in various leadership roles.",
+      "joinedYear": "2010",
+      "gallery": ["https://satyrsmc.org/Images/Members/BrandonBeveridge.png"]
+    },
+    {
+      "id": "brent-sweer",
+      "name": "Brent Sweer",
+      "title": "Vice President",
+      "image": "https://satyrsmc.org/Images/Members/BrentSweer.png",
+      "bio": "Brent is passionate about motorcycle culture and community building.",
+      "joinedYear": "2012",
+      "gallery": ["https://satyrsmc.org/Images/Members/BrentSweer.png"]
+    },
+    {
+      "id": "jovani-martinez",
+      "name": "Jovani Martinez",
+      "title": "Road Captain",
+      "image": "https://satyrsmc.org/Images/Members/JovaniMartinez.png",
+      "bio": "Jovani leads our rides and ensures everyone has a safe and memorable experience on the road.",
+      "joinedYear": "2015",
+      "gallery": ["https://satyrsmc.org/Images/Members/JovaniMartinez.png"]
+    },
+    {
+      "id": "ron-neiport",
+      "name": "Ron Neiport",
+      "title": "Treasurer",
+      "image": "https://satyrsmc.org/Images/Members/RonNeiport.png",
+      "bio": "Ron manages the club's finances and helps coordinate fundraising efforts.",
+      "joinedYear": "2008",
+      "gallery": ["https://satyrsmc.org/Images/Members/RonNeiport.png"]
+    },
+    {
+      "id": "terry-pederson",
+      "name": "Terry Pederson",
+      "title": "Correspondence Secretary",
+      "image": "https://satyrsmc.org/Images/Members/TerryPederson.png",
+      "bio": "Terry handles club communications and outreach to the broader community.",
+      "joinedYear": "2011",
+      "gallery": ["https://satyrsmc.org/Images/Members/TerryPederson.png"]
+    },
+    {
+      "id": "tom-hank-rhodes",
+      "name": "Tom \"Hank\" Rhodes",
+      "title": "Recording Secretary",
+      "image": "https://satyrsmc.org/Images/Members/Faceless_Logo.png",
+      "bio": "Hank keeps detailed records of club meetings and important decisions.",
+      "joinedYear": "2013",
+      "gallery": ["https://satyrsmc.org/Images/Members/Faceless_Logo.png"]
+    }
+  ],
+  "members": [
+    {
+      "id": "john-currier",
+      "name": "John Currier",
+      "image": "https://satyrsmc.org/Images/Members/Faceless_Logo.png",
+      "bio": "John is an active member who participates in many of our rides and events.",
+      "joinedYear": "2018",
+      "gallery": ["https://satyrsmc.org/Images/Members/Faceless_Logo.png"]
+    },
+    {
+      "id": "stephen-ely",
+      "name": "Stephen Ely",
+      "image": "https://satyrsmc.org/Images/Members/Faceless_Logo.png",
+      "bio": "Stephen brings enthusiasm and dedication to every club activity.",
+      "joinedYear": "2019",
+      "gallery": ["https://satyrsmc.org/Images/Members/Faceless_Logo.png"]
+    },
+    {
+      "id": "donald-cranford",
+      "name": "Donald Cranford",
+      "image": "https://satyrsmc.org/Images/Members/Faceless_Logo.png",
+      "bio": "Donald is a valued member of the Satyrs community.",
+      "joinedYear": "2020",
+      "gallery": ["https://satyrsmc.org/Images/Members/Faceless_Logo.png"]
+    }
+  ]
+}

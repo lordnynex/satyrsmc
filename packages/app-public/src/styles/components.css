@@ -1,0 +1,40 @@
+@reference "./tailwind.css";
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2 px-3 py-2 rounded-md border border-slate-600/60 bg-slate-800/50 text-slate-100 hover:bg-white/10 transition-colors;
+  }
+  .btn-primary {
+    @apply bg-satyrs-blue text-white border-transparent hover:bg-blue-700;
+  }
+  .btn-ghost {
+    @apply bg-transparent border-transparent hover:bg-white/10;
+  }
+  .btn-outline {
+    @apply bg-transparent border-slate-600/60 hover:bg-white/10;
+  }
+
+  .card {
+    @apply rounded-lg border border-slate-700/60 bg-slate-800/50 shadow-sm overflow-hidden;
+  }
+  .card-body {
+    @apply p-4 md:p-5;
+  }
+
+  .label {
+    @apply block text-sm mb-1 text-slate-200;
+  }
+  .input {
+    @apply w-full rounded-md border border-slate-600/60 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-satyrs-blue;
+  }
+  .textarea {
+    @apply w-full rounded-md border border-slate-600/60 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-400 min-h-[120px] focus:outline-none focus:ring-2 focus:ring-satyrs-blue;
+  }
+  .select {
+    @apply w-full rounded-md border border-slate-600/60 bg-slate-900/50 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-satyrs-blue;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-slate-700 text-slate-100;
+  }
+}
