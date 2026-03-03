@@ -37,8 +37,8 @@
       "@/trpc": ["./src/frontend/trpc.ts"],
       "@app-admin": ["./packages/app-admin/src"],
       "@app-admin/*": ["./packages/app-admin/src/*"],
-      "@web": ["./packages/web/src"],
-      "@web/*": ["./packages/web/src/*"]
+      "@app-public": ["./packages/app-public/src"],
+      "@app-public/*": ["./packages/app-public/src/*"]
     },
 
     // Some stricter flags (disabled by default)

@@ -14,7 +14,7 @@ STATIC_DIR := dist
 help:
 	@printf '$(CYN)Satyrs M/C$(RST)\n\n'
 	@printf '$(CYN)Targets:$(RST)\n'
-	@printf '  $(GRN)build-static$(RST)     Build unified static site (web + app-admin) into $(STATIC_DIR)/\n'
+	@printf '  $(GRN)build-static$(RST)     Build unified static site (app-public + app-admin) into $(STATIC_DIR)/\n'
 	@printf '  $(DIM)                     Set API_ORIGIN for production (e.g. API_ORIGIN=https://api.example.com)$(RST)\n'
 	@printf '  $(GRN)deploy-static$(RST)    Sync $(STATIC_DIR)/ to S3. Set S3_BUCKET or use terraform output$(RST)\n'
 	@printf '  $(GRN)deploy-static-dry$(RST) Same as deploy-static but with --dryrun$(RST)\n'
@@ -29,9 +29,9 @@ help:
 	@printf '  make deploy-static-dry\n'
 
 build-static:
-	@printf '$(CYN)Building static site (web + app-admin) -> $(STATIC_DIR)/$(RST)\n'
+	@printf '$(CYN)Building static site (app-public + app-admin) -> $(STATIC_DIR)/$(RST)\n'
 	@rm -rf $(STATIC_DIR) && mkdir -p $(STATIC_DIR) $(STATIC_DIR)/admin
-	@cd packages/web && OUTDIR=../../$(STATIC_DIR) API_ORIGIN="$(API_ORIGIN)" bun run build
+	@cd packages/app-public && OUTDIR=../../$(STATIC_DIR) API_ORIGIN="$(API_ORIGIN)" bun run build
 	@cd packages/app-admin && OUTDIR=../../$(STATIC_DIR)/admin API_ORIGIN="$(API_ORIGIN)" bun run build
 	@printf '$(GRN)Done. Output in $(STATIC_DIR)/$(RST)\n'
 
