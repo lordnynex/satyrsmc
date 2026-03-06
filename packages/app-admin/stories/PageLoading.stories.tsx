@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PageLoading } from "@app-admin/components/layout/PageLoading";
 
 import "@app-admin/index.css";

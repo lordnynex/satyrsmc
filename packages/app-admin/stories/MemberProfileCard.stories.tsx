@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemberProfileCard } from "@app-admin/components/members/MemberProfileCard";
 import { mockMembers } from "./mockData";
 

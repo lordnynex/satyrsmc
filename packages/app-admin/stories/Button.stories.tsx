@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "@app-admin/components/ui/button";
 
 import "@app-admin/index.css";

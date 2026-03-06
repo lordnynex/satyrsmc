@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChartCard } from "@app-admin/components/charts/ChartCard";
 
 import "@app-admin/index.css";

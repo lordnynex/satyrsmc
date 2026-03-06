@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { Calendar } from "@app-admin/components/ui/calendar";
 import type { DateRange } from "react-day-picker";

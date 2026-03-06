@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { NotFoundPage } from "@app-admin/components/layout/NotFoundPage";
 import { AppShell } from "./AppShell";
 

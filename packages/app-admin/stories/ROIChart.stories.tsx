@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ROIChart } from "@app-admin/components/charts/ROIChart";
 import { mockScenarioMetrics } from "./mockData";
 

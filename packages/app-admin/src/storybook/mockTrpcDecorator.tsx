@@ -1,16 +1,9 @@
-import type { Decorator } from "@storybook/react";
-import { useState } from "react";
+import type { Decorator } from "@storybook/react-vite";
+import { useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc } from "../trpc";
 import { TrpcClientProvider } from "../data/api";
 import { createMockTrpcLink } from "./mockTrpcLink";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false },
-  },
-});
 
 /**
  * Wraps stories with a full tRPC + React Query provider tree using a mock
@@ -18,11 +11,25 @@ const queryClient = new QueryClient({
  * or useMutation (e.g. BudgetingLayout, components using hooks from queries/hooks).
  */
 export const withMockTrpc: Decorator = (Story) => {
-  const [client] = useState(() =>
-    trpc.createClient({
-      links: [createMockTrpcLink()],
-    })
+  const queryClient = useMemo(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { retry: false, staleTime: Infinity },
+          mutations: { retry: false },
+        },
+      }),
+    []
   );
+
+  const client = useMemo(
+    () =>
+      trpc.createClient({
+        links: [createMockTrpcLink()],
+      }),
+    []
+  );
+
   return (
     <trpc.Provider client={client} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>

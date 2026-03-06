@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CostCoverageChart } from "@app-admin/components/charts/CostCoverageChart";
 import { mockScenarioMetrics } from "./mockData";
 

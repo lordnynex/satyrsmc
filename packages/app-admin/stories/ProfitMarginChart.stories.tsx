@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ProfitMarginChart } from "@app-admin/components/charts/ProfitMarginChart";
 import { mockScenarioMetrics } from "./mockData";
 

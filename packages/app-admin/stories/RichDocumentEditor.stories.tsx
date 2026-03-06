@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { RichDocumentEditor } from "@app-admin/components/ui/rich-document-editor";
 import { Button } from "@app-admin/components/ui/button";

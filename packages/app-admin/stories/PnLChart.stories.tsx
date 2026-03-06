@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PnLChart } from "@app-admin/components/charts/PnLChart";
 import { mockScenarioMetrics } from "./mockData";
 

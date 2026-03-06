@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Input } from "@app-admin/components/ui/input";
 import { Label } from "@app-admin/components/ui/label";
 

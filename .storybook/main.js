@@ -1,5 +1,11 @@
-const path = require("path");
-const { existsSync } = require("fs");
+// This file has been automatically migrated to valid ESM format by Storybook.
+import path, { dirname } from "path";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const appAdminSrc = path.join(rootDir, "packages/app-admin/src");
 const appPublicSrc = path.join(rootDir, "packages/app-public/src");
@@ -8,9 +14,15 @@ const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx"];
 
 function resolveWithExtensions(base, rel) {
   const full = path.join(base, rel);
+  // Try direct file with extensions
   for (const ext of EXTENSIONS) {
     const withExt = full + ext;
     if (existsSync(withExt)) return withExt;
+  }
+  // Try index file in directory
+  for (const ext of EXTENSIONS) {
+    const indexPath = path.join(full, `index${ext}`);
+    if (existsSync(indexPath)) return indexPath;
   }
   return null;
 }
@@ -50,13 +62,27 @@ async function viteFinal(config) {
 
 /** @type { import('@storybook/react-vite').StorybookConfig } */
 const config = {
-  framework: "@storybook/react-vite",
+  framework: {
+    name: getAbsolutePath("@storybook/react-vite"),
+    options: {},
+  },
   stories: [
     "../packages/app-admin/stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
     "../packages/app-public/stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
-  addons: ["@storybook/addon-essentials"],
+  addons: [
+    getAbsolutePath("@storybook/addon-docs"),
+    getAbsolutePath("@github-ui/storybook-addon-performance-panel"),
+  ],
+  docs: {},
+  typescript: {
+    reactDocgen: "react-docgen-typescript",
+  },
   viteFinal,
 };
 
-module.exports = config;
+export default config;
+
+function getAbsolutePath(value) {
+  return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+}
