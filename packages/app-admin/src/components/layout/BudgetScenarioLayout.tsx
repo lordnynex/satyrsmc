@@ -102,7 +102,7 @@ function BudgetScenarioListsSync({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Suspense fallback={<PageLoading />}>
+    <Suspense fallback={<PageLoading />} key={`${budgetId}-${scenarioId}`}>
       <BudgetScenarioDataSync budgetId={budgetId} scenarioId={scenarioId}>
         {children}
       </BudgetScenarioDataSync>

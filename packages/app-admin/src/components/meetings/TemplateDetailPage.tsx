@@ -9,7 +9,7 @@ import {
   unwrapSuspenseData,
 } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
-import { RichDocumentEditor } from "./RichDocumentEditor";
+import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 import { ExportPdfButton } from "./ExportPdfButton";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 

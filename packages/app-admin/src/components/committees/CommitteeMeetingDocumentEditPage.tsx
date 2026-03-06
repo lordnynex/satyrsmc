@@ -8,7 +8,7 @@ import {
   unwrapSuspenseData,
 } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
-import { RichDocumentEditor } from "@/components/meetings/RichDocumentEditor";
+import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 import { ArrowLeft, Save, FileDown } from "lucide-react";
 
 type DocumentType = "agenda" | "minutes";

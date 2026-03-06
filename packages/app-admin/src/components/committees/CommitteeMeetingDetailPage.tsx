@@ -23,7 +23,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { RichDocumentEditor } from "@/components/meetings/RichDocumentEditor";
+import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 import {
   ArrowLeft,
   Calendar,

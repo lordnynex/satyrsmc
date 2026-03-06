@@ -23,7 +23,7 @@ import {
   useMeetingTemplatesSuspense,
   unwrapSuspenseData,
 } from "@/queries/hooks";
-import { RichDocumentEditor } from "./RichDocumentEditor";
+import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 

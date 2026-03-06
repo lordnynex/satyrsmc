@@ -23,7 +23,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { RichDocumentEditor } from "./RichDocumentEditor";
+import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 import { MotionsCard } from "./MotionsCard";
 import { ActionItemsCard } from "./ActionItemsCard";
 import { NewBusinessCard } from "./NewBusinessCard";
@@ -139,12 +139,22 @@ export function MeetingDetailPage() {
   const hasMinutes =
     Boolean(meeting.minutes_document_id) || !isMinutesEmpty();
 
-  const [agendaOpen, setAgendaOpen] = useState(!hasMinutes);
+  const isMeetingInPast = (): boolean => {
+    const meetingDate = new Date(meeting.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    meetingDate.setHours(0, 0, 0, 0);
+    return meetingDate < today;
+  };
+
+  const shouldCollapseAgenda = hasMinutes && isMeetingInPast();
+
+  const [agendaOpen, setAgendaOpen] = useState(!shouldCollapseAgenda);
   const [minutesOpen, setMinutesOpen] = useState(true);
 
   useEffect(() => {
-    setAgendaOpen(!hasMinutes);
-  }, [hasMinutes]);
+    setAgendaOpen(!shouldCollapseAgenda);
+  }, [shouldCollapseAgenda]);
 
   const minutesExportDisabled =
     !meeting.minutes_document_id || isMinutesEmpty();
