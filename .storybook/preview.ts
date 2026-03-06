@@ -3,16 +3,16 @@ import addonPerformancePanel from "@github-ui/storybook-addon-performance-panel"
 import { withMockApi } from "../packages/app-admin/src/storybook/mockApiDecorator";
 import { withMockTrpc } from "../packages/app-admin/src/storybook/mockTrpcDecorator";
 
-// Wrapper that skips decorators in docs mode to prevent infinite loading
+// Wrapper that skips decorators in docs mode or when skipMocks parameter is set
 const withMockTrpcSafe: typeof withMockTrpc = (Story, context) => {
-  if (context.viewMode === "docs") {
+  if (context.viewMode === "docs" || context.parameters?.skipMocks) {
     return Story();
   }
   return withMockTrpc(Story, context);
 };
 
 const withMockApiSafe: typeof withMockApi = (Story, context) => {
-  if (context.viewMode === "docs") {
+  if (context.viewMode === "docs" || context.parameters?.skipMocks) {
     return Story();
   }
   return withMockApi(Story, context);

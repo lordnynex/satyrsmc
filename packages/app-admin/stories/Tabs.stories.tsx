@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@app-admin/components/ui/tabs";
 
 import "@app-admin/index.css";
@@ -7,6 +8,9 @@ const meta: Meta<typeof Tabs> = {
   component: Tabs,
   title: "App Admin/UI/Tabs",
   tags: ["autodocs"],
+  parameters: {
+    skipMocks: true,
+  },
 };
 
 export default meta;
@@ -26,6 +30,22 @@ export const Default: Story = {
       <TabsContent value="three">Content for tab three.</TabsContent>
     </Tabs>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText("Content for tab one.")).toBeVisible();
+
+    const tabTwo = canvas.getByRole("tab", { name: "Two" });
+    await userEvent.click(tabTwo);
+
+    await expect(canvas.getByText("Content for tab two.")).toBeVisible();
+    await expect(canvas.queryByText("Content for tab one.")).not.toBeVisible();
+
+    const tabThree = canvas.getByRole("tab", { name: "Three" });
+    await userEvent.click(tabThree);
+
+    await expect(canvas.getByText("Content for tab three.")).toBeVisible();
+  },
 };
 
 export const LineVariant: Story = {

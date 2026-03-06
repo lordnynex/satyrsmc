@@ -72,6 +72,7 @@ const config = {
   ],
   addons: [
     getAbsolutePath("@storybook/addon-docs"),
+    getAbsolutePath("@storybook/addon-a11y"),
     getAbsolutePath("@github-ui/storybook-addon-performance-panel"),
   ],
   docs: {},

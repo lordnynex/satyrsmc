@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@github-ui/storybook-addon-performance-panel": "^1.1.4",
+    "@storybook/addon-a11y": "^10.2.16",
     "@storybook/addon-docs": "^10.2.16",
     "@storybook/react": "^10.2.16",
     "@storybook/react-vite": "^10.2.16",

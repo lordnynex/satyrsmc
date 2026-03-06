@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
 import {
   Popover,
   PopoverContent,
@@ -12,6 +13,9 @@ const meta: Meta<typeof Popover> = {
   component: Popover,
   title: "App Admin/UI/Popover",
   tags: ["autodocs"],
+  parameters: {
+    skipMocks: true,
+  },
 };
 
 export default meta;
@@ -34,6 +38,17 @@ export const Default: Story = {
       </PopoverContent>
     </Popover>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole("button", { name: "Open popover" });
+
+    await userEvent.click(trigger);
+
+    const popoverContent = await within(document.body).findByText("Popover title");
+    await expect(popoverContent).toBeInTheDocument();
+
+    await userEvent.keyboard("{Escape}");
+  },
 };
 
 export const WithForm: Story = {

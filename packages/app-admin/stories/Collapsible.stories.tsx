@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
 import {
   Collapsible,
   CollapsibleContent,
@@ -12,6 +13,9 @@ const meta: Meta<typeof Collapsible> = {
   component: Collapsible,
   title: "App Admin/UI/Collapsible",
   tags: ["autodocs"],
+  parameters: {
+    skipMocks: true,
+  },
 };
 
 export default meta;
@@ -36,6 +40,19 @@ export const Default: Story = {
       </CollapsibleContent>
     </Collapsible>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole("button");
+    const contentText = "This content can be expanded and collapsed.";
+
+    await expect(canvas.queryByText(contentText)).not.toBeVisible();
+
+    await userEvent.click(trigger);
+    await expect(canvas.getByText(contentText)).toBeVisible();
+
+    await userEvent.click(trigger);
+    await expect(canvas.queryByText(contentText)).not.toBeVisible();
+  },
 };
 
 export const DefaultOpen: Story = {

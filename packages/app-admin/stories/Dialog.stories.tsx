@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
 import {
   Dialog,
   DialogClose,
@@ -19,6 +20,9 @@ const meta: Meta<typeof Dialog> = {
   component: Dialog,
   title: "App Admin/UI/Dialog",
   tags: ["autodocs"],
+  parameters: {
+    skipMocks: true,
+  },
 };
 
 export default meta;
@@ -48,6 +52,21 @@ export const Default: Story = {
       </DialogContent>
     </Dialog>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const openButton = canvas.getByRole("button", { name: "Open dialog" });
+
+    await userEvent.click(openButton);
+
+    const dialog = await within(document.body).findByRole("dialog");
+    await expect(dialog).toBeInTheDocument();
+    await expect(within(dialog).getByText("Dialog title")).toBeInTheDocument();
+
+    const cancelButton = within(dialog).getByRole("button", { name: "Cancel" });
+    await userEvent.click(cancelButton);
+
+    await expect(within(document.body).queryByRole("dialog")).not.toBeInTheDocument();
+  },
 };
 
 export const WithForm: Story = {

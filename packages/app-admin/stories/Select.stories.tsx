@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn, expect, userEvent, within } from "storybook/test";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,9 @@ const meta: Meta<typeof Select> = {
   component: Select,
   title: "App Admin/UI/Select",
   tags: ["autodocs"],
+  parameters: {
+    skipMocks: true,
+  },
 };
 
 export default meta;
@@ -22,8 +26,11 @@ export default meta;
 type Story = StoryObj<typeof Select>;
 
 export const Default: Story = {
-  render: () => (
-    <Select>
+  args: {
+    onValueChange: fn(),
+  },
+  render: (args) => (
+    <Select onValueChange={args.onValueChange}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select option" />
       </SelectTrigger>
@@ -34,6 +41,18 @@ export const Default: Story = {
       </SelectContent>
     </Select>
   ),
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole("combobox");
+
+    await userEvent.click(trigger);
+
+    const option = await within(document.body).findByText("Option Two");
+    await userEvent.click(option);
+
+    await expect(args.onValueChange).toHaveBeenCalledWith("two");
+    await expect(trigger).toHaveTextContent("Option Two");
+  },
 };
 
 export const WithGroups: Story = {
