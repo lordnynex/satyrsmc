@@ -57,6 +57,7 @@ export function MeetingDocumentEditPage({
       await updateDocumentMutation.mutateAsync({
         id: documentId,
         body: { content: editContent },
+        meetingId: id,
       });
       setDirty(false);
       navigate(`/meetings/${id}`);

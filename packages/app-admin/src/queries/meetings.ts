@@ -1,13 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
-import { queryKeys } from "@/queries/keys";
 import type {
   MeetingDetail,
   MeetingSummary,
   MotionsListResponse,
   OldBusinessItemWithMeeting,
 } from "@satyrsmc/shared/types/meeting";
+
+function useTrpcUtils() {
+  return trpc.useUtils();
+}
 
 /** Data: MeetingSummary[] */
 export function useMeetingsSuspense(sort?: "date" | "meeting_number") {
@@ -42,7 +45,7 @@ export function useMotionsList(page: number, perPage: number, q?: string) {
 
 export function useCreateMeeting() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: (body: {
       date: string;
@@ -53,26 +56,26 @@ export function useCreateMeeting() {
       minutes_content?: string | null;
       agenda_template_id?: string;
     }) => api.meetings.create(body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.meetings() }),
+    onSuccess: () => utils.admin.meetings.list.invalidate(),
   });
 }
 
 export function useUpdateMeeting() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
       api.meetings.update(id, body as never),
     onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: queryKeys.meetings() });
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(id) });
+      utils.admin.meetings.list.invalidate();
+      utils.admin.meetings.get.invalidate({ id });
     },
   });
 }
 
 export function useDeleteMeeting() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: (args: {
       id: string;
@@ -83,13 +86,13 @@ export function useDeleteMeeting() {
         delete_agenda: args.delete_agenda,
         delete_minutes: args.delete_minutes,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.meetings() }),
+    onSuccess: () => utils.admin.meetings.list.invalidate(),
   });
 }
 
 export function useOldBusinessCreate() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -99,13 +102,13 @@ export function useOldBusinessCreate() {
       body: { description: string; order_index?: number };
     }) => api.meetings.oldBusiness.create(meetingId, body),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useOldBusinessUpdate() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -117,24 +120,24 @@ export function useOldBusinessUpdate() {
       body: Record<string, unknown>;
     }) => api.meetings.oldBusiness.update(meetingId, oid, body),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useOldBusinessDelete() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({ meetingId, id: oid }: { meetingId: string; id: string }) =>
       api.meetings.oldBusiness.delete(meetingId, oid),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useMotionCreate() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -150,13 +153,13 @@ export function useMotionCreate() {
       };
     }) => api.meetings.motions.create(meetingId, body),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useMotionUpdate() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -168,24 +171,24 @@ export function useMotionUpdate() {
       body: Record<string, unknown>;
     }) => api.meetings.motions.update(meetingId, motionId, body),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useMotionDelete() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({ meetingId, motionId }: { meetingId: string; motionId: string }) =>
       api.meetings.motions.delete(meetingId, motionId),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useActionItemCreate() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -200,13 +203,13 @@ export function useActionItemCreate() {
       };
     }) => api.meetings.actionItems.create(meetingId, body),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useActionItemUpdate() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -218,13 +221,13 @@ export function useActionItemUpdate() {
       body: Record<string, unknown>;
     }) => api.meetings.actionItems.update(meetingId, actionItemId, body),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
 export function useActionItemDelete() {
   const api = useApi();
-  const qc = useQueryClient();
+  const utils = useTrpcUtils();
   return useMutation({
     mutationFn: ({
       meetingId,
@@ -234,6 +237,6 @@ export function useActionItemDelete() {
       actionItemId: string;
     }) => api.meetings.actionItems.delete(meetingId, actionItemId),
     onSuccess: (_, { meetingId }) =>
-      qc.invalidateQueries({ queryKey: queryKeys.meeting(meetingId) }),
+      utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }

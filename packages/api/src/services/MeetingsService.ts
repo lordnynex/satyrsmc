@@ -10,6 +10,7 @@ import {
   Member,
 } from "../entities";
 import { uuid } from "./utils";
+import type { MeetingDetail } from "@satyrsmc/shared/types/meeting";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -93,7 +94,7 @@ export class MeetingsService {
     return this.meetingToApi(meeting, docMap);
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<MeetingDetail | null> {
     const meeting = await this.ds.getRepository(Meeting).findOne({ where: { id } });
     if (!meeting) return null;
     const motions = await this.ds.getRepository(MeetingMotion).find({

@@ -6,18 +6,6 @@ import type {
   OldBusinessItemWithMeeting,
 } from "@satyrsmc/shared/types/meeting";
 
-async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((err as { error?: string }).error ?? "Request failed");
-  }
-  return res.json();
-}
-
 export class MeetingsApiClient {
   constructor(private client: TrpcClient) {}
 
@@ -83,24 +71,20 @@ export class MeetingsApiClient {
         seconder_member_id: string;
       }
     ) =>
-      fetchJson<unknown>(`/api/meetings/${meetingId}/motions`, {
-        method: "POST",
-        body: JSON.stringify(body),
+      this.client.admin.meetings.createMotion.mutate({
+        meetingId,
+        ...body,
       }),
-    update: (
-      meetingId: string,
-      mid: string,
-      body: Record<string, unknown>
-    ) =>
-      fetchJson<unknown>(`/api/meetings/${meetingId}/motions/${mid}`, {
-        method: "PUT",
-        body: JSON.stringify(body),
-      }),
+    update: (meetingId: string, mid: string, body: Record<string, unknown>) =>
+      this.client.admin.meetings.updateMotion.mutate({
+        meetingId,
+        motionId: mid,
+        ...body,
+      } as never),
     delete: (meetingId: string, mid: string) =>
-      fetch(`/api/meetings/${meetingId}/motions/${mid}`, {
-        method: "DELETE",
-      }).then((res) => {
-        if (!res.ok) throw new Error("Delete failed");
+      this.client.admin.meetings.deleteMotion.mutate({
+        meetingId,
+        motionId: mid,
       }),
   };
 
@@ -114,24 +98,20 @@ export class MeetingsApiClient {
         order_index?: number;
       }
     ) =>
-      fetchJson<unknown>(`/api/meetings/${meetingId}/action-items`, {
-        method: "POST",
-        body: JSON.stringify(body),
+      this.client.admin.meetings.createActionItem.mutate({
+        meetingId,
+        ...body,
       }),
-    update: (
-      meetingId: string,
-      aid: string,
-      body: Record<string, unknown>
-    ) =>
-      fetchJson<unknown>(`/api/meetings/${meetingId}/action-items/${aid}`, {
-        method: "PUT",
-        body: JSON.stringify(body),
-      }),
+    update: (meetingId: string, aid: string, body: Record<string, unknown>) =>
+      this.client.admin.meetings.updateActionItem.mutate({
+        meetingId,
+        actionItemId: aid,
+        ...body,
+      } as never),
     delete: (meetingId: string, aid: string) =>
-      fetch(`/api/meetings/${meetingId}/action-items/${aid}`, {
-        method: "DELETE",
-      }).then((res) => {
-        if (!res.ok) throw new Error("Delete failed");
+      this.client.admin.meetings.deleteActionItem.mutate({
+        meetingId,
+        actionItemId: aid,
       }),
   };
 
@@ -140,24 +120,20 @@ export class MeetingsApiClient {
       meetingId: string,
       body: { description: string; order_index?: number }
     ) =>
-      fetchJson<unknown>(`/api/meetings/${meetingId}/old-business`, {
-        method: "POST",
-        body: JSON.stringify(body),
+      this.client.admin.meetings.createOldBusiness.mutate({
+        meetingId,
+        ...body,
       }),
-    update: (
-      meetingId: string,
-      oid: string,
-      body: Record<string, unknown>
-    ) =>
-      fetchJson<unknown>(`/api/meetings/${meetingId}/old-business/${oid}`, {
-        method: "PUT",
-        body: JSON.stringify(body),
-      }),
+    update: (meetingId: string, oid: string, body: Record<string, unknown>) =>
+      this.client.admin.meetings.updateOldBusiness.mutate({
+        meetingId,
+        oldBusinessId: oid,
+        ...body,
+      } as never),
     delete: (meetingId: string, oid: string) =>
-      fetch(`/api/meetings/${meetingId}/old-business/${oid}`, {
-        method: "DELETE",
-      }).then((res) => {
-        if (!res.ok) throw new Error("Delete failed");
+      this.client.admin.meetings.deleteOldBusiness.mutate({
+        meetingId,
+        oldBusinessId: oid,
       }),
   };
 }

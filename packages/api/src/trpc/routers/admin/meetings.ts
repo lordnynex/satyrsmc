@@ -43,7 +43,7 @@ export const meetingsRouter = t.router({
 
   delete: t.procedure
     .input(z.object({ id: z.string(), delete_agenda: z.boolean().optional(), delete_minutes: z.boolean().optional() }))
-    .mutation(({ ctx, input }) => ctx.api.meetings.delete(input.id, input.delete_agenda, input.delete_minutes)),
+    .mutation(({ ctx, input }) => ctx.api.meetings.delete(input.id, { delete_agenda: input.delete_agenda, delete_minutes: input.delete_minutes })),
 
   listOldBusiness: t.procedure.query(({ ctx }) => ctx.api.meetings.listOldBusiness()),
 
@@ -56,4 +56,102 @@ export const meetingsRouter = t.router({
       }).optional()
     )
     .query(({ ctx, input }) => ctx.api.meetings.listMotions(input ?? {})),
+
+  createMotion: t.procedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        description: z.string().nullable().optional(),
+        result: z.enum(["pass", "fail"]),
+        order_index: z.number().optional(),
+        mover_member_id: z.string(),
+        seconder_member_id: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const { meetingId, ...body } = input;
+      return ctx.api.meetings.createMotion(meetingId, body);
+    }),
+
+  updateMotion: t.procedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        motionId: z.string(),
+      }).passthrough()
+    )
+    .mutation(({ ctx, input }) => {
+      const { meetingId, motionId, ...body } = input;
+      return ctx.api.meetings.updateMotion(meetingId, motionId, body);
+    }),
+
+  deleteMotion: t.procedure
+    .input(z.object({ meetingId: z.string(), motionId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.api.meetings.deleteMotion(input.meetingId, input.motionId)
+    ),
+
+  createActionItem: t.procedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        description: z.string(),
+        assignee_member_id: z.string().nullable().optional(),
+        due_date: z.string().nullable().optional(),
+        order_index: z.number().optional(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const { meetingId, ...body } = input;
+      return ctx.api.meetings.createActionItem(meetingId, body);
+    }),
+
+  updateActionItem: t.procedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        actionItemId: z.string(),
+      }).passthrough()
+    )
+    .mutation(({ ctx, input }) => {
+      const { meetingId, actionItemId, ...body } = input;
+      return ctx.api.meetings.updateActionItem(meetingId, actionItemId, body);
+    }),
+
+  deleteActionItem: t.procedure
+    .input(z.object({ meetingId: z.string(), actionItemId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.api.meetings.deleteActionItem(input.meetingId, input.actionItemId)
+    ),
+
+  createOldBusiness: t.procedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        description: z.string(),
+        order_index: z.number().optional(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const { meetingId, ...body } = input;
+      return ctx.api.meetings.createOldBusiness(meetingId, body);
+    }),
+
+  updateOldBusiness: t.procedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        oldBusinessId: z.string(),
+      }).passthrough()
+    )
+    .mutation(({ ctx, input }) => {
+      const { meetingId, oldBusinessId, ...body } = input;
+      return ctx.api.meetings.updateOldBusiness(meetingId, oldBusinessId, body);
+    }),
+
+  deleteOldBusiness: t.procedure
+    .input(z.object({ meetingId: z.string(), oldBusinessId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.api.meetings.deleteOldBusiness(input.meetingId, input.oldBusinessId)
+    ),
 });

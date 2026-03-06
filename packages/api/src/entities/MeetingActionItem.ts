@@ -18,7 +18,7 @@ export class MeetingActionItem {
   dueDate!: string | null;
 
   @Column({ type: "text", default: "open" })
-  status!: string;
+  status!: "open" | "completed";
 
   @Column({ name: "completed_at", type: "text", nullable: true })
   completedAt!: string | null;

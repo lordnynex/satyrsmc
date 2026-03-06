@@ -12,7 +12,7 @@ export class MeetingMotion {
   description!: string | null;
 
   @Column({ type: "text" })
-  result!: string;
+  result!: "pass" | "fail";
 
   @Column({ name: "mover_member_id", type: "text", nullable: true })
   moverMemberId!: string | null;

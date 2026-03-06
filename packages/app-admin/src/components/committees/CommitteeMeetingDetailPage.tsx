@@ -348,43 +348,40 @@ export function CommitteeMeetingDetailPage() {
 
       <Collapsible open={agendaOpen} onOpenChange={setAgendaOpen}>
         <div className="rounded-lg border">
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2 text-left hover:bg-muted/50"
-            >
-              <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-left hover:opacity-80"
+              >
                 {agendaOpen ? (
                   <ChevronDown className="size-4 text-muted-foreground" />
                 ) : (
                   <ChevronRight className="size-4 text-muted-foreground" />
                 )}
                 <h2 className="text-base font-medium">Agenda</h2>
-              </div>
-              <div
-                className="flex items-center gap-1.5"
-                onClick={(e) => e.stopPropagation()}
+              </button>
+            </CollapsibleTrigger>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={handleAgendaExportPdf}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2"
-                  onClick={handleAgendaExportPdf}
+                <FileDown className="size-3.5" />
+                Export
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                <Link
+                  to={`/meetings/committees/${committeeId}/meetings/${meetingId}/agenda/edit`}
                 >
-                  <FileDown className="size-3.5" />
-                  Export
-                </Button>
-                <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                  <Link
-                    to={`/meetings/committees/${committeeId}/meetings/${meetingId}/agenda/edit`}
-                  >
-                    <Pencil className="size-3.5" />
-                    Edit
-                  </Link>
-                </Button>
-              </div>
-            </button>
-          </CollapsibleTrigger>
+                  <Pencil className="size-3.5" />
+                  Edit
+                </Link>
+              </Button>
+            </div>
+          </div>
           <CollapsibleContent>
             <div className="border-t px-3 py-2">
               <RichDocumentEditor
@@ -401,53 +398,50 @@ export function CommitteeMeetingDetailPage() {
 
       <Collapsible open={minutesOpen} onOpenChange={setMinutesOpen}>
         <div className="rounded-lg border">
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2 text-left hover:bg-muted/50"
-            >
-              <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-left hover:opacity-80"
+              >
                 {minutesOpen ? (
                   <ChevronDown className="size-4 text-muted-foreground" />
                 ) : (
                   <ChevronRight className="size-4 text-muted-foreground" />
                 )}
                 <h2 className="text-base font-medium">Minutes</h2>
-              </div>
-              <div
-                className="flex items-center gap-1.5"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {meeting.minutes_document_id && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2"
-                      onClick={handleMinutesExportPdf}
-                      disabled={minutesExportDisabled}
+              </button>
+            </CollapsibleTrigger>
+            <div className="flex items-center gap-1.5">
+              {meeting.minutes_document_id && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2"
+                    onClick={handleMinutesExportPdf}
+                    disabled={minutesExportDisabled}
+                  >
+                    <FileDown className="size-3.5" />
+                    Export
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2"
+                    asChild
+                  >
+                    <Link
+                      to={`/meetings/committees/${committeeId}/meetings/${meetingId}/minutes/edit`}
                     >
-                      <FileDown className="size-3.5" />
-                      Export
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2"
-                      asChild
-                    >
-                      <Link
-                        to={`/meetings/committees/${committeeId}/meetings/${meetingId}/minutes/edit`}
-                      >
-                        <Pencil className="size-3.5" />
-                        Edit
-                      </Link>
-                    </Button>
-                  </>
-                )}
-              </div>
-            </button>
-          </CollapsibleTrigger>
+                      <Pencil className="size-3.5" />
+                      Edit
+                    </Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
           <CollapsibleContent>
             <div className="border-t px-3 py-2">
               <RichDocumentEditor
