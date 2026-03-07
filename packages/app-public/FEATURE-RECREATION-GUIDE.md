@@ -61,20 +61,21 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 ### Two Apps, Three Concerns
 
 ```
-app-public (one SPA, two sections):
+app-public (satyrsmc.org):
   /                  — Public/marketing (unauthenticated)
   /about, /events, /gallery, /blog, /contact
-  /members/          — Members area (authenticated)
-  /members/roster, /members/profile, /members/meetings
 
-app-admin (separate SPA):
-  /admin             — Club management (admin auth)
+app-admin (members.satyrsmc.org, to be renamed):
+  /                  — Members area (authenticated)
+  /roster, /profile, /events, /meetings
+  /admin/            — Club management (admin auth)
   /admin/events, /admin/contacts, /admin/budgets, ...
 ```
 
-- **`app-public`** handles both public marketing pages and authenticated member routes in a single app
-- **`app-admin`** is a separate app for club officers/administrators
-- **Shared auth**: Same JWT cookies work across both apps — logging into the members section in app-public = logged into app-admin. The API validates the same tokens regardless of which frontend made the request.
+- **`app-public`** is the public marketing site — fully unauthenticated, no member routes
+- **`app-admin`** (likely to be renamed, e.g. `app-members`) hosts both the authenticated **members section** at `/` and the **admin section** at `/admin`. Served from `members.satyrsmc.org`.
+- **Why members live in app-admin**: Members are the most frequently accessed section for logged-in users. Placing the members area at the root of `members.satyrsmc.org` gives it a clean URL and keeps all authenticated concerns in a single app, separate from the public marketing site.
+- **Shared auth**: Same JWT cookies work across both apps — the API validates the same tokens regardless of which frontend made the request.
 
 ### Dual Database (Transition Period)
 
@@ -185,11 +186,12 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 - Passwords: `bcryptjs` cost 12
 - Tokens: SHA-256 hashes stored in DB, raw tokens in emails
 
-**Frontend (app-public):**
+**Frontend (app-admin, at `members.satyrsmc.org`):**
 - `AuthContext` using React 19 `use()` pattern
 - `useAuth()` hook: `user`, `isAuthenticated`, `isAdmin`, `isMember`, `isLoading`, `login()`, `logout()`, `refresh()`
 - Route guards: `ProtectedRoute`, `AdminRoute`, `MemberRoute`
-- Pages: Login, Register, Signup, ForgotPassword, ResetPassword
+- Auth pages at root level: `/login`, `/register`, `/signup`, `/forgot-password`, `/reset-password`
+- `app-public` has no auth — it links to `members.satyrsmc.org/login` for member login
 
 **Auth Schemas (in `@satyrsmc/shared`):**
 - `passwordSchema`: 8-128 chars, requires uppercase + lowercase + number + special character (4 separate regex checks)
@@ -205,15 +207,30 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 ---
 
-### Phase 3: Members Section
+### Phase 3: Members Section (in app-admin)
 
-**Goal:** Authenticated member area within app-public with roster, profiles, and club data.
+**Goal:** Authenticated member area within `app-admin` (to be renamed), served at `members.satyrsmc.org/`. The members section lives at the root; the existing admin features move under `/admin`.
 
-**Routes (in app-public, auth-gated):**
-- `/members/roster` — sortable member roster (name, position, joined year, phone)
-- `/members/profile` — edit own profile
-- `/members/events` — event details with attendance
-- `/members/meetings` — meeting minutes access
+**Why app-admin, not app-public:**
+- Keeps all authenticated concerns in one app — members and admin share auth context, route guards, and tRPC client setup
+- The public site (`app-public`) stays purely unauthenticated with no auth dependencies
+- `app-admin` already has the auth infrastructure (tRPC client, query hooks, UI components) needed for member routes
+
+**App Restructure:**
+- `app-admin` is renamed (e.g. `app-members` or `app-internal`) and deployed to `members.satyrsmc.org`
+- Existing admin routes move from `/` to `/admin/*`
+- Members section takes over the root `/`
+
+**Routes (in app-admin, at root, auth-gated):**
+- `/` — members landing / dashboard
+- `/roster` — sortable member roster (name, position, joined year, phone)
+- `/profile` — edit own profile
+- `/events` — event details with attendance
+- `/meetings` — meeting minutes access
+
+**Routes (existing admin, moved under `/admin`):**
+- `/admin/` — admin dashboard
+- `/admin/contacts`, `/admin/events`, `/admin/budgets`, etc. — all existing admin routes
 
 **tRPC Routes (memberProcedure):**
 - `members.roster` — full roster with contact info
@@ -222,9 +239,9 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 - `members.meetings` — meeting summaries and minutes
 
 **Data Flow:**
-- Members with `show_on_website = true` feed into the public Members page
-- Member profiles are served via the existing `website.getMembersFeed` endpoint
-- The members section provides richer data for authenticated users
+- Members with `show_on_website = true` feed into the public Members page on `app-public` via `website.getMembersFeed`
+- The members section in `app-admin` provides richer data for authenticated users via `memberProcedure` routes
+- Admin features remain behind `adminProcedure` at `/admin/*`
 
 ---
 
@@ -296,13 +313,15 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 ### Phase 7: Admin Auth & User Management
 
-**Goal:** Protect admin routes and add user management.
+**Goal:** Protect admin routes and add user management. Since members and admin now share one app, auth context is set up once and covers both sections.
 
 **Auth Protection:**
 - Replace all bare `t.procedure` in admin routers with `adminProcedure`
-- Admin app needs auth context + login redirect
+- App-wide auth context (already needed for members section) handles login redirect
+- `/admin/*` routes use `AdminRoute` guard requiring admin/webmaster role
+- `/` member routes use `MemberRoute` guard requiring member or admin role
 
-**New Admin Features:**
+**New Admin Features (at `/admin/*`):**
 - User management page: list users, update status/type, add admin notes
 - Registration approval queue: list pending registrations, approve/reject
 - tRPC routes: `admin.users.list`, `admin.users.updateStatus`, `admin.users.updateType`, `admin.registrations.list`, `admin.registrations.approve`, `admin.registrations.reject`
