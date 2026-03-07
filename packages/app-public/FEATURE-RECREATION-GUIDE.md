@@ -1,377 +1,388 @@
-# Feature Recreation Guide — satyrsmc.org (thyrsus branch)
+# Feature Planning Guide — satyrsmc
 
-This document is a comprehensive guide for an AI agent to recreate the features implemented between `main` and `thyrsus` in this monorepo. It covers high-level architecture, reasoning behind decisions, and low-level implementation specifics.
+This document is a planning reference for future feature development. It covers what's been built, what's planned, and the implementation approach for each phase.
 
----
-
-## High-Level Context
-
-The project transforms a simple React SPA into a full-stack application with:
-- **Monorepo** (Bun workspaces): `apps/client`, `apps/server`, `packages/shared`
-- **Database-first architecture**: Neon Postgres + Drizzle ORM, with auto-generated Zod schemas
-- **CMS integration**: Contentful for editorial content
-- **Authentication**: JWT in httpOnly cookies, full registration/login/reset flow
-- **Repository pattern**: Clean separation of DB access from tRPC routers
-- **Comprehensive testing**: MSW mocks (client), unit tests with mocked repos + PGlite integration tests (server)
-- **Deployment**: Dual Netlify sites (client static, server as Functions)
-
-The work spans ~15 commits, 258 files, +23,900 lines across 11 phases.
+For coding conventions, type safety rules, and development workflow, see [CONTRIBUTING.md](../../CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md).
 
 ---
 
-## Phase 1-2: Monorepo + Database Pipeline
+## Current State
 
-### Why
-Single-package project needed proper separation of concerns. Database-first approach ensures Zod schemas and TypeScript types are always in sync with the DB.
+### What's Built
 
-### What
-- Convert to Bun workspaces monorepo with three packages
-- Docker Compose for local Postgres (port 5433 to avoid conflicts)
-- Drizzle ORM with database-first workflow: `schema.sql` (bootstrap) → `db:pull` → `db:zod` → generated schemas in `packages/shared/generated/`
-- `generate-zod.ts` script copies Drizzle schema into shared package, then generates Zod schemas
+**API (`@satyrsmc/api`)**
+- Bun.serve() + tRPC 11 server on port 3000
+- TypeORM entities (~50) with SQLite via sql.js (`data/badger.db`)
+- 20+ TypeORM migrations
+- Services for all domains (contacts, members, events, budgets, meetings, committees, mailing, QR codes, documents, website CMS)
+- Website tRPC router: `getEventsFeed`, `getMembersFeed`, `getBlogPublished`, `getBlogBySlug`, `getPages`, `getPageBySlug`, `getMenus`, `getSettings`, `submitContact`, `submitContactMember`
+- Admin tRPC routers (15+): full CRUD for all domains
+- Photo/asset serving via sharp (BLOBs in SQLite)
 
-### Key Details
-- `schema.sql` is bootstrap ONLY (Docker first start). All incremental changes use Drizzle migrations.
-- IDs: CUID2 (`@paralleldrive/cuid2`), TEXT columns, generated in app code
-- Initial tables: `contact_info`, `members`, `officer_terms`, `events`
-- Initial enums: `member_type`, `member_status`, `officer_position`, `event_category`, `event_status`
-- Shared package sets `noEmit: true`, `composite: false` — consumed as source, never emits dist
-- `tsconfig.base.json` at root with strict mode, `noUncheckedIndexedAccess`, `consistent-type-imports`
-- Schema philosophy: NEVER manually write Zod schemas unless absolutely necessary. Prefer generated schemas, derive with `.pick()/.omit()/.extend()`, only hand-write for non-DB entities.
+**Admin App (`@satyrsmc/app-admin`)**
+- Full club management SPA: members, contacts, events, meetings, budgets, committees, mailing lists, QR codes, documents, incidents
+- Website CMS: pages, blog posts, menus, contact submissions, settings, event feeds, member profiles, galleries
+- shadcn/ui components (button, card, dialog, input, label, select, textarea, tabs, sheet, calendar, date-picker, dropdown-menu, collapsible, popover)
+- TipTap rich text editor for documents/blog
+- Storybook with 38+ stories
+- ApexCharts for budget visualizations
+
+**Public App (`@satyrsmc/app-public`)**
+- 7 pages: Home, About, Events, Badger, Gallery, Members, Member Profile
+- tRPC client wired up (`createTRPCReact<AppRouter>()`) but **no pages consume tRPC yet** — all use static data files
+- Static data: `content/events.ts`, `data/members.json`, `data/timeline.json`
+- react-photo-album + lightbox for gallery
+- react-markdown for content rendering
+
+**Shared (`@satyrsmc/shared`)**
+- Hand-written TypeScript interfaces for all domains
+- No Zod schemas yet (Zod only used in tRPC router input validation)
+- `lib/constants` and `lib/pst` utilities
+
+### What's NOT Built
+
+- Authentication (no JWT, no login, no user/registration entities)
+- Neon Postgres (database is SQLite only)
+- Member-authenticated routes (roster, profile editing, meeting minutes)
+- Public pages consuming tRPC (all static)
+- Contact page with form/reCAPTCHA
+- Blog pages in public app
+- Dynamic CMS pages in public app
+- Auth protection on admin routes (all procedures are bare `t.procedure`)
+- Testing infrastructure (only 7 utility tests exist)
+- CI/CD pipelines
+- ESLint/Prettier configuration
+- Email service
 
 ---
 
-## Phase 3: Client Testing Infrastructure
+## Architecture
 
-### Why
-Need reliable testing before migrating pages to API-driven data. Coverage enforcement prevents regressions.
+### Two Apps, Three Concerns
 
-### What
-- Vitest + React Testing Library + MSW (Mock Service Worker)
-- 90% coverage thresholds (statements, branches, functions, lines)
-- Pre-push git hook runs `bun run test:coverage` — blocks push on failure
-- `test-utils.tsx` with `renderWithProviders()` helper wrapping all providers
-- MSW browser worker for dev mode (mocks API when no server running)
+```
+app-public (satyrsmc.org):
+  /                  — Public/marketing (unauthenticated)
+  /about, /events, /gallery, /blog, /contact
 
-### Key Details
-- `vitest.config.ts` is separate from `vite.config.ts` — aliases must be duplicated
-- `@/` path alias configured in tsconfig.json, vite.config.ts, AND vitest.config.ts
-- MSW `enableMocking()` checks `VITE_API_URL` and `PROD` env before starting worker
-- `bun run dev` = MSW mocks (no server needed), `bun run local` = real server
+app-admin (members.satyrsmc.org, to be renamed):
+  /                  — Members area (authenticated)
+  /roster, /profile, /events, /meetings
+  /admin/            — Club management (admin auth)
+  /admin/events, /admin/contacts, /admin/budgets, ...
+```
+
+- **`app-public`** is the public marketing site — fully unauthenticated, no member routes
+- **`app-admin`** (likely to be renamed, e.g. `app-members`) hosts both the authenticated **members section** at `/` and the **admin section** at `/admin`. Served from `members.satyrsmc.org`.
+- **Why members live in app-admin**: Members are the most frequently accessed section for logged-in users. Placing the members area at the root of `members.satyrsmc.org` gives it a clean URL and keeps all authenticated concerns in a single app, separate from the public marketing site.
+- **Shared auth**: Same JWT cookies work across both apps — the API validates the same tokens regardless of which frontend made the request.
+
+### Dual Database (Transition Period)
+
+```
+API Server
+  ├── SQLite DataSource (sqljs)     — existing admin data (contacts, events, budgets, etc.)
+  │   └── data/badger.db
+  └── Postgres DataSource (Neon)    — new data (users, registrations, auth tokens)
+      └── DATABASE_URL
+```
+
+- **SQLite stays intact** — all existing entities, migrations, and data remain untouched
+- **Postgres is added alongside** for new features (auth, members, etc.)
+- Services know which DataSource to use
+- tRPC context provides access to both
+- **Eventually** (separate future effort): migrate SQLite admin data into Postgres and retire the dual-DB setup
 
 ---
 
-## Phase 4: Server + tRPC
+## Feature Phases
 
-### Why
-Need a type-safe API layer. tRPC provides end-to-end type safety from server to client without code generation.
+### Phase 1: Add Neon Postgres
 
-### What
-- Express 5 + tRPC 11 server
-- Context-based tRPC setup using `createTRPCContext<AppRouter>()`
-- Split Express app: `app.ts` (no listener, for serverless) + `index.ts` (listener, for local dev)
-- Netlify Function wrapper via `serverless-http` in `netlify/functions/api.mts`
-- Dual database driver: static `drizzle-orm/node-postgres` (local/tests), dynamic `require()` for `@neondatabase/serverless` when `NETLIFY=true`
+**Goal:** Stand up Postgres alongside SQLite so new features have a proper relational database.
 
-### tRPC Context Pattern
-```ts
-// Per-request context
+**Database Setup:**
+- Add `postgresDataSource.ts` alongside existing `dataSource.ts`
+- TypeORM DataSource config: `type: "postgres"`, Neon connection string via `DATABASE_URL`
+- New entities for Postgres go in a separate directory or are tagged to the Postgres DataSource
+- Migrations for Postgres are separate from SQLite migrations
+
+**Neon Configuration:**
+- Production: `main` branch
+- Staging: `staging` branch (for PR previews)
+- Environment variables: `DATABASE_URL`, `DATABASE_URL_STAGING`
+
+**Local Development:**
+- Docker Compose for local Postgres (runs parallel to the SQLite file)
+- Same `bun run dev` workflow — API initializes both DataSources on startup
+
+**tRPC Context Update:**
+```typescript
+// context.ts — provides both data sources
 {
-  db: Database,
-  repos: Repositories,        // Factory-created from db
-  contentful: ContentfulClient, // Lazy singleton
-  email: EmailService,         // Lazy singleton
-  user: AuthUser | null,       // Extracted from JWT cookie
-  res: Response                // Express Response for cookie manipulation
+  sqliteApi: createApi(sqliteDb, sqliteDs),   // existing admin services
+  api: createApi(postgresDb, postgresDs),      // new services (auth, members, etc.)
+  session: null,                                // populated by auth middleware later
 }
 ```
 
-### Middleware Chain
-- `protectedProcedure` — requires valid JWT, narrows `ctx.user` to non-null
-- `adminProcedure` — requires userType "admin" or "webmaster"
-- `webmasterProcedure` — requires userType "webmaster" only
-- `memberProcedure` — requires `isMember` flag OR admin/webmaster override
-
-### Key Details
-- `httpLink` (NOT `httpBatchLink`) — msw-trpc v2 doesn't support batch
-- Lazy singletons for Contentful/email to avoid env var errors in tests
-- CI migration script (`migrate-ci.ts`) runs Drizzle migrations via Neon HTTP before deploy
-- Server `tsconfig` needs `"include": ["src", "drizzle", "netlify"]` and `"rootDir": "."`
-
 ---
 
-## Phase 5: Client-side tRPC Integration
+### Phase 2: Authentication System
 
-### Why
-Wire up the client to consume the type-safe API instead of static data.
+**Goal:** JWT-based auth with registration flow, shared across both frontend apps.
 
-### What
-- `@trpc/tanstack-react-query` with context-based client (NOT singleton)
-- `ApiProvider` wraps `QueryClientProvider` + `TRPCProvider`
-- MSW-tRPC v2 for test mocking
-- Client imports `AppRouter` type via workspace dep
+**Database (Postgres):**
+- `users` table: id, contactId FK, username, passwordHash, userType (enum), userStatus (enum), lastLogin, failedLoginAttempts, lockedUntil, resetTokenHash, resetTokenExpiresAt, passwordChangedAt, iceName, icePhone, adminNote
+- `registrations` table: id, email, firstName, lastName, tokenHash, expiresAt
+- Enums: `user_type` (user/admin/webmaster), `user_status` (active/locked/rejected/suspended/inactive/deactivated)
 
-### Key Details
-- `ApiProvider` uses `useState(() => ...)` for stable client instances (no re-creation on re-render)
-- tRPC client configured with `credentials: "include"` for cookie auth
-- `msw-trpc` has its OWN `httpLink` export — do NOT use `@trpc/client`'s `httpLink` in `createTRPCMsw` config
-- MSW handler arrays need explicit `RequestHandler[]` type annotation (avoids TS2742 portability errors)
-- Default QueryClient: 60s staleTime, retry: 1
+**Shared Types (`@satyrsmc/shared/types/auth`):**
+- User, Registration, AuthUser interfaces
+- Zod schemas for password, username, signup, login (Zod becomes a dependency of shared)
 
----
+**Server (`@satyrsmc/api`):**
 
-## Phase 6-7: Domain Routers + Page Migration
+Auth service with:
+- `register` — verify reCAPTCHA → check duplicate email (generic response) → create registration with hashed token + 14-day expiry → send email
+- `validateToken` — hash input, look up registration → return validity
+- `signup` — validate token → check username uniqueness → hash password → create user (status: "locked") → delete registration → notify admin
+- `login` — verify reCAPTCHA → find user (case-insensitive) → check lockout/status → verify password → on failure: increment attempts (lock at 5 for 15min) → on success: reset attempts, sign tokens, set cookies
+- `me` — read user profile from JWT
+- `refresh` — verify refresh cookie → check user active → sign new tokens (rotation)
+- `logout` — clear cookies
+- `forgotPassword` — generic response → generate token hash → send email
+- `resetPassword` — validate token + expiry → update password, clear token/lockout
 
-### Why
-Migrate all client pages from static data to tRPC queries. Shared fixtures ensure test data consistency.
+tRPC middleware in `trpc.ts`:
+```typescript
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session) throw new TRPCError({ code: "UNAUTHORIZED" });
+  return next({ ctx: { ...ctx, session: ctx.session } });
+});
 
-### What
-- Shared fixtures in `packages/shared/src/fixtures/` (members, events, users)
-- MSW handlers use shared fixtures
-- All 37+ client pages refactored to consume tRPC queries
-- Server routers: members, events, content, auth, admin
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (!["admin", "webmaster"].includes(ctx.session.userType))
+    throw new TRPCError({ code: "FORBIDDEN" });
+  return next({ ctx });
+});
 
-### Key Details
-- Fixture data uses typed interfaces (NOT `as const` — causes readonly tuple issues with Drizzle insert)
-- Each page has loading states (Skeleton components) and error states (Alert component)
+export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (!ctx.session.isMember && !["admin", "webmaster"].includes(ctx.session.userType))
+    throw new TRPCError({ code: "FORBIDDEN" });
+  return next({ ctx });
+});
+```
 
----
-
-## Phase 8: shadcn/ui Component Library
-
-### Why
-Consistent, accessible UI components with Tailwind 4 integration.
-
-### What
-- Components in `apps/client/src/components/ui/` — local source files, not a package
-- Dependencies: `class-variance-authority` (cva), `clsx`, `tailwind-merge`, `@radix-ui/react-slot`
-- `cn()` utility at `apps/client/src/lib/utils.ts`
-- Components use React 19 `ref` as prop (NOT `forwardRef`)
-
-### Components (14)
-alert, badge, breadcrumb, button, card, dialog, input, label, skeleton, sortable-table-head, table, textarea
-
-### Tailwind 4 Details
-- No `postcss.config.js` or `tailwind.config.js` — use `@tailwindcss/vite` plugin
-- Theme tokens in `@theme` block in `tailwind.css`
-- Custom utilities use `@utility` blocks in `components.css`
-- shadcn CSS variables in `:root` block → mapped via `@theme inline` block
-- `@custom-variant dark (&:is(.dark *))` for dark mode
-
----
-
-## Phase 9: Contentful CMS Integration
-
-### Why
-Editorial content (timeline, about page, hero banners) managed by non-technical users via CMS.
-
-### What
-- Contentful SDK v11 in server, `@contentful/rich-text-react-renderer` in client
-- Content types: `milestone`, `page`, `heroBanner`, `homeCard`, `homePage`
-- `content` tRPC router serves CMS data
-- Hand-written Zod schemas in `packages/shared/src/content.ts` (exception to schema philosophy — Contentful has no Drizzle equivalent)
-
-### Key Details
-- `z.custom<Document>()` for rich text Zod schema (NOT `z.literal("document")`)
-- `RichText.tsx` component for rendering rich text
-- `SafeHtml.tsx` component wraps `DOMPurify` — never use `dangerouslySetInnerHTML` directly
-- Contentful migration script: `01-create-content-models.cjs`
-- MSW mock data uses `BLOCKS.DOCUMENT` / `BLOCKS.PARAGRAPH` enums, not string literals
-
----
-
-## Phase 10: Deployment + Production Hardening
-
-### Why
-Move from GitHub Pages to Netlify for server-side functions and proper SPA routing.
-
-### What
-- Two Netlify sites: client (static) + server (Functions)
-- GitHub Actions: `ci.yml` (lint/typecheck/test per app), `deploy-client.yml`, `deploy-server.yml`
-- SPA routing: `[[redirects]]` in `netlify.toml` (replaces 404.html hack)
-- Pre-commit hook: lint-staged (ESLint fix + Prettier)
-- Pre-push hook: test coverage enforcement
-- `.nvmrc` for Node v20
-
-### Key Details
-- Staging: PR deploy previews use Neon staging branch + Contentful `dev` environment
-- Migrations automated in CI: staging first (PR), then production (merge to `main`)
-- `serverless-http` wraps Express app for Netlify Functions
-
----
-
-## Phase 11a: Authentication System
-
-### Why
-Full user management with role-based access control, secure registration flow, and brute-force protection.
-
-### Database Changes (Migration 0001-0003)
-- Added `users` table: `id`, `contactId` FK, `username`, `passwordHash`, `userType` (enum), `userStatus` (enum), `lastLogin`, `failedLoginAttempts`, `lockedUntil`, `resetToken`, `resetTokenExpiresAt`, `passwordChangedAt`, `iceName`, `icePhone`, `adminNote`
-- Added `registrations` table: `id`, `email`, `firstName`, `lastName`, `tokenHash`, `expiresAt`
-- Added enums: `user_type` (user/admin/webmaster), `user_status` (active/locked/rejected/suspended/inactive/deactivated)
-- Added `avatar_url` to `contact_info`
-
-### Auth Architecture
-- **JWT**: `jose` library, HS256 symmetric signing
-- **Cookies**: httpOnly, secure in prod, sameSite strict (prod) / lax (dev)
-  - `satyrs_access`: 15min expiry, path `/trpc`
-  - `satyrs_refresh`: 7 day expiry, path `/trpc/auth.refresh`
-- **Passwords**: `bcryptjs` cost 12
-- **Tokens**: Raw tokens in emails, SHA-256 hashes stored in DB
-
-### Registration Flow
-1. `register` — verify reCAPTCHA → check duplicate email (generic response) → create registration record with hashed token + 14-day expiry → send email with raw token link
-2. `validateToken` — hash input token, look up registration → return validity + name/email
-3. `signup` — validate token → check username uniqueness → hash password → create `contact_info` + `users` (status: "locked") → delete registration → notify admin
-
-### Login Flow
-1. `login` — verify reCAPTCHA → find user by username (case-insensitive via `lower()`) → check lockout → check status is "active" → verify password → on failure: increment attempts (lock at 5 for 15min) → on success: reset attempts, update lastLogin, check isMember → sign tokens, set cookies → return user profile
-2. `me` — read user profile from JWT, re-check isMember linkage
-3. `refresh` — verify refresh cookie → check user still active → re-check isMember → sign new tokens (rotation)
-4. `logout` — clear cookies
-
-### Password Reset Flow
-1. `forgotPassword` — generic response (prevents enumeration) → generate SHA-256 token hash, 1hr expiry → update user's resetToken fields → send email
-2. `resetPassword` — validate hashed token + expiry → update password, clear reset token, clear lockout
-
-### Auth Schemas (`packages/shared/src/auth.ts`)
-- `passwordSchema`: 8-128 chars, requires uppercase + lowercase + number + special character (4 separate regex checks)
-- `usernameSchema`: 3-30 chars, starts with letter, alphanumeric with dots/hyphens, no consecutive specials
-- `signupInputSchema`: includes token, username, password, confirm, birthday (18+ validation), ICE fields
-- All confirmation fields validated via `.refine()`
-- Enum reuse: `z.enum(userType.enumValues)` from generated schemas
-
-### Client Auth
-- `AuthContext.tsx`: React 19 patterns (`use()` not `useContext()`, `<Context value={...}>` not `<Provider>`)
-- `useAuth()` hook provides: `user`, `isAuthenticated`, `isAdmin`, `isMember`, `isLoading`, `login()`, `logout()`, `refresh()`
-- Route guards: `ProtectedRoute`, `AdminRoute`, `MemberRoute`
-- Auth pages: Login, Register, Signup, ForgotPassword, ResetPassword
-
-### Services
-- `EmailService` interface + `ConsoleEmailService` stub (logs to console)
+**Supporting Services:**
+- `EmailService` interface + `ConsoleEmailService` stub (logs to console in dev)
 - `RecaptchaService` for server-side reCAPTCHA v2 verification
 
-### Environment Variables
-- `JWT_SECRET` (min 32 chars), `RECAPTCHA_SECRET_KEY`, `APP_URL`, `ADMIN_EMAIL`
+**JWT & Cookies:**
+- `jose` library, HS256 symmetric signing
+- `satyrs_access`: httpOnly, 15min expiry, path `/trpc`
+- `satyrs_refresh`: httpOnly, 7 days, path `/trpc/auth.refresh`
+- `secure: true` + `sameSite: "strict"` in production, `"lax"` in dev
+- Passwords: `bcryptjs` cost 12
+- Tokens: SHA-256 hashes stored in DB, raw tokens in emails
+
+**Frontend (app-admin, at `members.satyrsmc.org`):**
+- `AuthContext` using React 19 `use()` pattern
+- `useAuth()` hook: `user`, `isAuthenticated`, `isAdmin`, `isMember`, `isLoading`, `login()`, `logout()`, `refresh()`
+- Route guards: `ProtectedRoute`, `AdminRoute`, `MemberRoute`
+- Auth pages at root level: `/login`, `/register`, `/signup`, `/forgot-password`, `/reset-password`
+- `app-public` has no auth — it links to `members.satyrsmc.org/login` for member login
+
+**Auth Schemas (in `@satyrsmc/shared`):**
+- `passwordSchema`: 8-128 chars, requires uppercase + lowercase + number + special character (4 separate regex checks)
+- `usernameSchema`: 3-30 chars, starts with letter, alphanumeric with dots/hyphens, no consecutive specials
+- `signupInputSchema`: token, username, password, confirm, birthday (18+ validation), ICE fields
+- `loginInputSchema`: username, password, reCAPTCHA token
+
+**Environment Variables:**
+- `JWT_SECRET` (min 32 chars)
+- `RECAPTCHA_SECRET_KEY`
+- `APP_URL` (for email links)
+- `ADMIN_EMAIL` (for admin notifications)
 
 ---
 
-## Phase 11b: Repository Pattern + PGlite Tests
+### Phase 3: Members Section (in app-admin)
 
-### Why
-Routers were doing too much — mixing auth, validation, and raw Drizzle queries. Repository pattern separates concerns and enables proper unit testing with mocks plus real DB integration tests without Docker.
+**Goal:** Authenticated member area within `app-admin` (to be renamed), served at `members.satyrsmc.org/`. The members section lives at the root; the existing admin features move under `/admin`.
 
-### Repository Architecture
-Each repository class:
-- Takes `Database` in constructor
-- Has explicit return type interfaces (e.g., `MemberListItem`, `UserLoginInfo`) — NOT Drizzle-generated types
-- Uses limited field selection (no `SELECT *`)
-- No business logic — pure data access
+**Why app-admin, not app-public:**
+- Keeps all authenticated concerns in one app — members and admin share auth context, route guards, and tRPC client setup
+- The public site (`app-public`) stays purely unauthenticated with no auth dependencies
+- `app-admin` already has the auth infrastructure (tRPC client, query hooks, UI components) needed for member routes
 
-### Repository Classes (5)
-1. **MemberRepository** — `findAllActive()`, `findById()`, `findCurrentOfficers()`, `listPaginated()`, `isMember()`, `findByUsername()`, `findRoster()`, `findContactForMember()`
-2. **UserRepository** (most complex, 16 methods) — CRUD, auth helpers (lockout, reset tokens), paginated listing with dynamic filters/ordering
-3. **ContactRepository** — `create()`, `findById()`, `findByEmail()`
-4. **EventRepository** — `findAll()`, `findUpcoming()`, `findPast()`
-5. **RegistrationRepository** — `create()`, `findByEmail()`, `findByToken()`, `listPaginated()`, `reject()`
+**App Restructure:**
+- `app-admin` is renamed (e.g. `app-members` or `app-internal`) and deployed to `members.satyrsmc.org`
+- Existing admin routes move from `/` to `/admin/*`
+- Members section takes over the root `/`
 
-### Factory Pattern
-```ts
-export function createRepositories(db: Database) {
-  return {
-    members: new MemberRepository(db),
-    users: new UserRepository(db),
-    contacts: new ContactRepository(db),
-    events: new EventRepository(db),
-    registrations: new RegistrationRepository(db),
-  };
-}
-export type Repositories = ReturnType<typeof createRepositories>;
-```
-Injected via `ctx.repos` in tRPC context.
+**Routes (in app-admin, at root, auth-gated):**
+- `/` — members landing / dashboard
+- `/roster` — sortable member roster (name, position, joined year, phone)
+- `/profile` — edit own profile
+- `/events` — event details with attendance
+- `/meetings` — meeting minutes access
 
-### Thin Router Pattern
-Routers now contain ONLY: input validation + auth middleware + delegation to `ctx.repos.*`. No Drizzle imports in routers.
+**Routes (existing admin, moved under `/admin`):**
+- `/admin/` — admin dashboard
+- `/admin/contacts`, `/admin/events`, `/admin/budgets`, etc. — all existing admin routes
 
-### Testing Strategy
-- **Unit tests**: Mock repos via `createMockRepos()`, test router logic/auth with `createTestCaller(user?)`
-- **Integration tests**: PGlite (`@electric-sql/pglite`) — in-memory Postgres, no Docker
-  - `createTestDb()` runs `schema.sql` + 4 migrations (stripping `--> statement-breakpoint` markers)
-  - `drizzle-orm/pglite` driver cast as `Database` via `as unknown as Database`
-  - 129 total tests: 65 unit + 64 integration
+**tRPC Routes (memberProcedure):**
+- `members.roster` — full roster with contact info
+- `members.profile` — get/update own profile
+- `members.events` — events with attendee details
+- `members.meetings` — meeting summaries and minutes
 
-### Pagination Pattern (in repositories)
-```ts
-const [countResult, data] = await Promise.all([countQuery, dataQuery]);
-return { items: data, total: countResult[0]?.count ?? 0, page, pageSize };
-```
-Dynamic WHERE via `sql.join(conditions, sql` AND `)`, dynamic ORDER BY via helper method.
+**Data Flow:**
+- Members with `show_on_website = true` feed into the public Members page on `app-public` via `website.getMembersFeed`
+- The members section in `app-admin` provides richer data for authenticated users via `memberProcedure` routes
+- Admin features remain behind `adminProcedure` at `/admin/*`
 
 ---
 
-## Phase 11c-d: Roster + Birthday
+### Phase 4: Migrate Public Pages to tRPC
 
-### Roster
-- New `members.roster` procedure (member-only access)
-- `MemberRepository.findRoster()` joins users, contacts, officer_terms
-- `RosterPage.tsx`: sortable table with name, position, joined year, phone
+**Goal:** Replace static data with live API data on all public pages.
 
-### Birthday
-- Migration 0004: added `birthday` DATE column to `contact_info`
-- Updated signup flow with age 18+ validation (actual age calculation accounting for month/day)
-- Regenerated Zod schemas
+**Pages to migrate:**
 
----
+| Page | Static Source | tRPC Endpoint |
+|---|---|---|
+| Home | `content/events.ts` | `website.getEventsFeed` |
+| About | `data/timeline.json` | `website.getPages` (about page) |
+| Events | `content/events.ts` | `website.getEventsFeed` |
+| Members | `data/members.json` | `website.getMembersFeed` |
+| Member Profile | `data/members.json` | `website.getMembersFeed` (by ID) |
+| Gallery | `content/gallery.ts` | TBD (may stay static or move to CMS) |
+| Badger | hardcoded HTML | `website.getPageBySlug("badger")` |
 
-## Admin Features
+**For each page:**
+1. Replace static import with `trpc.website.*` hook
+2. Wrap in Suspense boundary
+3. Add loading skeleton (requires shadcn `Skeleton` component)
+4. Add error state (requires shadcn `Alert` component)
+5. Handle empty state
 
-### Admin Router (`apps/server/src/router/admin.ts`)
-All require `adminProcedure`:
-- `members.list` — paginated members with filters/sorting
-- `registrations.list` — paginated registration queue
-- `registrations.approve` — approve registration (creates user)
-- `registrations.reject` — reject registration
-- `users.list` — paginated users with filters/sorting
-- `users.updateStatus`, `users.updateType`, `users.updateAdminNote`
-
-### Admin Pages
-- `AdminDashboardPage.tsx` — landing page
-- `AdminMembersPage.tsx` — member management table
-- `AdminUsersPage.tsx` — user management table
-- `AdminRegistrationsPage.tsx` — registration approval queue
+**Cleanup:**
+- Remove `src/content/events.ts`, `src/data/members.json`, `src/data/timeline.json` once all pages are migrated
 
 ---
 
-## Contact Page + Forms
+### Phase 5: Contact Page
 
-- `react-hook-form` + `@hookform/resolvers` + `zodResolver(contactFormSchema)`
-- `react-google-recaptcha` for reCAPTCHA v2
-- Netlify Forms: hidden HTML form in `public/netlify-forms.html` for SPA detection
-- Contact form schema hand-written in `packages/shared/src/contact.ts`
+**Goal:** Public contact form with validation and spam protection.
 
----
+**Frontend (app-public):**
+- New `/contact` route and `ContactPage.tsx`
+- `react-hook-form` + `@hookform/resolvers` + `zodResolver`
+- Contact form Zod schema in `@satyrsmc/shared` (shared with server validation)
+- reCAPTCHA v2 widget (`react-google-recaptcha`)
+- Success/error states
 
-## Critical Patterns & Conventions
+**Backend:**
+- `website.submitContact` already exists and saves to `contact_submissions` table
+- Add reCAPTCHA server-side verification before accepting submission
+- Admin views submissions in app-admin (`WebsiteContactSubmissionsPanel` already built)
 
-1. **No suppression comments**: No `eslint-disable`, `@ts-ignore`, `@ts-expect-error`. Fix root causes.
-2. **`SafeHtml` component**: All HTML rendering goes through DOMPurify wrapper. Never `dangerouslySetInnerHTML`.
-3. **React 19**: `use()` not `useContext()`, `<Context>` not `<Context.Provider>`, `ref` as prop not `forwardRef`
-4. **React Router 7**: Import from `react-router` NOT `react-router-dom`
-5. **Enum reuse**: NEVER spell out enum values in Zod — use `z.enum(enumName.enumValues)` from generated schemas
-6. **`console.info`** (not `console.log`) for server startup/seed messages
-7. **`c.charAt(0)`** not `c[0]` (fails with `noUncheckedIndexedAccess`)
-8. **ESLint 10 flat config**: Use `@eslint-react/eslint-plugin` (NOT `eslint-plugin-react`)
-9. **Tailwind 4**: No config files, CSS-based theming with `@theme` blocks
-10. **Type-only imports**: Always `import type { Foo }` for types
+**Environment:**
+- `VITE_RECAPTCHA_SITE_KEY` (client)
+- `RECAPTCHA_SECRET_KEY` (server — same as auth)
 
 ---
 
-## Migration History
+### Phase 6: Blog & Dynamic Pages
 
-| Migration | Description |
-|-----------|-------------|
-| 0000_dapper_sinister_six | Initial migration marker |
-| 0001_chief_famine | Auth tables (users, registrations), enums, avatar_url |
-| 0002_previous_garia | Remove password hash from registrations |
-| 0003_curly_ghost_rider | ICE fields on users |
-| 0004_motionless_warpath | Birthday on contact_info |
+**Goal:** CMS-driven content pages in the public app.
+
+**Blog:**
+- `/blog` — listing page consuming `trpc.website.getBlogPublished`
+- `/blog/:slug` — detail page consuming `trpc.website.getBlogBySlug`
+- Blog content authored in app-admin via TipTap editor (already built)
+- Render HTML content via `SafeHtml` component (DOMPurify)
+
+**Dynamic Pages:**
+- `/:slug` — catch-all for CMS pages consuming `trpc.website.getPageBySlug`
+- Pages created/edited in app-admin website CMS (already built)
+
+---
+
+### Phase 7: Admin Auth & User Management
+
+**Goal:** Protect admin routes and add user management. Since members and admin now share one app, auth context is set up once and covers both sections.
+
+**Auth Protection:**
+- Replace all bare `t.procedure` in admin routers with `adminProcedure`
+- App-wide auth context (already needed for members section) handles login redirect
+- `/admin/*` routes use `AdminRoute` guard requiring admin/webmaster role
+- `/` member routes use `MemberRoute` guard requiring member or admin role
+
+**New Admin Features (at `/admin/*`):**
+- User management page: list users, update status/type, add admin notes
+- Registration approval queue: list pending registrations, approve/reject
+- tRPC routes: `admin.users.list`, `admin.users.updateStatus`, `admin.users.updateType`, `admin.registrations.list`, `admin.registrations.approve`, `admin.registrations.reject`
+
+---
+
+### Phase 8: Testing Infrastructure
+
+**Goal:** Comprehensive test coverage with enforcement.
+
+**Setup:**
+- `bun:test` for all tests (per Bun-first convention)
+- Test utilities: `createTestContext()` for tRPC router testing, service mocking helpers
+
+**Coverage:**
+- 90% thresholds for statements, branches, functions, lines
+- Pre-push git hook blocks push on failure
+
+**Test Layers:**
+1. **Unit tests**: Mock services, test router logic and auth middleware
+2. **Integration tests**: Real Postgres database (local Docker or in-memory via `@electric-sql/pglite`) for service-level testing
+3. **Component tests**: React Testing Library for key UI components
+
+**Test Data:**
+- Shared fixtures in `@satyrsmc/shared` using typed interfaces
+- Fixtures match shared type contracts
+
+---
+
+### Phase 9: CI/CD & Linting
+
+**Goal:** Automated quality checks and deployment.
+
+**Linting:**
+- ESLint flat config with `@eslint-react/eslint-plugin`
+- Prettier: double quotes, semicolons, trailing commas, 100 char width
+- Pre-commit hook: lint-staged (ESLint fix + Prettier on `*.{ts,tsx}`)
+
+**CI (per PR):**
+- Parallel jobs per package: lint, typecheck, format check, tests
+- Coverage enforcement
+- Deploy previews (Postgres uses Neon staging branch)
+
+**Deploy (on merge to `main`):**
+- Build + deploy static sites
+- Run Postgres migrations against production Neon branch
+- Deploy API (Docker image or direct)
+
+---
+
+## Implementation Checklist
+
+When implementing any feature phase, ensure:
+
+- [ ] Shared types defined in `@satyrsmc/shared/types/` FIRST
+- [ ] TypeORM entity + migration created (in the correct DataSource — SQLite or Postgres)
+- [ ] Entity and migration registered in the appropriate `dataSource.ts`
+- [ ] Service created with explicit shared type return annotations
+- [ ] tRPC router with Zod input schemas, delegating to service
+- [ ] Frontend consuming via `trpc.*` hooks (types flow automatically)
+- [ ] Loading, error, and empty states handled in UI
+- [ ] No suppression comments, no `any`, no unsafe casts
+- [ ] Type-only imports for types
+- [ ] Tests written (when testing infrastructure exists)
