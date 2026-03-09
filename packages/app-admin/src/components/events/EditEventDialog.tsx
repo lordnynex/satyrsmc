@@ -71,6 +71,8 @@ interface EditEventDialogProps {
   setEditPreRideEventId: (v: string) => void;
   editRideCost: string;
   setEditRideCost: (v: string) => void;
+  editShowOnWebsite: boolean;
+  setEditShowOnWebsite: (v: boolean) => void;
   budgets: BudgetSummary[];
   scenarios: ScenarioSummary[];
   onSave: () => Promise<void>;
@@ -119,6 +121,8 @@ export function EditEventDialog({
   setEditPreRideEventId,
   editRideCost,
   setEditRideCost,
+  editShowOnWebsite,
+  setEditShowOnWebsite,
   budgets,
   scenarios,
   onSave,
@@ -333,6 +337,15 @@ export function EditEventDialog({
               rows={4}
             />
           </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={editShowOnWebsite}
+              onChange={(e) => setEditShowOnWebsite(e.target.checked)}
+              className="size-4 rounded border-input"
+            />
+            <span className="text-sm font-medium">Show on website</span>
+          </label>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
