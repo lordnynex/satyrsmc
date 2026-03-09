@@ -27,23 +27,25 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - Storybook with 38+ stories
 - ApexCharts for budget visualizations
 
-**Public App (`@satyrsmc/app-public`)**
-- 7 pages: Home, About, Events, Badger, Gallery, Members, Member Profile
+**Public App (`@satyrsmc/app-public`)** — unauthenticated marketing site only
+- 5 public pages: Home, About, Events, Badger, Gallery
 - tRPC client wired up (`createTRPCReact<AppRouter>()`) but **no pages consume tRPC yet** — all use static data files
 - Static data: `content/events.ts`, `data/members.json`, `data/timeline.json`
 - react-photo-album + lightbox for gallery
 - react-markdown for content rendering
+- Members and Member Profile pages will move to `app-admin` (see Phase 3)
 
 **Shared (`@satyrsmc/shared`)**
-- Hand-written TypeScript interfaces for all domains
+- Hand-written TypeScript interfaces for all domains — holdover from the original REST client DTOs
 - No Zod schemas yet (Zod only used in tRPC router input validation)
 - `lib/constants` and `lib/pst` utilities
+- **Future**: Once the stack stabilizes, shared will become a tRPC client package exporting a pure tRPC client and its types. Ripping out the current shared types will be significant since they're wound through many React components.
 
 ### What's NOT Built
 
 - Authentication (no JWT, no login, no user/registration entities)
 - Neon Postgres (database is SQLite only)
-- Member-authenticated routes (roster, profile editing, meeting minutes)
+- Member-authenticated routes in app-admin (roster, profile editing, meeting minutes)
 - Public pages consuming tRPC (all static)
 - Contact page with form/reCAPTCHA
 - Blog pages in public app
@@ -53,6 +55,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - CI/CD pipelines
 - ESLint/Prettier configuration
 - Email service
+- Test seeding/fixtures (faker-based test harness — not a blocker)
 
 ---
 
@@ -92,6 +95,13 @@ API Server
 - Services know which DataSource to use
 - tRPC context provides access to both
 - **Eventually** (separate future effort): migrate SQLite admin data into Postgres and retire the dual-DB setup
+- **ORM migration**: Once all data is on Postgres and SQLite is retired, evaluate switching from TypeORM to Prisma for database-first workflow (introspect → generate typed client + Zod schemas). Not a priority until the dual-DB period ends.
+
+### Database Philosophy
+
+TypeORM entity-first is the current approach (decorators define schema, hand-written SQL migrations). The long-term preference is **database-first** (SQL migrations → introspect → auto-generate types/Zod schemas), which Prisma handles well. For now, TypeORM stays to avoid churn during the dual-DB transition.
+
+**Testing approach**: Backend tests should use in-memory databases (pglite for Postgres, sql.js for SQLite) to unit-test SQL operations and migrations directly, without Docker or end-to-end tests. Trade-off: limited to data types both engines support (e.g., no PostGIS extensions).
 
 ---
 
@@ -256,10 +266,11 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 | Home | `content/events.ts` | `website.getEventsFeed` |
 | About | `data/timeline.json` | `website.getPages` (about page) |
 | Events | `content/events.ts` | `website.getEventsFeed` |
-| Members | `data/members.json` | `website.getMembersFeed` |
-| Member Profile | `data/members.json` | `website.getMembersFeed` (by ID) |
+| Members | `data/members.json` | `website.getMembersFeed` (list only, no profile click-through) |
 | Gallery | `content/gallery.ts` | TBD (may stay static or move to CMS) |
 | Badger | hardcoded HTML | `website.getPageBySlug("badger")` |
+
+Note: Member Profile pages move to the authenticated members app (Phase 3). The public Members page shows the list but does not link to individual profiles.
 
 **For each page:**
 1. Replace static import with `trpc.website.*` hook
