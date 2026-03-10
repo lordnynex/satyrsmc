@@ -11,6 +11,7 @@
     "build:public": "bun run --cwd packages/app-public build",
     "build:admin": "bun run --cwd packages/app-admin build",
     "test": "bun test packages/api/src/",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov packages/api/src/",
     "migrate": "bun run --cwd packages/api migrate",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
