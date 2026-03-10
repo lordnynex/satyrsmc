@@ -4,25 +4,41 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./lib/constants": "./lib/constants.ts",
-    "./lib/pst": "./lib/pst.ts",
-    "./types/contact": "./types/contact.ts",
-    "./types/meeting": "./types/meeting.ts",
-    "./types/committee": "./types/committee.ts",
-    "./types/document": "./types/document.ts",
-    "./types/website": "./types/website.ts",
-    "./types/member": "./types/member.ts",
-    "./types/event": "./types/event.ts",
-    "./types/budget": "./types/budget.ts",
-    "./types/budget-domain": "./types/budget-domain.ts",
-    "./types/scenario": "./types/scenario.ts",
-    "./types/state": "./types/state.ts",
-    "./types/qrCode": "./types/qrCode.ts"
+    "./dto": "./src/dto/index.ts",
+    "./lib/constants": "./src/lib/constants.ts",
+    "./lib/pst": "./src/lib/pst.ts",
+    "./types/contact": "./src/types/contact.ts",
+    "./types/meeting": "./src/types/meeting.ts",
+    "./types/committee": "./src/types/committee.ts",
+    "./types/document": "./src/types/document.ts",
+    "./types/website": "./src/types/website.ts",
+    "./types/member": "./src/types/member.ts",
+    "./types/event": "./src/types/event.ts",
+    "./types/budget": "./src/types/budget.ts",
+    "./types/budget-domain": "./src/types/budget-domain.ts",
+    "./types/scenario": "./src/types/scenario.ts",
+    "./types/state": "./src/types/state.ts",
+    "./types/qrCode": "./src/types/qrCode.ts",
+    "./dto/website": "./src/dto/website.ts",
+    "./dto/admin/budget": "./src/dto/admin/budget.ts",
+    "./dto/admin/contact": "./src/dto/admin/contact.ts",
+    "./dto/admin/event": "./src/dto/admin/event.ts",
+    "./dto/admin/member": "./src/dto/admin/member.ts",
+    "./dto/admin/meeting": "./src/dto/admin/meeting.ts",
+    "./dto/admin/committee": "./src/dto/admin/committee.ts",
+    "./dto/admin/document": "./src/dto/admin/document.ts",
+    "./dto/admin/scenario": "./src/dto/admin/scenario.ts",
+    "./dto/admin/qrCode": "./src/dto/admin/qrCode.ts",
+    "./dto/admin/mailingList": "./src/dto/admin/mailingList.ts",
+    "./dto/admin/mailingBatch": "./src/dto/admin/mailingBatch.ts",
+    "./dto/admin/websiteAdmin": "./src/dto/admin/websiteAdmin.ts",
+    "./dto/admin/incident": "./src/dto/admin/incident.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "dependencies": {
-    "pst-extractor": "^1.12.0"
+    "pst-extractor": "^1.12.0",
+    "zod": "^3.24.0"
   }
 }

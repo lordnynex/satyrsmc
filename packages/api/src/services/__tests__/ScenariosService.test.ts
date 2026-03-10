@@ -17,6 +17,7 @@ describe("ScenariosService", () => {
   describe("list", () => {
     test("returns created scenarios", async () => {
       const s = await createScenario(api, { name: "List Scenario" });
+      if (!s) throw new Error("createScenario failed");
       const result = await api.scenarios.list();
       expect(result.some((e) => e.id === s.id)).toBe(true);
     });
@@ -25,6 +26,7 @@ describe("ScenariosService", () => {
   describe("get", () => {
     test("returns scenario by id", async () => {
       const s = await createScenario(api, { name: "Get Scenario", description: "Desc" });
+      if (!s) throw new Error("createScenario failed");
       const got = await api.scenarios.get(s.id);
       expect(got).not.toBeNull();
       expect(got!.id).toBe(s.id);
@@ -41,12 +43,14 @@ describe("ScenariosService", () => {
   describe("create", () => {
     test("creates with inputs", async () => {
       const s = await createScenario(api, { name: "With Inputs", inputs: { foo: 1 } });
+      if (!s) throw new Error("createScenario failed");
       expect(s.id).toBeDefined();
       expect(s.inputs).toEqual({ foo: 1 });
     });
 
     test("creates without inputs (default)", async () => {
       const s = await createScenario(api, { name: "No Inputs" });
+      if (!s) throw new Error("createScenario failed");
       expect(s.inputs).toBeDefined();
     });
   });
@@ -54,6 +58,7 @@ describe("ScenariosService", () => {
   describe("update", () => {
     test("updates scenario", async () => {
       const s = await createScenario(api, { name: "Update Scenario" });
+      if (!s) throw new Error("createScenario failed");
       const updated = await api.scenarios.update(s.id, { name: "Updated", description: "D" });
       expect(updated).not.toBeNull();
       expect(updated!.name).toBe("Updated");
@@ -69,6 +74,7 @@ describe("ScenariosService", () => {
   describe("delete", () => {
     test("deletes scenario", async () => {
       const s = await createScenario(api, { name: "Delete Scenario" });
+      if (!s) throw new Error("createScenario failed");
       await api.scenarios.delete(s.id);
       const got = await api.scenarios.get(s.id);
       expect(got).toBeNull();

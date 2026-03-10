@@ -7,7 +7,7 @@ import type {
   ListPreview,
   MailingListStats,
   MailingListIncludedPage,
-} from "@satyrsmc/shared/types/contact";
+} from "@satyrsmc/shared/dto/admin/mailingList";
 import type { ContactsService } from "./ContactsService";
 import { IsNull } from "typeorm";
 import { Contact as ContactEntity, MailingList as MailingListEntity, MailingListMember as MailingListMemberEntity, ContactAddress as ContactAddressEntity } from "../entities";
@@ -50,10 +50,10 @@ export class MailingListsService {
     if (criteria.clubName) {
       qb.andWhere("c.clubName ILIKE :club", { club: `%${criteria.clubName}%` });
     }
-    if (criteria.tagIn && criteria.tagIn.length > 0) {
+    if (Array.isArray(criteria.tagIn) && criteria.tagIn.length > 0) {
       qb.andWhere("c.id IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagIn)))", { tagIn: criteria.tagIn });
     }
-    if (criteria.tagNotIn && criteria.tagNotIn.length > 0) {
+    if (Array.isArray(criteria.tagNotIn) && criteria.tagNotIn.length > 0) {
       qb.andWhere("c.id NOT IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagNotIn)))", { tagNotIn: criteria.tagNotIn });
     }
     if (criteria.hellenic === true) {
@@ -274,7 +274,7 @@ export class MailingListsService {
       });
       contactIds = rows.map((r) => r.contactId);
     } else if (list.list_type === "dynamic") {
-      contactIds = await this.evaluateDynamicCriteria(list.criteria);
+      contactIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
     } else {
       /* Original: SELECT contact_id FROM mailing_list_members WHERE list_id = ? AND suppressed = 0 AND unsubscribed = 0 */
       const manualRows = await this.ds.getRepository(MailingListMemberEntity).find({
@@ -282,7 +282,7 @@ export class MailingListsService {
         select: ["contactId"],
       });
       const manualIds = new Set(manualRows.map((r) => r.contactId));
-      const dynamicIds = await this.evaluateDynamicCriteria(list.criteria);
+      const dynamicIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
       contactIds = [...new Set([...manualIds, ...dynamicIds])];
     }
 
@@ -346,7 +346,7 @@ export class MailingListsService {
         where: [{ listId: id, suppressed: true }, { listId: id, unsubscribed: true }],
         select: ["contactId", "suppressed", "suppressReason", "unsubscribed"],
       });
-      const seenExcluded = new Set(excluded.map((e) => e.contact.id));
+      const seenExcluded = new Set((excluded as Array<{ contact: { id: string } }>).map((e) => e.contact.id));
       for (const r of suppressedRows) {
         if (seenExcluded.has(r.contactId)) continue;
         const contact = await this.contactsService.get(r.contactId);
@@ -409,14 +409,14 @@ export class MailingListsService {
       });
       contactIds = rows.map((r) => r.contactId);
     } else if (list.list_type === "dynamic") {
-      contactIds = await this.evaluateDynamicCriteria(list.criteria);
+      contactIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
     } else {
       const manualRows = await this.ds.getRepository(MailingListMemberEntity).find({
         where: { listId, suppressed: false, unsubscribed: false },
         select: ["contactId"],
       });
       const manualIds = new Set(manualRows.map((r) => r.contactId));
-      const dynamicIds = await this.evaluateDynamicCriteria(list.criteria);
+      const dynamicIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
       contactIds = [...new Set([...manualIds, ...dynamicIds])];
     }
 
@@ -531,7 +531,7 @@ export class MailingListsService {
 
     const duplicateGroups = Array.from(addrToContacts.entries()).filter(([, ids]) => ids.length > 1);
     let totalDuplicateContacts = 0;
-    const groups: MailingListStats["duplicateAddresses"]["groups"] = [];
+    const groups: Array<{ address: string; contactIds: string[]; contacts: Array<{ id: string; display_name: string }> }> = [];
     for (const [, ids] of duplicateGroups) {
       totalDuplicateContacts += ids.length;
       const addr = contactToAddr.get(ids[0]!);

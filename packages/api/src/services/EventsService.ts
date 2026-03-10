@@ -22,6 +22,19 @@ import {
 import { uuid, memberRowToApi } from "./utils";
 import { ImageService } from "./ImageService";
 import { toISOString, toISOStringOrNull } from "../lib/date";
+import type { IncidentListOutput } from "@satyrsmc/shared/dto/admin/incident";
+import type {
+  EventAddAssetOutput,
+  EventAddPhotoOutput,
+  EventCreateOutput,
+  EventDeleteAssetOutput,
+  EventDeleteOutput,
+  EventDeletePhotoOutput,
+  EventGetOutput,
+  EventListOutput,
+  EventUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/event";
+import type { GetEventsFeedOutput } from "@satyrsmc/shared/dto/website";
 
 function memberEntityToApi(m: Member) {
   return memberRowToApi({
@@ -38,7 +51,7 @@ export class EventsService {
     private ds: DataSource
   ) {}
 
-  async list(type?: string) {
+  async list(type?: string): Promise<EventListOutput> {
     /* Original: SELECT * FROM events ORDER BY year DESC, name */
     const repo = this.ds.getRepository(Event);
     const findOptions: Parameters<typeof repo.find>[0] = {
@@ -70,7 +83,7 @@ export class EventsService {
     }));
   }
 
-  async listForWebsite() {
+  async listForWebsite(): Promise<GetEventsFeedOutput> {
     const repo = this.ds.getRepository(Event);
     const entities = await repo.find({
       where: { showOnWebsite: true },
@@ -84,12 +97,20 @@ export class EventsService {
       event_date: toISOStringOrNull(e.eventDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
+      event_location_embed: e.eventLocationEmbed ?? null,
+      ga_ticket_cost: e.gaTicketCost ?? null,
+      day_pass_cost: e.dayPassCost ?? null,
+      ga_tickets_sold: e.gaTicketsSold ?? null,
+      day_passes_sold: e.dayPassesSold ?? null,
+      budget_id: e.budgetId ?? null,
+      scenario_id: e.scenarioId ?? null,
+      planning_notes: e.planningNotes ?? null,
       event_type: e.eventType ?? "badger",
-      created_at: toISOString(e.createdAt),
+      created_at: toISOString(e.createdAt) ?? "",
     }));
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<EventGetOutput | null> {
     /* Original: SELECT * FROM events WHERE id = ? */
     const event = await this.ds.getRepository(Event).findOne({ where: { id } });
     if (!event) return null;
@@ -335,7 +356,7 @@ export class EventsService {
     return items.map((s) => ({
       id: s.id,
       event_id: s.eventId,
-      scheduled_time: toISOString(s.scheduledTime),
+      scheduled_time: toISOString(s.scheduledTime) ?? "",
       label: s.label,
       location: s.location ?? null,
       sort_order: s.sortOrder ?? 0,
@@ -421,7 +442,7 @@ export class EventsService {
     }));
   }
 
-  async listIncidents(page: number, perPage: number) {
+  async listIncidents(page: number, perPage: number): Promise<IncidentListOutput> {
     const repo = this.ds.getRepository(Incident);
     const [rows, total] = await repo.findAndCount({
       order: { createdAt: "DESC", occurredAt: "DESC" },
@@ -430,7 +451,7 @@ export class EventsService {
     });
 
     if (rows.length === 0) {
-      return { items: [] as Array<unknown>, page, per_page: perPage, total };
+      return { items: [], page, per_page: perPage, total };
     }
 
     const eventIds = [...new Set(rows.map((r) => r.eventId))];
@@ -541,7 +562,7 @@ export class EventsService {
     pre_ride_event_id?: string;
     ride_cost?: number;
     show_on_website?: boolean;
-  }) {
+  }): Promise<EventCreateOutput> {
     const id = uuid();
     const eventType = body.event_type ?? "badger";
     const showOnWebsite = body.show_on_website !== false;
@@ -572,7 +593,9 @@ export class EventsService {
         showOnWebsite,
       ]
     );
-    return this.get(id)!;
+    const created = await this.get(id);
+    if (!created) throw new Error("Event not found after create");
+    return created;
   }
 
   async update(id: string, body: Partial<{
@@ -597,7 +620,7 @@ export class EventsService {
     pre_ride_event_id: string;
     ride_cost: number;
     show_on_website: boolean;
-  }>) {
+  }>): Promise<EventUpdateOutput | null> {
     /* Original: SELECT * FROM events WHERE id = ? */
     const existing = await this.ds.getRepository(Event).findOne({ where: { id } });
     if (!existing) return null;
@@ -629,7 +652,7 @@ export class EventsService {
     return this.get(id)!;
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<EventDeleteOutput> {
     await this.db.run("DELETE FROM event_assignment_members WHERE assignment_id IN (SELECT id FROM event_assignments WHERE event_id = ?)", [id]);
     await this.db.run("DELETE FROM event_assignments WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM event_planning_milestones WHERE event_id = ?", [id]);
@@ -642,7 +665,7 @@ export class EventsService {
     await this.db.run("DELETE FROM event_assets WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM ride_schedule_items WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM events WHERE id = ?", [id]);
-    return { ok: true };
+    return { ok: true as const };
   }
 
   async getPhoto(eventId: string, photoId: string, size: "thumbnail" | "display" | "full"): Promise<Buffer | null> {
@@ -667,15 +690,7 @@ export class EventsService {
     }
   }
 
-  async addPhoto(eventId: string, imageBuffer: Buffer): Promise<{
-    id: string;
-    event_id: string;
-    sort_order: number;
-    photo_url: string;
-    photo_thumbnail_url: string;
-    photo_display_url: string;
-    created_at: string;
-  } | null> {
+  async addPhoto(eventId: string, imageBuffer: Buffer): Promise<EventAddPhotoOutput | null> {
     const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
     if (!event) return null;
 
@@ -703,12 +718,12 @@ export class EventsService {
     };
   }
 
-  async deletePhoto(eventId: string, photoId: string): Promise<boolean> {
-    const result = await this.ds.getRepository(EventPhoto).delete({
+  async deletePhoto(eventId: string, photoId: string): Promise<EventDeletePhotoOutput> {
+    await this.ds.getRepository(EventPhoto).delete({
       id: photoId,
       eventId,
     });
-    return (result.affected ?? 0) > 0;
+    return { ok: true as const };
   }
 
   async getAsset(eventId: string, assetId: string, size: "thumbnail" | "display" | "full"): Promise<Buffer | null> {
@@ -732,15 +747,7 @@ export class EventsService {
     }
   }
 
-  async addAsset(eventId: string, imageBuffer: Buffer): Promise<{
-    id: string;
-    event_id: string;
-    sort_order: number;
-    photo_url: string;
-    photo_thumbnail_url: string;
-    photo_display_url: string;
-    created_at: string;
-  } | null> {
+  async addAsset(eventId: string, imageBuffer: Buffer): Promise<EventAddAssetOutput | null> {
     const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
     if (!event) return null;
     const optimized = await ImageService.optimize(imageBuffer, 1920, 1920, 88);
@@ -764,9 +771,9 @@ export class EventsService {
     };
   }
 
-  async deleteAsset(eventId: string, assetId: string): Promise<boolean> {
-    const result = await this.ds.getRepository(EventAsset).delete({ id: assetId, eventId });
-    return (result.affected ?? 0) > 0;
+  async deleteAsset(eventId: string, assetId: string): Promise<EventDeleteAssetOutput> {
+    await this.ds.getRepository(EventAsset).delete({ id: assetId, eventId });
+    return { ok: true as const };
   }
 
   attendees = {

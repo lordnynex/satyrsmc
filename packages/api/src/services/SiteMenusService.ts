@@ -1,29 +1,18 @@
 import type { DataSource } from "typeorm";
 import { SiteMenuItem } from "../entities";
 import { uuid } from "./utils";
-
-export interface MenuItemPayload {
-  label: string;
-  url?: string | null;
-  internal_ref?: string | null;
-  sort_order?: number;
-}
-
-export interface MenuItemResponse {
-  id: string;
-  menu_key: string;
-  label: string;
-  url: string | null;
-  internal_ref: string | null;
-  sort_order: number;
-}
-
-export type MenusResponse = Record<string, MenuItemResponse[]>;
+import type {
+  MenuItemResponse,
+  MenuItemUpdateInput,
+  MenusResponse,
+  WebsiteAdminGetMenusOutput,
+  WebsiteAdminUpdateMenuOutput,
+} from "@satyrsmc/shared/dto/admin/websiteAdmin";
 
 export class SiteMenusService {
   constructor(private ds: DataSource) {}
 
-  async listAll(): Promise<MenusResponse> {
+  async listAll(): Promise<WebsiteAdminGetMenusOutput> {
     const items = await this.ds.getRepository(SiteMenuItem).find({
       order: { menuKey: "ASC", sortOrder: "ASC" },
     });
@@ -42,7 +31,7 @@ export class SiteMenusService {
     return byKey;
   }
 
-  async updateMenu(key: string, items: MenuItemPayload[]): Promise<MenuItemResponse[]> {
+  async updateMenu(key: string, items: MenuItemUpdateInput[]): Promise<WebsiteAdminUpdateMenuOutput> {
     const repo = this.ds.getRepository(SiteMenuItem);
     const existing = await repo.find({ where: { menuKey: key }, order: { sortOrder: "ASC" } });
     for (const e of existing) {
@@ -50,7 +39,7 @@ export class SiteMenusService {
     }
     const result: MenuItemResponse[] = [];
     for (let i = 0; i < items.length; i++) {
-      const it = items[i];
+      const it = items[i]!;
       const id = uuid();
       const item = repo.create({
         id,

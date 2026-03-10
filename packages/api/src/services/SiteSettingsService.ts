@@ -1,31 +1,19 @@
 import type { DataSource } from "typeorm";
 import { SiteSettings } from "../entities";
 import { toISOString } from "../lib/date";
+import type {
+  SiteSettingsResponse,
+  SiteSettingsUpdateInput,
+  WebsiteAdminGetSettingsOutput,
+  WebsiteAdminUpdateSettingsOutput,
+} from "@satyrsmc/shared/dto/admin/websiteAdmin";
 
 const DEFAULT_ID = "default";
-
-export interface SiteSettingsPayload {
-  title?: string | null;
-  logo_url?: string | null;
-  footer_text?: string | null;
-  default_meta_description?: string | null;
-  contact_email?: string | null;
-}
-
-export interface SiteSettingsResponse {
-  id: string;
-  title: string | null;
-  logo_url: string | null;
-  footer_text: string | null;
-  default_meta_description: string | null;
-  contact_email: string | null;
-  updated_at: string | undefined;
-}
 
 export class SiteSettingsService {
   constructor(private ds: DataSource) {}
 
-  async get(): Promise<SiteSettingsResponse> {
+  async get(): Promise<WebsiteAdminGetSettingsOutput> {
     let row = await this.ds.getRepository(SiteSettings).findOne({ where: { id: DEFAULT_ID } });
     if (!row) {
       const repo = this.ds.getRepository(SiteSettings);
@@ -43,7 +31,7 @@ export class SiteSettingsService {
     return this.toResponse(row);
   }
 
-  async update(body: SiteSettingsPayload): Promise<SiteSettingsResponse> {
+  async update(body: SiteSettingsUpdateInput): Promise<WebsiteAdminUpdateSettingsOutput> {
     const repo = this.ds.getRepository(SiteSettings);
     let row = await repo.findOne({ where: { id: DEFAULT_ID } });
     if (!row) {
@@ -59,14 +47,13 @@ export class SiteSettingsService {
       await repo.save(row);
     }
 
-    const now = new Date().toISOString();
     if (body.title !== undefined) row.title = body.title;
     if (body.logo_url !== undefined) row.logoUrl = body.logo_url;
     if (body.footer_text !== undefined) row.footerText = body.footer_text;
     if (body.default_meta_description !== undefined)
       row.defaultMetaDescription = body.default_meta_description;
     if (body.contact_email !== undefined) row.contactEmail = body.contact_email;
-    row.updatedAt = now;
+    row.updatedAt = new Date();
 
     await repo.save(row);
     return this.toResponse(row);

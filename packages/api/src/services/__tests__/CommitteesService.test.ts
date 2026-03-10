@@ -87,24 +87,25 @@ describe("CommitteesService", () => {
     test("addMember and removeMember", async () => {
       const committee = await createCommittee(api, { name: "Member Committee" });
       const member = await createMember(api, { name: "CM Member" });
-      expect(committee).not.toBeNull();
-      expect(member).not.toBeNull();
-      const afterAdd = await api.committees.addMember(committee!.id, member!.id);
+      if (!committee || !member) throw new Error("createCommittee or createMember failed");
+      const afterAdd = await api.committees.addMember(committee.id, member.id);
       expect(afterAdd).not.toBeNull();
       const member2 = await createMember(api, { name: "CM Member 2" });
-      expect(member2).not.toBeNull();
-      await api.committees.addMember(committee!.id, member2!.id);
-      await api.committees.updateMemberOrder(committee!.id, [member2!.id, member!.id]);
-      await api.committees.removeMember(committee!.id, member!.id);
-      const got = await api.committees.get(committee!.id);
-      expect(got!.members.some((m) => m.member_id === member2!.id)).toBe(true);
-      expect(got!.members.some((m) => m.member_id === member!.id)).toBe(false);
+      if (!member2) throw new Error("createMember failed");
+      await api.committees.addMember(committee.id, member2.id);
+      await api.committees.updateMemberOrder(committee.id, [member2.id, member.id]);
+      await api.committees.removeMember(committee.id, member.id);
+      const got = await api.committees.get(committee.id);
+      if (!got) throw new Error("get committee failed");
+      const members = (got.members ?? []) as Array<{ member_id: string }>;
+      expect(members.some((m) => m.member_id === member2.id)).toBe(true);
+      expect(members.some((m) => m.member_id === member.id)).toBe(false);
     });
 
     test("addMember(badCommitteeId) returns null", async () => {
       const member = await createMember(api, { name: "Bad Committee Member" });
-      expect(member).not.toBeNull();
-      const result = await api.committees.addMember(BAD_ID, member!.id);
+      if (!member) throw new Error("createMember failed");
+      const result = await api.committees.addMember(BAD_ID, member.id);
       expect(result).toBeNull();
     });
   });

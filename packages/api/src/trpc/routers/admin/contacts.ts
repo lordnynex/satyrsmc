@@ -1,29 +1,33 @@
-import { z } from "zod";
 import { t } from "../../trpc";
 import { TRPCError } from "@trpc/server";
-
-const contactSearchParams = z.object({
-  q: z.string().optional(),
-  status: z.enum(["active", "deleted", "all"]).optional(),
-  hasPostalAddress: z.boolean().optional(),
-  hasEmail: z.boolean().optional(),
-  tagIds: z.array(z.string()).optional(),
-  organization: z.string().optional(),
-  role: z.string().optional(),
-  hellenic: z.boolean().optional(),
-  excludeDeceased: z.boolean().optional(),
-  limit: z.number().optional(),
-  offset: z.number().optional(),
-  page: z.number().optional(),
-  sort: z.string().optional(),
-  sortDir: z.enum(["asc", "desc"]).optional(),
-});
+import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
+import {
+  ContactCreateInputSchema,
+  ContactCreateOutputSchema,
+  ContactDeleteInputSchema,
+  ContactDeleteOutputSchema,
+  ContactGetInputSchema,
+  ContactGetOutputSchema,
+  ContactListInputSchema,
+  ContactListOutputSchema,
+  ContactListTagsOutputSchema,
+  ContactRestoreInputSchema,
+  ContactRestoreOutputSchema,
+  ContactUpdateInputSchema,
+  ContactUpdateOutputSchema,
+} from "@satyrsmc/shared/dto/admin/contact";
 
 export const contactsRouter = t.router({
-  list: t.procedure.input(contactSearchParams.optional()).query(async ({ ctx, input }) => ctx.api.contacts.list(input ?? {})),
+  list: t.procedure
+    .input(ContactListInputSchema)
+    .output(ContactListOutputSchema)
+    .meta({ description: "List contacts with optional search and filters." })
+    .query(async ({ ctx, input }) => ctx.api.contacts.list(input ?? {})),
 
   get: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(ContactGetInputSchema)
+    .output(ContactGetOutputSchema)
+    .meta({ description: "Get a contact by id." })
     .query(async ({ ctx, input }) => {
       const c = await ctx.api.contacts.get(input.id);
       if (!c) throw new TRPCError({ code: "NOT_FOUND" });
@@ -31,28 +35,47 @@ export const contactsRouter = t.router({
     }),
 
   create: t.procedure
-    .input(z.object({ display_name: z.string() }).passthrough())
-    .mutation(async ({ ctx, input }) => ctx.api.contacts.create(input)),
+    .input(ContactCreateInputSchema)
+    .output(ContactCreateOutputSchema)
+    .meta({ description: "Create a new contact." })
+    .mutation(async ({ ctx, input }) => {
+      const c = await ctx.api.contacts.create(input as Partial<Contact> & { display_name: string });
+      if (!c) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Contact create returned null" });
+      return c;
+    }),
 
   update: t.procedure
-    .input(z.object({ id: z.string() }).passthrough())
+    .input(ContactUpdateInputSchema)
+    .output(ContactUpdateOutputSchema)
+    .meta({ description: "Update a contact." })
     .mutation(async ({ ctx, input }) => {
       const { id, ...body } = input;
-      const c = await ctx.api.contacts.update(id, body);
+      const c = await ctx.api.contacts.update(id, body as Partial<Contact>);
       if (!c) throw new TRPCError({ code: "NOT_FOUND" });
       return c;
     }),
 
   delete: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(ContactDeleteInputSchema)
+    .output(ContactDeleteOutputSchema)
+    .meta({ description: "Soft-delete a contact." })
     .mutation(async ({ ctx, input }) => {
       await ctx.api.contacts.delete(input.id);
-      return { ok: true };
+      return { ok: true as const };
     }),
 
   restore: t.procedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => ctx.api.contacts.restore(input.id)),
+    .input(ContactRestoreInputSchema)
+    .output(ContactRestoreOutputSchema)
+    .meta({ description: "Restore a soft-deleted contact." })
+    .mutation(async ({ ctx, input }) => {
+      const c = await ctx.api.contacts.restore(input.id);
+      if (!c) throw new TRPCError({ code: "NOT_FOUND" });
+      return c;
+    }),
 
-  listTags: t.procedure.query(async ({ ctx }) => ctx.api.contacts.tags.list()),
+  listTags: t.procedure
+    .output(ContactListTagsOutputSchema)
+    .meta({ description: "List all contact tags." })
+    .query(async ({ ctx }) => ctx.api.contacts.tags.list()),
 });

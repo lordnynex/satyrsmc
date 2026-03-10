@@ -3,6 +3,13 @@ import type { DbLike } from "../db/dbAdapter";
 import { Scenario } from "../entities";
 import { uuid, DEFAULT_SCENARIO_INPUTS } from "./utils";
 import { toISOString } from "../lib/date";
+import type {
+  ScenarioCreateOutput,
+  ScenarioDeleteOutput,
+  ScenarioGetOutput,
+  ScenarioListOutput,
+  ScenarioUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/scenario";
 
 export class ScenariosService {
   constructor(
@@ -10,7 +17,7 @@ export class ScenariosService {
     private ds: DataSource
   ) {}
 
-  async list() {
+  async list(): Promise<ScenarioListOutput> {
     /* Original: SELECT * FROM scenarios ORDER BY name */
     const entities = await this.ds.getRepository(Scenario).find({ order: { name: "ASC" } });
     return entities.map((e) => ({
@@ -22,7 +29,7 @@ export class ScenariosService {
     }));
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<ScenarioGetOutput | null> {
     /* Original: SELECT * FROM scenarios WHERE id = ? */
     const entity = await this.ds.getRepository(Scenario).findOne({ where: { id } });
     if (!entity) return null;
@@ -35,7 +42,7 @@ export class ScenariosService {
     };
   }
 
-  async create(body: { name: string; description?: string; inputs?: Record<string, unknown> }) {
+  async create(body: { name: string; description?: string; inputs?: Record<string, unknown> }): Promise<ScenarioCreateOutput> {
     const id = uuid();
     const inputs = body.inputs ?? DEFAULT_SCENARIO_INPUTS;
     await this.db.run(
@@ -48,7 +55,7 @@ export class ScenariosService {
   async update(
     id: string,
     body: { name?: string; description?: string; inputs?: Record<string, unknown> }
-  ) {
+  ): Promise<ScenarioUpdateOutput | null> {
     /* Original: SELECT * FROM scenarios WHERE id = ? */
     const existing = await this.ds.getRepository(Scenario).findOne({ where: { id } });
     if (!existing) return null;
@@ -59,8 +66,8 @@ export class ScenariosService {
     return { id, name, description, inputs };
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<ScenarioDeleteOutput> {
     await this.db.run("DELETE FROM scenarios WHERE id = ?", [id]);
-    return { ok: true };
+    return { ok: true as const };
   }
 }

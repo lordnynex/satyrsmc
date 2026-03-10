@@ -17,12 +17,14 @@ describe("MeetingTemplatesService", () => {
   describe("list", () => {
     test("returns created templates", async () => {
       const t = await createMeetingTemplate(api, { name: "List Template", type: "agenda" });
+      if (!t) throw new Error("createMeetingTemplate failed");
       const result = await api.meetingTemplates.list();
       expect(result.some((e) => e.id === t.id)).toBe(true);
     });
 
     test("filters by type", async () => {
       const t = await createMeetingTemplate(api, { name: "Agenda Only", type: "agenda" });
+      if (!t) throw new Error("createMeetingTemplate failed");
       const result = await api.meetingTemplates.list("agenda");
       expect(result.some((e) => e.id === t.id)).toBe(true);
     });
@@ -31,6 +33,7 @@ describe("MeetingTemplatesService", () => {
   describe("get", () => {
     test("returns template by id", async () => {
       const t = await createMeetingTemplate(api, { name: "Get Template", content: "Content" });
+      if (!t) throw new Error("createMeetingTemplate failed");
       const got = await api.meetingTemplates.get(t.id);
       expect(got).not.toBeNull();
       expect(got!.id).toBe(t.id);
@@ -46,6 +49,7 @@ describe("MeetingTemplatesService", () => {
   describe("create", () => {
     test("creates template", async () => {
       const t = await createMeetingTemplate(api, { name: "New Template", type: "minutes", content: "Text" });
+      if (!t) throw new Error("createMeetingTemplate failed");
       expect(t.id).toBeDefined();
       expect(t.name).toBe("New Template");
       expect(t.type).toBe("minutes");
@@ -55,6 +59,7 @@ describe("MeetingTemplatesService", () => {
   describe("update", () => {
     test("updates template", async () => {
       const t = await createMeetingTemplate(api, { name: "Update Template" });
+      if (!t) throw new Error("createMeetingTemplate failed");
       const updated = await api.meetingTemplates.update(t.id, { name: "Updated", type: "minutes" });
       expect(updated).not.toBeNull();
       expect(updated!.name).toBe("Updated");
@@ -70,6 +75,7 @@ describe("MeetingTemplatesService", () => {
   describe("delete", () => {
     test("deletes template", async () => {
       const t = await createMeetingTemplate(api, { name: "Delete Template" });
+      if (!t) throw new Error("createMeetingTemplate failed");
       await api.meetingTemplates.delete(t.id);
       const got = await api.meetingTemplates.get(t.id);
       expect(got).toBeNull();

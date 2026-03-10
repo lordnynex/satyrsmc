@@ -4,16 +4,20 @@ import type { DbLike } from "../db/dbAdapter";
 import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
   Contact,
+  ContactCreateOutput,
+  ContactDeleteOutput,
   ContactEmail,
   ContactPhone,
   ContactAddress,
   ContactEmergencyContact,
   ContactNote,
   ContactPhoto as ContactPhotoType,
-  Tag,
+  ContactRestoreOutput,
   ContactSearchParams,
   ContactSearchResult,
-} from "@satyrsmc/shared/types/contact";
+  ContactUpdateOutput,
+  Tag,
+} from "@satyrsmc/shared/dto/admin/contact";
 import {
   Contact as ContactEntity,
   ContactEmail as ContactEmailEntity,
@@ -193,7 +197,7 @@ export class ContactsService {
       contact_photos: sortedPhotos.map((p) => ({
         id: p.id,
         contact_id: p.contactId,
-        type: p.type as ContactPhotoType["type"],
+        type: p.type,
         sort_order: p.sortOrder,
         photo_url: `/api/contacts/${contactId}/photos/${p.id}?size=full`,
         photo_thumbnail_url: `/api/contacts/${contactId}/photos/${p.id}?size=thumbnail`,
@@ -459,7 +463,7 @@ export class ContactsService {
     return result;
   }
 
-  async create(body: Partial<Contact> & { display_name: string }) {
+  async create(body: Partial<Contact> & { display_name: string }): Promise<ContactCreateOutput | null> {
     const id = uuid();
     const uid = body.uid ?? `contact-${id}@satyrsmc`;
     const displayName = body.display_name?.trim() ?? "Unknown";
@@ -582,7 +586,7 @@ export class ContactsService {
     return this.get(id)!;
   }
 
-  async update(id: string, body: Partial<Contact>) {
+  async update(id: string, body: Partial<Contact>): Promise<ContactUpdateOutput | null> {
     /* Original: SELECT * FROM contacts WHERE id = ? */
     const existing = await this.ds
       .getRepository(ContactEntity)
@@ -768,20 +772,20 @@ export class ContactsService {
     return this.get(id)!;
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<ContactDeleteOutput> {
     await this.db.run(
       "UPDATE contacts SET status = 'deleted', deleted_at = ?, updated_at = ? WHERE id = ?",
       [new Date().toISOString(), new Date().toISOString(), id],
     );
-    return { ok: true };
+    return { ok: true as const };
   }
 
-  async restore(id: string) {
+  async restore(id: string): Promise<ContactRestoreOutput | null> {
     await this.db.run(
       "UPDATE contacts SET status = 'active', deleted_at = NULL, updated_at = ? WHERE id = ?",
       [new Date().toISOString(), id],
     );
-    return this.get(id)!;
+    return this.get(id);
   }
 
   async bulkUpdate(

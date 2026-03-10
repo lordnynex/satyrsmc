@@ -9,14 +9,27 @@ import {
   MeetingTemplate,
 } from "../entities";
 import { uuid } from "./utils";
-import { toISOString } from "../lib/date";
+import { toISOString, toISOStringOrNull } from "../lib/date";
+import type {
+  CommitteeAddMemberOutput,
+  CommitteeCreateMeetingOutput,
+  CommitteeCreateOutput,
+  CommitteeGetMeetingOutput,
+  CommitteeGetOutput,
+  CommitteeListMeetingsOutput,
+  CommitteeListOutput,
+  CommitteeRemoveMemberOutput,
+  CommitteeReorderMembersOutput,
+  CommitteeUpdateMeetingOutput,
+  CommitteeUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/committee";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
 export class CommitteesService {
   constructor(private ds: DataSource) {}
 
-  async list(sort?: "formed_date" | "name") {
+  async list(sort?: "formed_date" | "name"): Promise<CommitteeListOutput> {
     const repo = this.ds.getRepository(Committee);
     const order: Record<string, "ASC" | "DESC"> =
       sort === "name"
@@ -33,8 +46,8 @@ export class CommitteesService {
       name: c.name,
       description: c.description ?? null,
       purpose: c.purpose ?? null,
-      formed_date: c.formedDate,
-      closed_date: c.closedDate ?? null,
+      formed_date: toISOString(c.formedDate),
+      closed_date: toISOStringOrNull(c.closedDate),
       chairperson_member_id: c.chairpersonMemberId ?? null,
       status: c.status as "active" | "closed",
       created_at: toISOString(c.createdAt),
@@ -44,7 +57,7 @@ export class CommitteesService {
     }));
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<CommitteeGetOutput | null> {
     const committee = await this.ds.getRepository(Committee).findOne({ where: { id } });
     if (!committee) return null;
     const members = await this.ds.getRepository(CommitteeMember).find({
@@ -73,8 +86,8 @@ export class CommitteesService {
       name: committee.name,
       description: committee.description ?? null,
       purpose: committee.purpose ?? null,
-      formed_date: committee.formedDate,
-      closed_date: committee.closedDate ?? null,
+      formed_date: toISOString(committee.formedDate),
+      closed_date: toISOStringOrNull(committee.closedDate),
       chairperson_member_id: committee.chairpersonMemberId ?? null,
       chairperson_name: chairpersonName,
       status: committee.status as "active" | "closed",
@@ -98,7 +111,7 @@ export class CommitteesService {
     formed_date: string;
     chairperson_member_id?: string | null;
     member_ids?: string[];
-  }) {
+  }): Promise<CommitteeCreateOutput | null> {
     const now = new Date().toISOString();
     const committee = this.ds.getRepository(Committee).create({
       id: uuid(),
@@ -126,18 +139,18 @@ export class CommitteesService {
     return this.get(committee.id)!;
   }
 
-  async update(id: string, body: Record<string, unknown>) {
+  async update(id: string, body: Record<string, unknown>): Promise<CommitteeUpdateOutput | null> {
     const committee = await this.ds.getRepository(Committee).findOne({ where: { id } });
     if (!committee) return null;
     const updates: Partial<Committee> = {};
     if (body.name !== undefined) updates.name = body.name as string;
     if (body.description !== undefined) updates.description = body.description as string | null;
     if (body.purpose !== undefined) updates.purpose = body.purpose as string | null;
-    if (body.formed_date !== undefined) updates.formedDate = body.formed_date as string;
-    if (body.closed_date !== undefined) updates.closedDate = body.closed_date as string | null;
+    if (body.formed_date !== undefined) updates.formedDate = new Date(body.formed_date as string);
+    if (body.closed_date !== undefined) updates.closedDate = body.closed_date != null ? new Date(body.closed_date as string) : null;
     if (body.chairperson_member_id !== undefined) updates.chairpersonMemberId = body.chairperson_member_id as string | null;
     if (body.status !== undefined) updates.status = body.status as string;
-    updates.updatedAt = new Date().toISOString();
+    updates.updatedAt = new Date();
     await this.ds.getRepository(Committee).update(id, updates);
     return this.get(id);
   }
@@ -160,7 +173,7 @@ export class CommitteesService {
     return result.affected !== 0;
   }
 
-  async addMember(committeeId: string, memberId: string) {
+  async addMember(committeeId: string, memberId: string): Promise<CommitteeAddMemberOutput | null> {
     const committee = await this.ds.getRepository(Committee).findOne({ where: { id: committeeId } });
     if (!committee) return null;
     const existing = await this.ds.getRepository(CommitteeMember).findOne({
@@ -182,7 +195,7 @@ export class CommitteesService {
     return this.get(committeeId);
   }
 
-  async removeMember(committeeId: string, memberId: string) {
+  async removeMember(committeeId: string, memberId: string): Promise<CommitteeRemoveMemberOutput | null> {
     const result = await this.ds.getRepository(CommitteeMember).delete({
       committeeId,
       memberId,
@@ -191,7 +204,7 @@ export class CommitteesService {
     return this.get(committeeId);
   }
 
-  async updateMemberOrder(committeeId: string, memberIds: string[]) {
+  async updateMemberOrder(committeeId: string, memberIds: string[]): Promise<CommitteeReorderMembersOutput | null> {
     const committee = await this.ds.getRepository(Committee).findOne({ where: { id: committeeId } });
     if (!committee) return null;
     for (let i = 0; i < memberIds.length; i++) {
@@ -203,7 +216,7 @@ export class CommitteesService {
     return this.get(committeeId);
   }
 
-  async listMeetings(committeeId: string) {
+  async listMeetings(committeeId: string): Promise<CommitteeListMeetingsOutput | null> {
     const committee = await this.ds.getRepository(Committee).findOne({ where: { id: committeeId } });
     if (!committee) return null;
     const meetings = await this.ds.getRepository(CommitteeMeeting).find({
@@ -225,7 +238,7 @@ export class CommitteesService {
     agenda_content?: string;
     minutes_content?: string | null;
     agenda_template_id?: string;
-  }) {
+  }): Promise<CommitteeCreateMeetingOutput | null> {
     const committee = await this.ds.getRepository(Committee).findOne({ where: { id: committeeId } });
     if (!committee) return null;
     let agendaContent = body.agenda_content ?? EMPTY_DOC;
@@ -278,7 +291,7 @@ export class CommitteesService {
     return this.committeeMeetingToApi(meeting, docMap);
   }
 
-  async getMeeting(committeeId: string, meetingId: string) {
+  async getMeeting(committeeId: string, meetingId: string): Promise<CommitteeGetMeetingOutput | null> {
     const meeting = await this.ds.getRepository(CommitteeMeeting).findOne({
       where: { id: meetingId, committeeId },
     });
@@ -290,20 +303,20 @@ export class CommitteesService {
     };
   }
 
-  async updateMeeting(committeeId: string, meetingId: string, body: Record<string, unknown>) {
+  async updateMeeting(committeeId: string, meetingId: string, body: Record<string, unknown>): Promise<CommitteeUpdateMeetingOutput | null> {
     const meeting = await this.ds.getRepository(CommitteeMeeting).findOne({
       where: { id: meetingId, committeeId },
     });
     if (!meeting) return null;
     const updates: Partial<CommitteeMeeting> = {};
-    if (body.date !== undefined) updates.date = body.date as string;
+    if (body.date !== undefined) updates.date = new Date(body.date as string);
     if (body.meeting_number !== undefined) updates.meetingNumber = body.meeting_number as number;
     if (body.location !== undefined) updates.location = body.location as string | null;
-    if (body.start_time !== undefined) updates.startTime = body.start_time as string | null;
-    if (body.end_time !== undefined) updates.endTime = body.end_time as string | null;
+    if (body.start_time !== undefined) updates.startTime = body.start_time != null ? new Date(body.start_time as string) : null;
+    if (body.end_time !== undefined) updates.endTime = body.end_time != null ? new Date(body.end_time as string) : null;
     if (body.video_conference_url !== undefined) updates.videoConferenceUrl = body.video_conference_url as string | null;
     if (body.previous_meeting_id !== undefined) updates.previousMeetingId = body.previous_meeting_id as string | null;
-    updates.updatedAt = new Date().toISOString();
+    updates.updatedAt = new Date();
     await this.ds.getRepository(CommitteeMeeting).update(meetingId, updates);
     const updated = await this.ds.getRepository(CommitteeMeeting).findOne({ where: { id: meetingId } });
     if (!updated) return null;
@@ -358,17 +371,17 @@ export class CommitteesService {
     return new Map(docs.map((d) => [d.id, d]));
   }
 
-  private committeeMeetingToApi(m: CommitteeMeeting, docMap: Map<string, Document>) {
+  private committeeMeetingToApi(m: CommitteeMeeting, docMap: Map<string, Document>): CommitteeGetMeetingOutput {
     const agendaDoc = docMap.get(m.agendaDocumentId);
     const minutesDoc = m.minutesDocumentId ? docMap.get(m.minutesDocumentId) : null;
     return {
       id: m.id,
       committee_id: m.committeeId,
-      date: m.date,
+      date: toISOString(m.date),
       meeting_number: m.meetingNumber,
       location: m.location ?? null,
-      start_time: m.startTime ?? null,
-      end_time: m.endTime ?? null,
+      start_time: toISOStringOrNull(m.startTime),
+      end_time: toISOStringOrNull(m.endTime),
       video_conference_url: m.videoConferenceUrl ?? null,
       previous_meeting_id: m.previousMeetingId ?? null,
       agenda_document_id: m.agendaDocumentId,

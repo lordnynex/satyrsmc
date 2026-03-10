@@ -2,29 +2,36 @@ import type { DataSource } from "typeorm";
 import type { DbLike } from "../db/dbAdapter";
 import { Member } from "../entities";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
+import type {
+  MemberCreateOutput,
+  MemberDeleteOutput,
+  MemberGetOutput,
+  MemberListOutput,
+  MemberUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/member";
+import type { GetMembersFeedOutput } from "@satyrsmc/shared/dto/website";
 import { uuid, VALID_POSITIONS, parsePhotoToBlob, memberRowToApi } from "./utils";
 import { ImageService } from "./ImageService";
 import { toISOString } from "../lib/date";
 
 export type PhotoSize = "thumbnail" | "medium" | "full";
 
-function rowToMember(m: Record<string, unknown>) {
+function rowToMember(m: Record<string, unknown>): MemberGetOutput {
   const { photo_url, photo_thumbnail_url } = memberRowToApi(m);
   return {
     id: m.id as string,
-    name: m.name,
-    phone_number: m.phone_number ?? null,
-    email: m.email ?? null,
-    address: m.address ?? null,
-    birthday: m.birthday ?? null,
-    member_since: m.member_since ?? null,
+    name: m.name as string,
+    phone_number: (m.phone_number ?? null) as string | null,
+    email: (m.email ?? null) as string | null,
+    address: (m.address ?? null) as string | null,
+    birthday: (m.birthday ?? null) as string | null,
+    member_since: (m.member_since ?? null) as string | null,
     is_baby: m.is_baby as boolean,
-    position: m.position ?? null,
-    emergency_contact_name: m.emergency_contact_name ?? null,
-    emergency_contact_phone: m.emergency_contact_phone ?? null,
+    position: (m.position ?? null) as string | null,
+    emergency_contact_name: (m.emergency_contact_name ?? null) as string | null,
+    emergency_contact_phone: (m.emergency_contact_phone ?? null) as string | null,
     photo_url,
     photo_thumbnail_url,
-    show_on_website: m.show_on_website as boolean,
     created_at: toISOString(m.created_at as Date | string | null | undefined),
   };
 }
@@ -35,7 +42,7 @@ export class MembersService {
     private ds: DataSource
   ) {}
 
-  async list() {
+  async list(): Promise<MemberListOutput> {
     /* Original: SELECT id, name, phone_number, email, address, birthday, member_since, is_baby, position, emergency_contact_name, emergency_contact_phone, created_at, (photo IS NOT NULL) as has_photo FROM members WHERE id != ? ORDER BY name */
     const rows = (await this.ds
       .getRepository(Member)
@@ -61,7 +68,7 @@ export class MembersService {
   }
 
   /** Public website feed: members with show_on_website = 1, minimal public fields only. */
-  async listForWebsite() {
+  async listForWebsite(): Promise<GetMembersFeedOutput> {
     const rows = (await this.ds
       .getRepository(Member)
       .createQueryBuilder("m")
@@ -79,13 +86,13 @@ export class MembersService {
         id: m.id as string,
         name: m.name as string,
         position: (m.position as string) ?? null,
-        photo_url,
-        photo_thumbnail_url,
+        photo_url: photo_url ?? null,
+        photo_thumbnail_url: photo_thumbnail_url ?? null,
       };
     });
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<MemberGetOutput | null> {
     /* Original: SELECT id, name, phone_number, email, address, birthday, member_since, is_baby, position, emergency_contact_name, emergency_contact_phone, created_at, (photo IS NOT NULL) as has_photo FROM members WHERE id = ? */
     const row = (await this.ds
       .getRepository(Member)
@@ -152,7 +159,7 @@ export class MembersService {
     emergency_contact_name?: string;
     emergency_contact_phone?: string;
     photo?: string;
-  }) {
+  }): Promise<MemberCreateOutput | null> {
     const id = uuid();
     const rawPhoto = body.photo ? parsePhotoToBlob(body.photo) : null;
     const photoBlob = rawPhoto
@@ -194,7 +201,7 @@ export class MembersService {
     emergency_contact_phone: string | null;
     photo: string | null;
     show_on_website: boolean;
-  }>) {
+  }>): Promise<MemberUpdateOutput | null> {
     /* Original: SELECT * FROM members WHERE id = ? */
     const existing = await this.ds.getRepository(Member).findOne({ where: { id } });
     if (!existing) return null;
@@ -229,8 +236,8 @@ export class MembersService {
     return this.get(id)!;
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<MemberDeleteOutput> {
     await this.db.run("DELETE FROM members WHERE id = ?", [id]);
-    return { ok: true };
+    return { ok: true as const };
   }
 }

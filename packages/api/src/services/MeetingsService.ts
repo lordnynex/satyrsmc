@@ -11,14 +11,22 @@ import {
 } from "../entities";
 import { uuid } from "./utils";
 import { toISOString, toISOStringOrNull } from "../lib/date";
-import type { MeetingDetail } from "@satyrsmc/shared/types/meeting";
+import type {
+  MeetingCreateOldBusinessOutput,
+  MeetingCreateOutput,
+  MeetingDeleteOutput,
+  MeetingDetail,
+  MeetingListOutput,
+  MeetingUpdateOldBusinessOutput,
+  MeetingUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/meeting";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
 export class MeetingsService {
   constructor(private ds: DataSource) {}
 
-  async list(sort?: "date" | "meeting_number") {
+  async list(sort?: "date" | "meeting_number"): Promise<MeetingListOutput> {
     const repo = this.ds.getRepository(Meeting);
     const order: Record<string, "ASC" | "DESC"> =
       sort === "meeting_number"
@@ -45,7 +53,7 @@ export class MeetingsService {
     agenda_content?: string;
     minutes_content?: string | null;
     agenda_template_id?: string;
-  }) {
+  }): Promise<MeetingCreateOutput | null> {
     let agendaContent = body.agenda_content ?? EMPTY_DOC;
     if (body.agenda_template_id) {
       const template = await this.ds.getRepository(MeetingTemplate).findOne({
@@ -158,7 +166,7 @@ export class MeetingsService {
         description: a.description,
         assignee_member_id: a.assigneeMemberId ?? null,
         assignee_name: a.assigneeMemberId ? membersMap.get(a.assigneeMemberId)?.name ?? null : null,
-        due_date: a.dueDate ?? null,
+        due_date: toISOStringOrNull(a.dueDate),
         status: a.status,
         completed_at: toISOStringOrNull(a.completedAt),
         order_index: a.orderIndex,
@@ -169,7 +177,7 @@ export class MeetingsService {
           id: ob.id,
           meeting_id: ob.meetingId,
           description: ob.description,
-          status: ob.status,
+          status: ob.status as "open" | "closed",
           closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
@@ -180,7 +188,7 @@ export class MeetingsService {
           id: ob.id,
           meeting_id: ob.meetingId,
           description: ob.description,
-          status: ob.status,
+          status: ob.status as "open" | "closed",
           closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
@@ -191,18 +199,18 @@ export class MeetingsService {
     };
   }
 
-  async update(id: string, body: Record<string, unknown>) {
+  async update(id: string, body: Record<string, unknown>): Promise<MeetingUpdateOutput | null> {
     const meeting = await this.ds.getRepository(Meeting).findOne({ where: { id } });
     if (!meeting) return null;
     const updates: Partial<Meeting> = {};
-    if (body.date !== undefined) updates.date = body.date as string;
+    if (body.date !== undefined) updates.date = new Date(body.date as string);
     if (body.meeting_number !== undefined) updates.meetingNumber = body.meeting_number as number;
     if (body.location !== undefined) updates.location = body.location as string | null;
-    if (body.start_time !== undefined) updates.startTime = body.start_time as string | null;
-    if (body.end_time !== undefined) updates.endTime = body.end_time as string | null;
+    if (body.start_time !== undefined) updates.startTime = (body.start_time as string | null) != null ? new Date(body.start_time as string) : null;
+    if (body.end_time !== undefined) updates.endTime = (body.end_time as string | null) != null ? new Date(body.end_time as string) : null;
     if (body.video_conference_url !== undefined) updates.videoConferenceUrl = body.video_conference_url as string | null;
     if (body.previous_meeting_id !== undefined) updates.previousMeetingId = body.previous_meeting_id as string | null;
-    updates.updatedAt = new Date().toISOString();
+    updates.updatedAt = new Date();
     await this.ds.getRepository(Meeting).update(id, updates);
     const updated = await this.ds.getRepository(Meeting).findOne({ where: { id } });
     if (!updated) return null;
@@ -213,9 +221,9 @@ export class MeetingsService {
   async delete(
     id: string,
     options?: { delete_agenda?: boolean; delete_minutes?: boolean }
-  ) {
+  ): Promise<MeetingDeleteOutput> {
     const meeting = await this.ds.getRepository(Meeting).findOne({ where: { id } });
-    if (!meeting) return false;
+    if (!meeting) return;
     const deleteAgenda = options?.delete_agenda !== false;
     const deleteMinutes = options?.delete_minutes !== false;
     const docIds: string[] = [];
@@ -225,8 +233,7 @@ export class MeetingsService {
     if (docIds.length) {
       await this.ds.getRepository(Document).delete(docIds);
     }
-    const result = await this.ds.getRepository(Meeting).delete(id);
-    return result.affected !== 0;
+    await this.ds.getRepository(Meeting).delete(id);
   }
 
   async createMotion(meetingId: string, body: {
@@ -246,11 +253,11 @@ export class MeetingsService {
       id: uuid(),
       meetingId,
       description: body.description ?? null,
-      result: body.result,
+      result: body.result as "pass" | "fail",
       orderIndex,
       moverMemberId: body.mover_member_id,
       seconderMemberId: body.seconder_member_id,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     });
     await this.ds.getRepository(MeetingMotion).save(motion);
     return {
@@ -270,7 +277,7 @@ export class MeetingsService {
     if (!motion) return null;
     const updates: Partial<MeetingMotion> = {};
     if (body.description !== undefined) updates.description = body.description as string | null;
-    if (body.result !== undefined) updates.result = body.result as string;
+    if (body.result !== undefined) updates.result = body.result as "pass" | "fail";
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     if (body.mover_member_id !== undefined) updates.moverMemberId = body.mover_member_id as string | null;
     if (body.seconder_member_id !== undefined) updates.seconderMemberId = body.seconder_member_id as string | null;
@@ -312,7 +319,16 @@ export class MeetingsService {
       createdAt: new Date().toISOString(),
     });
     await this.ds.getRepository(MeetingActionItem).save(item);
-    return { id: item.id, meeting_id: item.meetingId, description: item.description, assignee_member_id: item.assigneeMemberId ?? null, due_date: item.dueDate ?? null, status: item.status, order_index: item.orderIndex, created_at: toISOString(item.createdAt) };
+    return {
+      id: item.id,
+      meeting_id: item.meetingId,
+      description: item.description,
+      assignee_member_id: item.assigneeMemberId ?? null,
+      due_date: toISOStringOrNull(item.dueDate),
+      status: item.status,
+      order_index: item.orderIndex,
+      created_at: toISOString(item.createdAt),
+    };
   }
 
   async updateActionItem(meetingId: string, aid: string, body: Record<string, unknown>) {
@@ -321,15 +337,27 @@ export class MeetingsService {
     const updates: Partial<MeetingActionItem> = {};
     if (body.description !== undefined) updates.description = body.description as string;
     if (body.assignee_member_id !== undefined) updates.assigneeMemberId = body.assignee_member_id as string | null;
-    if (body.due_date !== undefined) updates.dueDate = body.due_date as string | null;
+    if (body.due_date !== undefined) updates.dueDate = (body.due_date as string | null) != null ? new Date(body.due_date as string) : null;
     if (body.status !== undefined) {
-      updates.status = body.status as string;
-      if (body.status === "completed") updates.completedAt = new Date().toISOString();
+      updates.status = body.status as "open" | "completed";
+      if (body.status === "completed") updates.completedAt = new Date();
     }
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(MeetingActionItem).update(aid, updates);
     const updated = await this.ds.getRepository(MeetingActionItem).findOne({ where: { id: aid } });
-    return updated ? { id: updated.id, meeting_id: updated.meetingId, description: updated.description, assignee_member_id: updated.assigneeMemberId ?? null, due_date: updated.dueDate ?? null, status: updated.status, completed_at: toISOStringOrNull(updated.completedAt), order_index: updated.orderIndex, created_at: toISOString(updated.createdAt) } : null;
+    return updated
+      ? {
+          id: updated.id,
+          meeting_id: updated.meetingId,
+          description: updated.description,
+          assignee_member_id: updated.assigneeMemberId ?? null,
+          due_date: toISOStringOrNull(updated.dueDate),
+          status: updated.status,
+          completed_at: toISOStringOrNull(updated.completedAt),
+          order_index: updated.orderIndex,
+          created_at: toISOString(updated.createdAt),
+        }
+      : null;
   }
 
   async deleteActionItem(meetingId: string, aid: string) {
@@ -337,7 +365,10 @@ export class MeetingsService {
     return result.affected !== 0;
   }
 
-  async createOldBusiness(meetingId: string, body: { description: string; order_index?: number }) {
+  async createOldBusiness(
+    meetingId: string,
+    body: { description: string; order_index?: number }
+  ): Promise<MeetingCreateOldBusinessOutput> {
     const maxOrder = await this.ds.getRepository(OldBusinessItem)
       .createQueryBuilder("o")
       .select("MAX(o.order_index)", "max")
@@ -353,10 +384,21 @@ export class MeetingsService {
       createdAt: new Date().toISOString(),
     });
     await this.ds.getRepository(OldBusinessItem).save(item);
-    return { id: item.id, meeting_id: item.meetingId, description: item.description, status: item.status, order_index: item.orderIndex, created_at: toISOString(item.createdAt) };
+    return {
+      id: item.id,
+      meeting_id: item.meetingId,
+      description: item.description,
+      status: item.status as "open" | "closed",
+      order_index: item.orderIndex,
+      created_at: toISOString(item.createdAt),
+    };
   }
 
-  async updateOldBusiness(meetingId: string, oid: string, body: Record<string, unknown>) {
+  async updateOldBusiness(
+    meetingId: string,
+    oid: string,
+    body: Record<string, unknown>
+  ): Promise<MeetingUpdateOldBusinessOutput | null> {
     const item = await this.ds.getRepository(OldBusinessItem).findOne({ where: { id: oid, meetingId } });
     if (!item) return null;
     const updates: Partial<OldBusinessItem> = {};
@@ -364,7 +406,7 @@ export class MeetingsService {
     if (body.status !== undefined) {
       updates.status = body.status as string;
       if (body.status === "closed") {
-        updates.closedAt = new Date().toISOString();
+        updates.closedAt = new Date();
         updates.closedInMeetingId = (body.closed_in_meeting_id as string) ?? meetingId;
       }
     }
@@ -372,7 +414,18 @@ export class MeetingsService {
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(OldBusinessItem).update(oid, updates);
     const updated = await this.ds.getRepository(OldBusinessItem).findOne({ where: { id: oid } });
-    return updated ? { id: updated.id, meeting_id: updated.meetingId, description: updated.description, status: updated.status, closed_at: toISOStringOrNull(updated.closedAt), closed_in_meeting_id: updated.closedInMeetingId ?? null, order_index: updated.orderIndex, created_at: toISOString(updated.createdAt) } : null;
+    return updated
+      ? {
+          id: updated.id,
+          meeting_id: updated.meetingId,
+          description: updated.description,
+          status: updated.status as "open" | "closed",
+          closed_at: toISOStringOrNull(updated.closedAt),
+          closed_in_meeting_id: updated.closedInMeetingId ?? null,
+          order_index: updated.orderIndex,
+          created_at: toISOString(updated.createdAt),
+        }
+      : null;
   }
 
   async deleteOldBusiness(meetingId: string, oid: string) {
@@ -488,7 +541,7 @@ export class MeetingsService {
         order_index: ob.orderIndex,
         created_at: toISOString(ob.createdAt),
         meeting_number: meeting?.meetingNumber,
-        meeting_date: meeting?.date,
+        meeting_date: meeting?.date ? meeting.date.toISOString().slice(0, 10) : undefined,
       };
     });
   }
@@ -518,13 +571,15 @@ export class MeetingsService {
   private meetingToApi(m: Meeting, docMap: Map<string, Document>) {
     const agendaDoc = docMap.get(m.agendaDocumentId);
     const minutesDoc = m.minutesDocumentId ? docMap.get(m.minutesDocumentId) : null;
+    const dateStr =
+      m.date instanceof Date ? m.date.toISOString().slice(0, 10) : (m.date as string);
     return {
       id: m.id,
-      date: m.date,
+      date: dateStr,
       meeting_number: m.meetingNumber,
       location: m.location ?? null,
-      start_time: m.startTime ?? null,
-      end_time: m.endTime ?? null,
+      start_time: toISOStringOrNull(m.startTime),
+      end_time: toISOStringOrNull(m.endTime),
       video_conference_url: m.videoConferenceUrl ?? null,
       previous_meeting_id: m.previousMeetingId ?? null,
       agenda_document_id: m.agendaDocumentId,
