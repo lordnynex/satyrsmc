@@ -126,6 +126,7 @@ function EventDetailContent({ id }: { id: string }) {
   const [editFacebookEventUrl, setEditFacebookEventUrl] = useState("");
   const [editPreRideEventId, setEditPreRideEventId] = useState("");
   const [editRideCost, setEditRideCost] = useState<string>("");
+  const [editShowOnWebsite, setEditShowOnWebsite] = useState(false);
 
   useEffect(() => {
     setEditName(event.name);
@@ -148,6 +149,7 @@ function EventDetailContent({ id }: { id: string }) {
     setEditFacebookEventUrl(event.facebook_event_url ?? "");
     setEditPreRideEventId(event.pre_ride_event_id ?? "");
     setEditRideCost(event.ride_cost != null ? String(event.ride_cost) : "");
+    setEditShowOnWebsite(event.show_on_website ?? false);
   }, [event]);
 
   const refresh = async () => {
@@ -178,6 +180,7 @@ function EventDetailContent({ id }: { id: string }) {
         facebook_event_url: editFacebookEventUrl || undefined,
         pre_ride_event_id: editPreRideEventId || undefined,
         ride_cost: editRideCost === "" ? undefined : parseFloat(editRideCost),
+        show_on_website: editShowOnWebsite,
       },
     });
     setEditOpen(false);
@@ -606,6 +609,8 @@ function EventDetailContent({ id }: { id: string }) {
         setEditPreRideEventId={setEditPreRideEventId}
         editRideCost={editRideCost}
         setEditRideCost={setEditRideCost}
+        editShowOnWebsite={editShowOnWebsite}
+        setEditShowOnWebsite={setEditShowOnWebsite}
         budgets={budgets}
         scenarios={scenarios}
         onSave={handleSaveEdit}

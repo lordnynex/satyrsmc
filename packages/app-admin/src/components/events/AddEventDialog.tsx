@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -41,6 +42,7 @@ export function AddEventDialog({
   const [year, setYear] = useState<number | "">(new Date().getFullYear());
   const [eventDate, setEventDate] = useState("");
   const [description, setDescription] = useState("");
+  const [showOnWebsite, setShowOnWebsite] = useState(true);
   const [saving, setSaving] = useState(false);
   const createEventMutation = useCreateEvent();
 
@@ -56,6 +58,7 @@ export function AddEventDialog({
     setYear(new Date().getFullYear());
     setEventDate("");
     setDescription("");
+    setShowOnWebsite(true);
   };
 
   const handleSubmit = async () => {
@@ -70,6 +73,7 @@ export function AddEventDialog({
         year: year === "" ? undefined : Number(year),
         event_date: eventDate.trim() || undefined,
         description: description.trim() || undefined,
+        show_on_website: showOnWebsite,
       } as Record<string, unknown>);
       reset();
       onOpenChange(false);
@@ -123,10 +127,9 @@ export function AddEventDialog({
             </div>
             <div className="space-y-2">
               <Label>Event date</Label>
-              <Input
-                type="date"
+              <DatePicker
                 value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
+                onChange={setEventDate}
               />
             </div>
           </div>
@@ -139,6 +142,15 @@ export function AddEventDialog({
               rows={2}
             />
           </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showOnWebsite}
+              onChange={(e) => setShowOnWebsite(e.target.checked)}
+              className="size-4 rounded border-input"
+            />
+            <span className="text-sm font-medium">Show on website</span>
+          </label>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

@@ -13,7 +13,12 @@ export const photos: Photo[] = [
     height: 1067,
     alt: "70th Anniversary Group Photo",
   },
-  // Sample external placeholders
+  {
+    src: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1600",
+    width: 1600,
+    height: 1067,
+    alt: "Motorcycle cruising — placeholder",
+  },
   {
     src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600",
     width: 1600,
@@ -25,5 +30,17 @@ export const photos: Photo[] = [
     width: 1200,
     height: 800,
     alt: "Open road — placeholder",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1600",
+    width: 1600,
+    height: 1067,
+    alt: "Desert highway — placeholder",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?q=80&w=1600",
+    width: 1600,
+    height: 1067,
+    alt: "Canyon road — placeholder",
   },
 ];

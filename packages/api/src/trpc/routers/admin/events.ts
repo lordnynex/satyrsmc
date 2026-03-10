@@ -65,6 +65,7 @@ export const eventsRouter = t.router({
         facebook_event_url: z.string().optional(),
         pre_ride_event_id: z.string().optional(),
         ride_cost: z.number().optional(),
+        show_on_website: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

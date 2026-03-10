@@ -179,6 +179,7 @@ export class EventsService {
       scenario_id: e.scenarioId ?? null,
       planning_notes: e.planningNotes ?? null,
       event_type: (e.eventType ?? "badger") as "badger" | "anniversary" | "pioneer_run" | "rides",
+      show_on_website: e.showOnWebsite === 1,
       created_at: e.createdAt ?? undefined,
       milestones: milestones.map((m) => {
         const month = m.month;
@@ -538,11 +539,13 @@ export class EventsService {
     facebook_event_url?: string;
     pre_ride_event_id?: string;
     ride_cost?: number;
+    show_on_website?: boolean;
   }) {
     const id = uuid();
     const eventType = body.event_type ?? "badger";
+    const showOnWebsite = body.show_on_website === false ? 0 : 1;
     await this.db.run(
-      `INSERT INTO events (id, name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (id, name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         body.name,
@@ -565,6 +568,7 @@ export class EventsService {
         body.facebook_event_url ?? null,
         body.pre_ride_event_id ?? null,
         body.ride_cost ?? null,
+        showOnWebsite,
       ]
     );
     return this.get(id)!;
