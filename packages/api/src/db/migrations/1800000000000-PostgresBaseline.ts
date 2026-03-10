@@ -55,7 +55,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         position TEXT,
         email TEXT,
         member_since TIMESTAMPTZ,
-        is_baby BOOLEAN DEFAULT FALSE,
+        is_baby BOOLEAN NOT NULL DEFAULT FALSE,
         show_on_website BOOLEAN NOT NULL DEFAULT FALSE
       )
     `);
@@ -69,7 +69,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         year INTEGER NOT NULL,
         description TEXT NOT NULL,
         sort_order INTEGER DEFAULT 0,
-        completed BOOLEAN DEFAULT FALSE,
+        completed BOOLEAN NOT NULL DEFAULT FALSE,
         due_date TIMESTAMPTZ
       )
     `);
@@ -105,7 +105,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         sort_order INTEGER DEFAULT 0,
         quantity INTEGER,
         note TEXT,
-        loaded BOOLEAN DEFAULT FALSE
+        loaded BOOLEAN NOT NULL DEFAULT FALSE
       )
     `);
 
@@ -147,7 +147,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS event_attendees (
         id TEXT PRIMARY KEY,
         event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-        contact_id TEXT NOT NULL,
+        contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
         sort_order INTEGER NOT NULL DEFAULT 0,
         waiver_signed BOOLEAN NOT NULL DEFAULT FALSE
       )
@@ -267,12 +267,12 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         ok_to_email TEXT CHECK (ok_to_email IN ('yes', 'no', 'unknown')) DEFAULT 'unknown',
         ok_to_mail TEXT CHECK (ok_to_mail IN ('yes', 'no', 'unknown')) DEFAULT 'unknown',
         ok_to_sms TEXT CHECK (ok_to_sms IN ('yes', 'no', 'unknown')) DEFAULT 'unknown',
-        do_not_contact BOOLEAN DEFAULT FALSE,
+        do_not_contact BOOLEAN NOT NULL DEFAULT FALSE,
         club_name TEXT,
         role TEXT,
         uid TEXT UNIQUE,
-        hellenic BOOLEAN DEFAULT FALSE,
-        deceased BOOLEAN DEFAULT FALSE,
+        hellenic BOOLEAN NOT NULL DEFAULT FALSE,
+        deceased BOOLEAN NOT NULL DEFAULT FALSE,
         deceased_year INTEGER,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -287,7 +287,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
         email TEXT NOT NULL,
         type TEXT CHECK (type IN ('work', 'home', 'other')) DEFAULT 'other',
-        is_primary BOOLEAN DEFAULT FALSE
+        is_primary BOOLEAN NOT NULL DEFAULT FALSE
       )
     `);
 
@@ -298,7 +298,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
         phone TEXT NOT NULL,
         type TEXT CHECK (type IN ('work', 'home', 'cell', 'other')) DEFAULT 'other',
-        is_primary BOOLEAN DEFAULT FALSE
+        is_primary BOOLEAN NOT NULL DEFAULT FALSE
       )
     `);
 
@@ -314,7 +314,7 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         postal_code TEXT,
         country TEXT DEFAULT 'US',
         type TEXT CHECK (type IN ('home', 'work', 'postal', 'other')) DEFAULT 'home',
-        is_primary_mailing BOOLEAN DEFAULT FALSE
+        is_primary_mailing BOOLEAN NOT NULL DEFAULT FALSE
       )
     `);
 
@@ -404,9 +404,9 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         added_by TEXT,
         added_at TIMESTAMPTZ DEFAULT NOW(),
         source TEXT CHECK (source IN ('manual', 'import', 'rule')) DEFAULT 'manual',
-        suppressed BOOLEAN DEFAULT FALSE,
+        suppressed BOOLEAN NOT NULL DEFAULT FALSE,
         suppress_reason TEXT,
-        unsubscribed BOOLEAN DEFAULT FALSE,
+        unsubscribed BOOLEAN NOT NULL DEFAULT FALSE,
         UNIQUE(list_id, contact_id)
       )
     `);

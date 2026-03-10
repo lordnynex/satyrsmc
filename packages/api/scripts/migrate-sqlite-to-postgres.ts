@@ -115,10 +115,11 @@ function convertValue(column: string, value: unknown): unknown {
   if (value === null || value === undefined) return null;
 
   if (TIMESTAMP_COLUMNS.has(column)) {
-    // SQLite stores dates as ISO text strings
+    // SQLite datetime('now') produces 'YYYY-MM-DD HH:MM:SS' (no T, no Z)
     const str = String(value);
     if (!str) return null;
-    const d = new Date(str);
+    const normalized = str.includes("T") ? str : str.replace(" ", "T") + "Z";
+    const d = new Date(normalized);
     return isNaN(d.getTime()) ? null : d;
   }
 
