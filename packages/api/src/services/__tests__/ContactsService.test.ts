@@ -1,21 +1,24 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from "bun:test";
-import { setupTestDb, teardownTestDb, resetTestDb, getTestApi } from "../../test/setup";
+import { setupTestDb, teardownTestDb, resetTestDb } from "../../test/setup";
 import type { Api } from "../api";
+import type { DataSource } from "typeorm";
 
 describe("ContactsService", () => {
   let api: Api;
+  let ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
+    ds = result.ds;
   });
 
   afterAll(async () => {
-    await teardownTestDb();
+    await teardownTestDb(ds);
   });
 
   beforeEach(async () => {
-    await resetTestDb();
+    await resetTestDb(ds);
   });
 
   describe("create", () => {
