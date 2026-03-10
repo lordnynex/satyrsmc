@@ -14,11 +14,11 @@ export class Committee {
   @Column({ type: "text", nullable: true })
   purpose!: string | null;
 
-  @Column({ name: "formed_date", type: "text" })
-  formedDate!: string;
+  @Column({ name: "formed_date", type: "timestamptz" })
+  formedDate!: Date;
 
-  @Column({ name: "closed_date", type: "text", nullable: true })
-  closedDate!: string | null;
+  @Column({ name: "closed_date", type: "timestamptz", nullable: true })
+  closedDate!: Date | null;
 
   @Column({ name: "chairperson_member_id", type: "text", nullable: true })
   chairpersonMemberId!: string | null;
@@ -26,9 +26,9 @@ export class Committee {
   @Column({ type: "text" })
   status!: string;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
-  @Column({ name: "updated_at", type: "text", nullable: true })
-  updatedAt!: string | null;
+  @Column({ name: "updated_at", type: "timestamptz", nullable: true })
+  updatedAt!: Date | null;
 }

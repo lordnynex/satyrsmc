@@ -17,14 +17,14 @@ export class Member {
   @Column({ type: "text", nullable: true })
   address!: string | null;
 
-  @Column({ type: "text", nullable: true })
-  birthday!: string | null;
+  @Column({ type: "timestamptz", nullable: true })
+  birthday!: Date | null;
 
-  @Column({ name: "member_since", type: "text", nullable: true })
-  memberSince!: string | null;
+  @Column({ name: "member_since", type: "timestamptz", nullable: true })
+  memberSince!: Date | null;
 
-  @Column({ name: "is_baby", type: "integer", default: 0 })
-  isBaby!: number;
+  @Column({ name: "is_baby", type: "boolean", default: false })
+  isBaby!: boolean;
 
   @Column({ type: "text", nullable: true })
   position!: string | null;
@@ -35,15 +35,15 @@ export class Member {
   @Column({ name: "emergency_contact_phone", type: "text", nullable: true })
   emergencyContactPhone!: string | null;
 
-  @Column({ type: "blob", nullable: true })
+  @Column({ type: "bytea", nullable: true })
   photo!: Buffer | null;
 
-  @Column({ name: "photo_thumbnail", type: "blob", nullable: true })
+  @Column({ name: "photo_thumbnail", type: "bytea", nullable: true })
   photoThumbnail!: Buffer | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
-  @Column({ name: "show_on_website", type: "integer", default: 0 })
-  showOnWebsite!: number;
+  @Column({ name: "show_on_website", type: "boolean", default: false })
+  showOnWebsite!: boolean;
 }

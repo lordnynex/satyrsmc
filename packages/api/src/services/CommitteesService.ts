@@ -9,6 +9,7 @@ import {
   MeetingTemplate,
 } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -36,8 +37,8 @@ export class CommitteesService {
       closed_date: c.closedDate ?? null,
       chairperson_member_id: c.chairpersonMemberId ?? null,
       status: c.status as "active" | "closed",
-      created_at: c.createdAt ?? undefined,
-      updated_at: c.updatedAt ?? undefined,
+      created_at: toISOString(c.createdAt),
+      updated_at: toISOString(c.updatedAt),
       member_count: memberCounts.get(c.id) ?? 0,
       meeting_count: meetingCounts.get(c.id) ?? 0,
     }));
@@ -77,8 +78,8 @@ export class CommitteesService {
       chairperson_member_id: committee.chairpersonMemberId ?? null,
       chairperson_name: chairpersonName,
       status: committee.status as "active" | "closed",
-      created_at: committee.createdAt ?? undefined,
-      updated_at: committee.updatedAt ?? undefined,
+      created_at: toISOString(committee.createdAt),
+      updated_at: toISOString(committee.updatedAt),
       members: members.map((m) => ({
         id: m.id,
         committee_id: m.committeeId,
@@ -374,8 +375,8 @@ export class CommitteesService {
       minutes_document_id: m.minutesDocumentId ?? null,
       agenda_content: agendaDoc?.content ?? EMPTY_DOC,
       minutes_content: minutesDoc?.content ?? null,
-      created_at: m.createdAt ?? undefined,
-      updated_at: m.updatedAt ?? undefined,
+      created_at: toISOString(m.createdAt),
+      updated_at: toISOString(m.updatedAt),
     };
   }
 }

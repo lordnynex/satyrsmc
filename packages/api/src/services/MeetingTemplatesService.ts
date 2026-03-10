@@ -2,6 +2,7 @@ import { In } from "typeorm";
 import type { DataSource } from "typeorm";
 import { Document, MeetingTemplate } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -18,8 +19,8 @@ export class MeetingTemplatesService {
       type: t.type,
       document_id: t.documentId,
       content: doc?.content ?? EMPTY_DOC,
-      created_at: t.createdAt ?? undefined,
-      updated_at: t.updatedAt ?? undefined,
+      created_at: toISOString(t.createdAt),
+      updated_at: toISOString(t.updatedAt),
     };
   }
 

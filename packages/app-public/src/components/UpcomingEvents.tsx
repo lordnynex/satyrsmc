@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 import { trpc } from "../trpc";
 
 export const UpcomingEvents: React.FC = () => {
@@ -125,7 +126,7 @@ export const UpcomingEvents: React.FC = () => {
               className="text-sm font-medium shrink-0"
               style={{ color: "var(--color-accent)", minWidth: "160px" }}
             >
-              {event.event_date}
+              {event.event_date ? dayjs(event.event_date).format("M/D/YY") : ""}
             </span>
             <div className="flex-1 min-w-0">
               <span className="font-semibold" style={{ color: "var(--color-text)" }}>

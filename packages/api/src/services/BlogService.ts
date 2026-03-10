@@ -1,6 +1,7 @@
 import type { DataSource } from "typeorm";
 import { BlogPost } from "../entities";
 import { uuid } from "./utils";
+import { toISOString, toISOStringOrNull } from "../lib/date";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -104,11 +105,11 @@ export class BlogService {
       title: p.title,
       excerpt: p.excerpt ?? null,
       body: p.body,
-      published_at: p.publishedAt ?? null,
+      published_at: toISOStringOrNull(p.publishedAt),
       meta_title: p.metaTitle ?? null,
       meta_description: p.metaDescription ?? null,
-      created_at: p.createdAt ?? undefined,
-      updated_at: p.updatedAt ?? undefined,
+      created_at: toISOString(p.createdAt),
+      updated_at: toISOString(p.updatedAt),
     };
   }
 }

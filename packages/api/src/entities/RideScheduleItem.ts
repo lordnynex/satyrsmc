@@ -8,8 +8,8 @@ export class RideScheduleItem {
   @Column({ name: "event_id", type: "text" })
   eventId!: string;
 
-  @Column({ name: "scheduled_time", type: "text" })
-  scheduledTime!: string;
+  @Column({ name: "scheduled_time", type: "timestamptz", nullable: true })
+  scheduledTime!: Date | null;
 
   @Column("text")
   label!: string;

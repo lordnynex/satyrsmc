@@ -14,18 +14,18 @@ export class MailingListMember {
   @Column({ name: "added_by", type: "text", nullable: true })
   addedBy!: string | null;
 
-  @Column({ name: "added_at", type: "text", nullable: true })
-  addedAt!: string | null;
+  @Column({ name: "added_at", type: "timestamptz", nullable: true })
+  addedAt!: Date | null;
 
   @Column({ type: "text", default: "manual" })
   source!: string;
 
-  @Column({ type: "integer", default: 0 })
-  suppressed!: number;
+  @Column({ type: "boolean", default: false })
+  suppressed!: boolean;
 
   @Column({ name: "suppress_reason", type: "text", nullable: true })
   suppressReason!: string | null;
 
-  @Column({ type: "integer", default: 0 })
-  unsubscribed!: number;
+  @Column({ type: "boolean", default: false })
+  unsubscribed!: boolean;
 }

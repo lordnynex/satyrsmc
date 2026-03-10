@@ -23,6 +23,6 @@ export class MeetingMotion {
   @Column({ name: "order_index", type: "integer", default: 0 })
   orderIndex!: number;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 }

@@ -20,9 +20,9 @@ export class EventPlanningMilestone {
   @Column({ name: "sort_order", type: "integer", default: 0 })
   sortOrder!: number;
 
-  @Column({ type: "integer", default: 0 })
-  completed!: number;
+  @Column({ type: "boolean", default: false })
+  completed!: boolean;
 
-  @Column({ name: "due_date", type: "text", nullable: true })
-  dueDate!: string | null;
+  @Column({ name: "due_date", type: "timestamptz", nullable: true })
+  dueDate!: Date | null;
 }

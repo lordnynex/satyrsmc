@@ -7,6 +7,7 @@ import { EVENT_TYPE_LABELS } from "@/lib/event-constants";
 import { Calendar, ChevronRight, BarChart3, Plus } from "lucide-react";
 import { AddEventDialog } from "./AddEventDialog";
 import type { EventType } from "@satyrsmc/shared/types/event";
+import { formatDateOnly } from "@/lib/date-utils";
 
 interface EventsPanelProps {
   type?: EventType;
@@ -75,7 +76,7 @@ export function EventsPanel({ type }: EventsPanelProps) {
                         <span className="text-border">•</span>
                         <span className="flex items-center gap-1">
                           <Calendar className="size-3.5" />
-                          {e.event_date}
+                          {formatDateOnly(e.event_date!)}
                         </span>
                       </>
                     )}

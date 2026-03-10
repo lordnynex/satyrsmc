@@ -14,18 +14,18 @@ export class MeetingActionItem {
   @Column({ name: "assignee_member_id", type: "text", nullable: true })
   assigneeMemberId!: string | null;
 
-  @Column({ name: "due_date", type: "text", nullable: true })
-  dueDate!: string | null;
+  @Column({ name: "due_date", type: "timestamptz", nullable: true })
+  dueDate!: Date | null;
 
   @Column({ type: "text", default: "open" })
   status!: "open" | "completed";
 
-  @Column({ name: "completed_at", type: "text", nullable: true })
-  completedAt!: string | null;
+  @Column({ name: "completed_at", type: "timestamptz", nullable: true })
+  completedAt!: Date | null;
 
   @Column({ name: "order_index", type: "integer", default: 0 })
   orderIndex!: number;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 }

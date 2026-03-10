@@ -12,12 +12,12 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 
 **API (`@satyrsmc/api`)**
 - Bun.serve() + tRPC 11 server on port 3000
-- TypeORM entities (~50) with SQLite via sql.js (`data/badger.db`)
+- TypeORM entities (~50) with Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
 - 20+ TypeORM migrations
 - Services for all domains (contacts, members, events, budgets, meetings, committees, mailing, QR codes, documents, website CMS)
 - Website tRPC router: `getEventsFeed`, `getMembersFeed`, `getBlogPublished`, `getBlogBySlug`, `getPages`, `getPageBySlug`, `getMenus`, `getSettings`, `submitContact`, `submitContactMember`
 - Admin tRPC routers (15+): full CRUD for all domains
-- Photo/asset serving via sharp (BLOBs in SQLite)
+- Photo/asset serving via sharp (BYTEA in Postgres)
 
 **Admin App (`@satyrsmc/app-admin`)**
 - Full club management SPA: members, contacts, events, meetings, budgets, committees, mailing lists, QR codes, documents, incidents
@@ -44,7 +44,6 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 ### What's NOT Built
 
 - Authentication (no JWT, no login, no user/registration entities)
-- Neon Postgres (database is SQLite only)
 - Member-authenticated routes in app-admin (roster, profile editing, meeting minutes)
 - Public pages consuming tRPC (all static)
 - Contact page with form/reCAPTCHA
@@ -80,61 +79,42 @@ app-admin (members.satyrsmc.org, to be renamed):
 - **Why members live in app-admin**: Members are the most frequently accessed section for logged-in users. Placing the members area at the root of `members.satyrsmc.org` gives it a clean URL and keeps all authenticated concerns in a single app, separate from the public marketing site.
 - **Shared auth**: Same JWT cookies work across both apps — the API validates the same tokens regardless of which frontend made the request.
 
-### Dual Database (Transition Period)
+### Database
 
 ```
 API Server
-  ├── SQLite DataSource (sqljs)     — existing admin data (contacts, events, budgets, etc.)
-  │   └── data/badger.db
-  └── Postgres DataSource (Neon)    — new data (users, registrations, auth tokens)
-      └── DATABASE_URL
+  └── Postgres DataSource (TypeORM + pg)
+      └── DATABASE_URL (Neon serverless in production)
 ```
 
-- **SQLite stays intact** — all existing entities, migrations, and data remain untouched
-- **Postgres is added alongside** for new features (auth, members, etc.)
-- Services know which DataSource to use
-- tRPC context provides access to both
-- **Eventually** (separate future effort): migrate SQLite admin data into Postgres and retire the dual-DB setup
-- **ORM migration**: Once all data is on Postgres and SQLite is retired, evaluate switching from TypeORM to Prisma for database-first workflow (introspect → generate typed client + Zod schemas). Not a priority until the dual-DB period ends.
+- **Single Postgres database** — all entities, migrations, and data live in one Postgres DataSource
+- Connection configured via `DATABASE_URL` environment variable
+- Photos stored as BYTEA in Postgres, served via sharp for resizing
+- Production: Neon serverless Postgres; Tests: PGlite embedded Postgres; Local dev: docker-compose.yml with Postgres 17
+- **ORM migration**: Evaluate switching from TypeORM to Prisma for database-first workflow (introspect → generate typed client + Zod schemas) as a future consideration.
 
 ### Database Philosophy
 
-TypeORM entity-first is the current approach (decorators define schema, hand-written SQL migrations). The long-term preference is **database-first** (SQL migrations → introspect → auto-generate types/Zod schemas), which Prisma handles well. For now, TypeORM stays to avoid churn during the dual-DB transition.
+TypeORM entity-first is the current approach (decorators define schema, hand-written SQL migrations). The long-term preference is **database-first** (SQL migrations → introspect → auto-generate types/Zod schemas), which Prisma handles well. TypeORM remains the current ORM.
 
-**Testing approach**: Backend tests should use in-memory databases (pglite for Postgres, sql.js for SQLite) to unit-test SQL operations and migrations directly, without Docker or end-to-end tests. Trade-off: limited to data types both engines support (e.g., no PostGIS extensions).
+**Testing approach**: Backend tests use PGlite (embedded Postgres) to unit-test SQL operations and migrations directly, without Docker or end-to-end tests.
 
 ---
 
 ## Feature Phases
 
-### Phase 1: Add Neon Postgres
+### Phase 1: Postgres Migration (COMPLETE)
 
-**Goal:** Stand up Postgres alongside SQLite so new features have a proper relational database.
+**Goal:** Migrate from SQLite to Postgres as the single database.
 
-**Database Setup:**
-- Add `postgresDataSource.ts` alongside existing `dataSource.ts`
-- TypeORM DataSource config: `type: "postgres"`, Neon connection string via `DATABASE_URL`
-- New entities for Postgres go in a separate directory or are tagged to the Postgres DataSource
-- Migrations for Postgres are separate from SQLite migrations
-
-**Neon Configuration:**
-- Production: `main` branch
-- Staging: `staging` branch (for PR previews)
-- Environment variables: `DATABASE_URL`, `DATABASE_URL_STAGING`
-
-**Local Development:**
-- Docker Compose for local Postgres (runs parallel to the SQLite file)
-- Same `bun run dev` workflow — API initializes both DataSources on startup
-
-**tRPC Context Update:**
-```typescript
-// context.ts — provides both data sources
-{
-  sqliteApi: createApi(sqliteDb, sqliteDs),   // existing admin services
-  api: createApi(postgresDb, postgresDs),      // new services (auth, members, etc.)
-  session: null,                                // populated by auth middleware later
-}
-```
+**What was done:**
+- Replaced SQLite (sql.js / `data/badger.db`) with Postgres via TypeORM + pg
+- Single `dataSource.ts` with `type: "postgres"`, connection via `DATABASE_URL`
+- All entities and migrations consolidated into one Postgres DataSource
+- Neon serverless Postgres for production
+- PGlite for integration tests
+- docker-compose.yml with Postgres 17 for local development
+- Photos stored as BYTEA in Postgres
 
 ---
 
@@ -142,7 +122,7 @@ TypeORM entity-first is the current approach (decorators define schema, hand-wri
 
 **Goal:** JWT-based auth with registration flow, shared across both frontend apps.
 
-**Database (Postgres):**
+**Database:**
 - `users` table: id, contactId FK, username, passwordHash, userType (enum), userStatus (enum), lastLogin, failedLoginAttempts, lockedUntil, resetTokenHash, resetTokenExpiresAt, passwordChangedAt, iceName, icePhone, adminNote
 - `registrations` table: id, email, firstName, lastName, tokenHash, expiresAt
 - Enums: `user_type` (user/admin/webmaster), `user_status` (active/locked/rejected/suspended/inactive/deactivated)
@@ -353,7 +333,7 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 
 **Test Layers:**
 1. **Unit tests**: Mock services, test router logic and auth middleware
-2. **Integration tests**: Real Postgres database (local Docker or in-memory via `@electric-sql/pglite`) for service-level testing
+2. **Integration tests**: PGlite embedded Postgres for service-level testing
 3. **Component tests**: React Testing Library for key UI components
 
 **Test Data:**
@@ -388,8 +368,8 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 When implementing any feature phase, ensure:
 
 - [ ] Shared types defined in `@satyrsmc/shared/types/` FIRST
-- [ ] TypeORM entity + migration created (in the correct DataSource — SQLite or Postgres)
-- [ ] Entity and migration registered in the appropriate `dataSource.ts`
+- [ ] TypeORM entity + migration created
+- [ ] Entity and migration registered in `dataSource.ts`
 - [ ] Service created with explicit shared type return annotations
 - [ ] tRPC router with Zod input schemas, delegating to service
 - [ ] Frontend consuming via `trpc.*` hooks (types flow automatically)

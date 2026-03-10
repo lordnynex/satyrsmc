@@ -47,7 +47,7 @@ export function memberRowToApi(m: Record<string, unknown>): {
   photo_thumbnail_url: string | null;
 } {
   const id = m.id as string;
-  const hasPhoto = m.photo != null || (m.has_photo as number) === 1;
+  const hasPhoto = m.photo != null || m.has_photo === true;
   return {
     id,
     name: m.name as string,

@@ -17,8 +17,8 @@ export class MailingBatch {
   @Column({ name: "created_by", type: "text", nullable: true })
   createdBy!: string | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
   @Column({ name: "recipient_count", type: "integer", default: 0 })
   recipientCount!: number;

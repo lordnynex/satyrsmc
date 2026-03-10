@@ -22,12 +22,12 @@ export class QrCode {
   @Column({ type: "text", nullable: true })
   config!: string | null;
 
-  @Column({ name: "image_data", type: "blob", nullable: true })
+  @Column({ name: "image_data", type: "bytea", nullable: true })
   imageData!: Buffer | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
-  @Column({ name: "updated_at", type: "text", nullable: true })
-  updatedAt!: string | null;
+  @Column({ name: "updated_at", type: "timestamptz", nullable: true })
+  updatedAt!: Date | null;
 }

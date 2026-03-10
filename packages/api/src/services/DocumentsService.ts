@@ -1,6 +1,7 @@
 import type { DataSource } from "typeorm";
 import { Document, DocumentVersion } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 import { tiptapJsonToPdf } from "../lib/tiptapToPdf";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
@@ -14,8 +15,8 @@ export class DocumentsService {
     return {
       id: doc.id,
       content: doc.content,
-      created_at: doc.createdAt ?? undefined,
-      updated_at: doc.updatedAt ?? undefined,
+      created_at: toISOString(doc.createdAt),
+      updated_at: toISOString(doc.updatedAt),
     };
   }
 
@@ -64,8 +65,8 @@ export class DocumentsService {
       ? {
           id: updated.id,
           content: updated.content,
-          created_at: updated.createdAt ?? undefined,
-          updated_at: updated.updatedAt ?? undefined,
+          created_at: toISOString(updated.createdAt),
+          updated_at: toISOString(updated.updatedAt),
         }
       : null;
   }
@@ -80,7 +81,7 @@ export class DocumentsService {
       document_id: v.documentId,
       content: v.content,
       version_number: v.versionNumber,
-      created_at: v.createdAt ?? undefined,
+      created_at: toISOString(v.createdAt),
     }));
   }
 
@@ -101,7 +102,7 @@ export class DocumentsService {
       document_id: version.documentId,
       content: version.content,
       version_number: version.versionNumber,
-      created_at: version.createdAt ?? undefined,
+      created_at: toISOString(version.createdAt),
     };
   }
 

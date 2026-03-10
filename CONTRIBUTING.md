@@ -14,7 +14,7 @@ graph TB
     end
 
     subgraph "Data"
-        DB[(SQLite<br/>TypeORM + sql.js)]
+        DB[(Postgres<br/>TypeORM + pg)]
     end
 
     subgraph "Shared"
@@ -33,7 +33,7 @@ graph TB
 
 | Package | Purpose |
 |---|---|
-| `@satyrsmc/api` | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, SQLite database |
+| `@satyrsmc/api` | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database |
 | `@satyrsmc/app-admin` | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
 | `@satyrsmc/app-public` | React 19 public website (home, about, events, gallery, members) |
 | `@satyrsmc/shared` | Hand-written TypeScript interfaces shared across all packages |
@@ -41,6 +41,7 @@ graph TB
 ## Prerequisites
 
 - [Bun](https://bun.sh) v1.x
+- [PostgreSQL](https://www.postgresql.org/) (or use docker-compose for local dev)
 - [Docker](https://docker.com) (optional — for running the API as a container)
 
 ## Local Development
@@ -57,11 +58,11 @@ bun run dev
 bun run start:api-only
 ```
 
-**Docker** (API container with data volume):
+**Docker** (API container with DATABASE_URL):
 
 ```bash
 make docker-api       # Build image
-make docker-api-run   # Run on :3000 with ./data volume
+make docker-api-run   # Run on :3000 with DATABASE_URL
 ```
 
 **Storybook** (component development):
@@ -106,7 +107,7 @@ satyrsmc/
         api-only.ts         # API-only entry (no static serving)
         server.ts           # Route handler (tRPC, health, photos, SPA fallback)
         db/
-          dataSource.ts     # TypeORM DataSource config (sqljs driver)
+          dataSource.ts     # TypeORM DataSource config (postgres driver)
           dbAdapter.ts      # DbLike interface for raw SQL
           migrations/       # TypeORM MigrationInterface classes
         entities/           # TypeORM @Entity classes (~50 entities)
@@ -137,19 +138,15 @@ satyrsmc/
     shared/                 # Shared TypeScript interfaces
       types/                # Per-domain type definitions
       lib/                  # Constants and utilities
-  data/                     # Runtime data directory
-    badger.db               # SQLite database file
   .storybook/               # Storybook config
   Makefile                  # Build and deploy targets
 ```
 
 ## Database
 
-### Current: SQLite via sql.js
+### Current: Postgres via TypeORM
 
-The database is a SQLite file at `data/badger.db`, accessed via TypeORM's `sqljs` driver. This keeps the application fully self-contained with no external database server.
-
-> **Planned:** Migration to Neon Postgres is planned for future scalability. The TypeORM entity layer should make this transition straightforward — change the driver config, adjust column types where needed.
+The database is Postgres, accessed via TypeORM's `postgres` driver. In production, the project uses [Neon](https://neon.tech) serverless Postgres. For tests, PGlite provides an embedded Postgres instance. Connection is configured via the `DATABASE_URL` environment variable.
 
 ### TypeORM Migration Workflow
 
@@ -173,7 +170,8 @@ export class AddNewFeature1740000021000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS new_table (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now'))
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMPTZ DEFAULT now()
       )
     `);
   }
@@ -211,7 +209,7 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 | Variable | Description |
 |---|---|
-| `DATA_DIR` | Override data directory path (default: repo root) |
+| `DATABASE_URL` | Postgres connection string (required) |
 | `PORT` | API server port (default: 3000) |
 | `NODE_ENV` | `production` for production mode |
 
@@ -229,7 +227,7 @@ This project uses Bun exclusively. Do not introduce Node.js, npm, Vite, or other
 - `bun test` — not jest or vitest
 - `Bun.build()` — not webpack, esbuild, or Vite
 - `Bun.serve()` — not Express
-- `bun:sqlite` — not better-sqlite3 (for any new SQLite needs)
+- `pg` via TypeORM — not raw `pg` or `postgres.js` directly in application code
 - Bun auto-loads `.env` — do not use dotenv
 
 ## TypeScript Configuration
@@ -410,7 +408,7 @@ Target **90% coverage thresholds** for statements, branches, functions, and line
 
 ### Two-Layer Strategy
 1. **Unit tests**: Mock services, test business logic
-2. **Integration tests**: Use real SQLite database for data operations
+2. **Integration tests**: Use PGlite embedded Postgres for data operations
 
 ### Test Data
 Use typed interfaces for fixture data. Import shared types to ensure test data matches the contract.

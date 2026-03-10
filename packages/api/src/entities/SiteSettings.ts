@@ -20,6 +20,6 @@ export class SiteSettings {
   @Column({ name: "contact_email", type: "text", nullable: true })
   contactEmail!: string | null;
 
-  @Column({ name: "updated_at", type: "text", nullable: true })
-  updatedAt!: string | null;
+  @Column({ name: "updated_at", type: "timestamptz", nullable: true })
+  updatedAt!: Date | null;
 }

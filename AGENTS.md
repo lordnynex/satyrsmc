@@ -13,7 +13,7 @@ Satyrs Motorcycle Club management system and public website — a Bun monorepo w
 - **App-Admin**: React 19 + TanStack Query + tRPC — admin panel for club management and website CMS (served at `/admin`)
 - **App-Public**: React 19 + tRPC — public website (served at `/`)
 - **Shared**: Hand-written TypeScript interfaces shared across all packages
-- **Database**: SQLite via TypeORM + sql.js (file: `data/badger.db`). Postgres migration planned.
+- **Database**: Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
 - **Build**: `Bun.build()` for both SPAs (no Vite, no webpack)
 
 ## Key Commands
@@ -122,14 +122,12 @@ satyrsmc/
     shared/                 # TypeScript interfaces
       types/                # Per-domain type files
       lib/                  # Constants + utilities
-  data/
-    badger.db               # SQLite database
   Makefile                  # Build + deploy targets
 ```
 
 ## Database
 
-**Current:** SQLite file (`data/badger.db`) via TypeORM's `sqljs` driver. Migrations auto-run on startup.
+**Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var. Migrations auto-run on startup.
 
 **Adding a schema change:**
 1. Create a `MigrationInterface` class in `packages/api/src/db/migrations/`
@@ -144,8 +142,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 
 | Content | Source | Notes |
 |---|---|---|
-| Members, contacts, events, budgets, meetings | SQLite via TypeORM | Full CRUD in app-admin |
-| Website pages, blog posts, menus, settings | SQLite via TypeORM | CMS in app-admin, served to app-public via `website` tRPC router |
+| Members, contacts, events, budgets, meetings | Postgres via TypeORM | Full CRUD in app-admin |
+| Website pages, blog posts, menus, settings | Postgres via TypeORM | CMS in app-admin, served to app-public via `website` tRPC router |
 | Static events, gallery | Files in app-public `src/content/` | Some content not yet migrated to database |
 
 ## Local Development
@@ -154,4 +152,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 bun run dev    # Primary — builds frontends + starts API with HMR
 ```
 
-The API serves app-public at `/` and app-admin at `/admin`. Images are stored as BLOBs in SQLite and served via `sharp` for resizing.
+The API serves app-public at `/` and app-admin at `/admin`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.

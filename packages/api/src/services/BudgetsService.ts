@@ -2,6 +2,7 @@ import type { DataSource } from "typeorm";
 import type { DbLike } from "../db/dbAdapter";
 import { Budget, LineItem } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 export class BudgetsService {
   constructor(
@@ -19,7 +20,7 @@ export class BudgetsService {
       name: e.name,
       year: e.year,
       description: e.description,
-      created_at: e.createdAt ?? "",
+      created_at: toISOString(e.createdAt) ?? "",
     }));
   }
 
@@ -37,7 +38,7 @@ export class BudgetsService {
       name: budget.name,
       year: budget.year,
       description: budget.description,
-      created_at: budget.createdAt ?? "",
+      created_at: toISOString(budget.createdAt) ?? "",
       lineItems: items.map((i) => ({
         id: i.id,
         name: i.name,

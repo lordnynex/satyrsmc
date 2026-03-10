@@ -1,6 +1,7 @@
 import type { DataSource } from "typeorm";
 import { SitePage } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -89,8 +90,8 @@ export class SitePagesService {
       body: p.body,
       meta_title: p.metaTitle ?? null,
       meta_description: p.metaDescription ?? null,
-      created_at: p.createdAt ?? undefined,
-      updated_at: p.updatedAt ?? undefined,
+      created_at: toISOString(p.createdAt),
+      updated_at: toISOString(p.updatedAt),
     };
   }
 }

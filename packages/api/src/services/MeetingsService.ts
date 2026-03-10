@@ -10,6 +10,7 @@ import {
   Member,
 } from "../entities";
 import { uuid } from "./utils";
+import { toISOString, toISOStringOrNull } from "../lib/date";
 import type { MeetingDetail } from "@satyrsmc/shared/types/meeting";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
@@ -149,7 +150,7 @@ export class MeetingsService {
         seconder_member_id: m.seconderMemberId ?? null,
         mover_name: m.moverMemberId ? membersMap.get(m.moverMemberId)?.name ?? null : null,
         seconder_name: m.seconderMemberId ? membersMap.get(m.seconderMemberId)?.name ?? null : null,
-        created_at: m.createdAt ?? undefined,
+        created_at: toISOString(m.createdAt),
       })),
       action_items: actionItems.map((a) => ({
         id: a.id,
@@ -159,9 +160,9 @@ export class MeetingsService {
         assignee_name: a.assigneeMemberId ? membersMap.get(a.assigneeMemberId)?.name ?? null : null,
         due_date: a.dueDate ?? null,
         status: a.status,
-        completed_at: a.completedAt ?? null,
+        completed_at: toISOStringOrNull(a.completedAt),
         order_index: a.orderIndex,
-        created_at: a.createdAt ?? undefined,
+        created_at: toISOString(a.createdAt),
       })),
       old_business: [
         ...oldBusinessForMeeting.map((ob) => ({
@@ -169,10 +170,10 @@ export class MeetingsService {
           meeting_id: ob.meetingId,
           description: ob.description,
           status: ob.status,
-          closed_at: ob.closedAt ?? null,
+          closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
-          created_at: ob.createdAt ?? undefined,
+          created_at: toISOString(ob.createdAt),
           is_carried: true,
         })),
         ...newOldBusiness.map((ob) => ({
@@ -180,10 +181,10 @@ export class MeetingsService {
           meeting_id: ob.meetingId,
           description: ob.description,
           status: ob.status,
-          closed_at: ob.closedAt ?? null,
+          closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
-          created_at: ob.createdAt ?? undefined,
+          created_at: toISOString(ob.createdAt),
           is_carried: false,
         })),
       ].sort((a, b) => a.order_index - b.order_index),
@@ -260,7 +261,7 @@ export class MeetingsService {
       order_index: motion.orderIndex,
       mover_member_id: motion.moverMemberId ?? null,
       seconder_member_id: motion.seconderMemberId ?? null,
-      created_at: motion.createdAt ?? undefined,
+      created_at: toISOString(motion.createdAt),
     };
   }
 
@@ -284,7 +285,7 @@ export class MeetingsService {
       order_index: updated.orderIndex,
       mover_member_id: updated.moverMemberId ?? null,
       seconder_member_id: updated.seconderMemberId ?? null,
-      created_at: updated.createdAt ?? undefined,
+      created_at: toISOString(updated.createdAt),
     };
   }
 
@@ -311,7 +312,7 @@ export class MeetingsService {
       createdAt: new Date().toISOString(),
     });
     await this.ds.getRepository(MeetingActionItem).save(item);
-    return { id: item.id, meeting_id: item.meetingId, description: item.description, assignee_member_id: item.assigneeMemberId ?? null, due_date: item.dueDate ?? null, status: item.status, order_index: item.orderIndex, created_at: item.createdAt ?? undefined };
+    return { id: item.id, meeting_id: item.meetingId, description: item.description, assignee_member_id: item.assigneeMemberId ?? null, due_date: item.dueDate ?? null, status: item.status, order_index: item.orderIndex, created_at: toISOString(item.createdAt) };
   }
 
   async updateActionItem(meetingId: string, aid: string, body: Record<string, unknown>) {
@@ -328,7 +329,7 @@ export class MeetingsService {
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(MeetingActionItem).update(aid, updates);
     const updated = await this.ds.getRepository(MeetingActionItem).findOne({ where: { id: aid } });
-    return updated ? { id: updated.id, meeting_id: updated.meetingId, description: updated.description, assignee_member_id: updated.assigneeMemberId ?? null, due_date: updated.dueDate ?? null, status: updated.status, completed_at: updated.completedAt ?? null, order_index: updated.orderIndex, created_at: updated.createdAt ?? undefined } : null;
+    return updated ? { id: updated.id, meeting_id: updated.meetingId, description: updated.description, assignee_member_id: updated.assigneeMemberId ?? null, due_date: updated.dueDate ?? null, status: updated.status, completed_at: toISOStringOrNull(updated.completedAt), order_index: updated.orderIndex, created_at: toISOString(updated.createdAt) } : null;
   }
 
   async deleteActionItem(meetingId: string, aid: string) {
@@ -352,7 +353,7 @@ export class MeetingsService {
       createdAt: new Date().toISOString(),
     });
     await this.ds.getRepository(OldBusinessItem).save(item);
-    return { id: item.id, meeting_id: item.meetingId, description: item.description, status: item.status, order_index: item.orderIndex, created_at: item.createdAt ?? undefined };
+    return { id: item.id, meeting_id: item.meetingId, description: item.description, status: item.status, order_index: item.orderIndex, created_at: toISOString(item.createdAt) };
   }
 
   async updateOldBusiness(meetingId: string, oid: string, body: Record<string, unknown>) {
@@ -371,7 +372,7 @@ export class MeetingsService {
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(OldBusinessItem).update(oid, updates);
     const updated = await this.ds.getRepository(OldBusinessItem).findOne({ where: { id: oid } });
-    return updated ? { id: updated.id, meeting_id: updated.meetingId, description: updated.description, status: updated.status, closed_at: updated.closedAt ?? null, closed_in_meeting_id: updated.closedInMeetingId ?? null, order_index: updated.orderIndex, created_at: updated.createdAt ?? undefined } : null;
+    return updated ? { id: updated.id, meeting_id: updated.meetingId, description: updated.description, status: updated.status, closed_at: toISOStringOrNull(updated.closedAt), closed_in_meeting_id: updated.closedInMeetingId ?? null, order_index: updated.orderIndex, created_at: toISOString(updated.createdAt) } : null;
   }
 
   async deleteOldBusiness(meetingId: string, oid: string) {
@@ -398,7 +399,7 @@ export class MeetingsService {
         qb.leftJoin(Member, "mover", "mover.id = m.mover_member_id")
           .leftJoin(Member, "seconder", "seconder.id = m.seconder_member_id")
           .andWhere(
-            "(m.description LIKE :searchPattern OR mover.name LIKE :searchPattern OR seconder.name LIKE :searchPattern OR CAST(mt.meeting_number AS TEXT) LIKE :searchPattern)",
+            "(m.description ILIKE :searchPattern OR mover.name ILIKE :searchPattern OR seconder.name ILIKE :searchPattern OR CAST(mt.meeting_number AS TEXT) ILIKE :searchPattern)",
             { searchPattern }
           );
       }
@@ -428,7 +429,7 @@ export class MeetingsService {
         m_order_index: number;
         m_mover_member_id: string | null;
         m_seconder_member_id: string | null;
-        m_created_at: string | null;
+        m_created_at: Date | string | null;
         meeting_date: string;
         meeting_number: number;
       }>();
@@ -456,7 +457,7 @@ export class MeetingsService {
       seconder_member_id: r.m_seconder_member_id ?? null,
       mover_name: r.m_mover_member_id ? membersMap.get(r.m_mover_member_id) ?? null : null,
       seconder_name: r.m_seconder_member_id ? membersMap.get(r.m_seconder_member_id) ?? null : null,
-      created_at: r.m_created_at ?? undefined,
+      created_at: toISOString(r.m_created_at),
       meeting_date: r.meeting_date,
       meeting_number: r.meeting_number,
     }));
@@ -482,10 +483,10 @@ export class MeetingsService {
         meeting_id: ob.meetingId,
         description: ob.description,
         status: ob.status as "open" | "closed",
-        closed_at: ob.closedAt ?? null,
+        closed_at: toISOStringOrNull(ob.closedAt),
         closed_in_meeting_id: ob.closedInMeetingId ?? null,
         order_index: ob.orderIndex,
-        created_at: ob.createdAt ?? undefined,
+        created_at: toISOString(ob.createdAt),
         meeting_number: meeting?.meetingNumber,
         meeting_date: meeting?.date,
       };
@@ -530,8 +531,8 @@ export class MeetingsService {
       minutes_document_id: m.minutesDocumentId ?? null,
       agenda_content: agendaDoc?.content ?? EMPTY_DOC,
       minutes_content: minutesDoc?.content ?? null,
-      created_at: m.createdAt ?? undefined,
-      updated_at: m.updatedAt ?? undefined,
+      created_at: toISOString(m.createdAt),
+      updated_at: toISOString(m.updatedAt),
     };
   }
 }

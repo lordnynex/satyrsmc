@@ -12,6 +12,7 @@ import type { ContactsService } from "./ContactsService";
 import { IsNull } from "typeorm";
 import { Contact as ContactEntity, MailingList as MailingListEntity, MailingListMember as MailingListMemberEntity, ContactAddress as ContactAddressEntity } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 export class MailingListsService {
   constructor(
@@ -32,10 +33,10 @@ export class MailingListsService {
       .andWhere("c.status = :status", { status: criteria.active === false ? "inactive" : "active" });
 
     if (criteria.okToMail === true) {
-      qb.andWhere("(c.okToMail = 'yes' OR c.okToMail = 'unknown') AND c.doNotContact = 0");
+      qb.andWhere("(c.okToMail = 'yes' OR c.okToMail = 'unknown') AND c.doNotContact = false");
     }
     if (criteria.okToEmail === true) {
-      qb.andWhere("(c.okToEmail = 'yes' OR c.okToEmail = 'unknown') AND c.doNotContact = 0");
+      qb.andWhere("(c.okToEmail = 'yes' OR c.okToEmail = 'unknown') AND c.doNotContact = false");
     }
     if (criteria.hasPostalAddress === true) {
       qb.andWhere("EXISTS (SELECT 1 FROM contact_addresses ca WHERE ca.contact_id = c.id AND ca.address_line1 IS NOT NULL AND ca.address_line1 != '')");
@@ -44,10 +45,10 @@ export class MailingListsService {
       qb.andWhere("EXISTS (SELECT 1 FROM contact_emails ce WHERE ce.contact_id = c.id)");
     }
     if (criteria.organization) {
-      qb.andWhere("c.organizationName LIKE :org", { org: `%${criteria.organization}%` });
+      qb.andWhere("c.organizationName ILIKE :org", { org: `%${criteria.organization}%` });
     }
     if (criteria.clubName) {
-      qb.andWhere("c.clubName LIKE :club", { club: `%${criteria.clubName}%` });
+      qb.andWhere("c.clubName ILIKE :club", { club: `%${criteria.clubName}%` });
     }
     if (criteria.tagIn && criteria.tagIn.length > 0) {
       qb.andWhere("c.id IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagIn)))", { tagIn: criteria.tagIn });
@@ -56,9 +57,9 @@ export class MailingListsService {
       qb.andWhere("c.id NOT IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagNotIn)))", { tagNotIn: criteria.tagNotIn });
     }
     if (criteria.hellenic === true) {
-      qb.andWhere("c.hellenic = 1");
+      qb.andWhere("c.hellenic = true");
     }
-    qb.andWhere("(c.deceased IS NULL OR c.deceased = 0)");
+    qb.andWhere("(c.deceased IS NULL OR c.deceased = false)");
 
     const rows = await qb.getMany();
     return rows.map((r) => r.id);
@@ -72,7 +73,7 @@ export class MailingListsService {
       .leftJoin("events", "e", "e.id = ml.event_id")
       .addSelect("e.name", "event_name")
       .addSelect(
-        "(SELECT COUNT(*) FROM mailing_list_members mlm WHERE mlm.list_id = ml.id AND mlm.suppressed = 0 AND mlm.unsubscribed = 0)",
+        "(SELECT COUNT(*) FROM mailing_list_members mlm WHERE mlm.list_id = ml.id AND mlm.suppressed = false AND mlm.unsubscribed = false)",
         "manual_count"
       )
       .orderBy("ml.name")
@@ -87,8 +88,8 @@ export class MailingListsService {
       event_id: r.ml_event_id ?? null,
       template: r.ml_template ?? null,
       criteria: r.ml_criteria ? (JSON.parse(r.ml_criteria) as MailingListCriteria) : null,
-      created_at: r.ml_created_at ?? undefined,
-      updated_at: r.ml_updated_at ?? undefined,
+      created_at: toISOString(r.ml_created_at),
+      updated_at: toISOString(r.ml_updated_at),
       event: r.ml_event_id ? { id: r.ml_event_id, name: r.event_name } : undefined,
       member_count: Number(r.manual_count ?? 0),
     }));
@@ -108,7 +109,7 @@ export class MailingListsService {
 
     /* Original: SELECT COUNT(*) as c FROM mailing_list_members WHERE list_id = ? AND suppressed = 0 AND unsubscribed = 0 */
     const memberCount = await this.ds.getRepository(MailingListMemberEntity).count({
-      where: { listId: id, suppressed: 0, unsubscribed: 0 },
+      where: { listId: id, suppressed: false, unsubscribed: false },
     });
     return {
       id: row.ml_id,
@@ -119,8 +120,8 @@ export class MailingListsService {
       event_id: row.ml_event_id ?? null,
       template: row.ml_template ?? null,
       criteria: row.ml_criteria ? (JSON.parse(row.ml_criteria) as MailingListCriteria) : null,
-      created_at: row.ml_created_at ?? undefined,
-      updated_at: row.ml_updated_at ?? undefined,
+      created_at: toISOString(row.ml_created_at),
+      updated_at: toISOString(row.ml_updated_at),
       event: row.ml_event_id ? { id: row.ml_event_id, name: row.event_name } : undefined,
       member_count: memberCount,
     };
@@ -177,8 +178,8 @@ export class MailingListsService {
     const criteria = body.criteria !== undefined ? body.criteria : (existing.criteria ? JSON.parse(existing.criteria) : null);
 
     await this.db.run(
-      "UPDATE mailing_lists SET name = ?, description = ?, list_type = ?, delivery_type = ?, event_id = ?, template = ?, criteria = ?, updated_at = datetime('now') WHERE id = ?",
-      [name, description, list_type, delivery_type, event_id, template, criteria ? JSON.stringify(criteria) : null, id]
+      "UPDATE mailing_lists SET name = ?, description = ?, list_type = ?, delivery_type = ?, event_id = ?, template = ?, criteria = ?, updated_at = ? WHERE id = ?",
+      [name, description, list_type, delivery_type, event_id, template, criteria ? JSON.stringify(criteria) : null, new Date().toISOString(), id]
     );
     return this.get(id)!;
   }
@@ -210,7 +211,7 @@ export class MailingListsService {
   async removeExclusion(listId: string, contactId: string) {
     const result = await this.ds.getRepository(MailingListMemberEntity).update(
       { listId, contactId },
-      { suppressed: 0, suppressReason: null, unsubscribed: 0 }
+      { suppressed: false, suppressReason: null, unsubscribed: false }
     );
     if (!result.affected) return null;
     return { ok: true };
@@ -237,7 +238,7 @@ export class MailingListsService {
       .select("c.id")
       .where("c.deletedAt IS NULL")
       .andWhere("c.status = :status", { status: "active" })
-      .andWhere("(c.deceased IS NULL OR c.deceased = 0)");
+      .andWhere("(c.deceased IS NULL OR c.deceased = false)");
     const rows = await qb.getMany();
     const contactIds = rows.map((r) => r.id);
     await this.addMembersBulk(listId, contactIds, source);
@@ -251,8 +252,8 @@ export class MailingListsService {
       .select("c.id")
       .where("c.deletedAt IS NULL")
       .andWhere("c.status = :status", { status: "active" })
-      .andWhere("(c.deceased IS NULL OR c.deceased = 0)")
-      .andWhere("c.hellenic = 1");
+      .andWhere("(c.deceased IS NULL OR c.deceased = false)")
+      .andWhere("c.hellenic = true");
     const rows = await qb.getMany();
     const contactIds = rows.map((r) => r.id);
     await this.addMembersBulk(listId, contactIds, source);
@@ -268,7 +269,7 @@ export class MailingListsService {
     if (list.list_type === "static") {
       /* Original: SELECT contact_id FROM mailing_list_members WHERE list_id = ? AND suppressed = 0 AND unsubscribed = 0 */
       const rows = await this.ds.getRepository(MailingListMemberEntity).find({
-        where: { listId: id, suppressed: 0, unsubscribed: 0 },
+        where: { listId: id, suppressed: false, unsubscribed: false },
         select: ["contactId"],
       });
       contactIds = rows.map((r) => r.contactId);
@@ -277,7 +278,7 @@ export class MailingListsService {
     } else {
       /* Original: SELECT contact_id FROM mailing_list_members WHERE list_id = ? AND suppressed = 0 AND unsubscribed = 0 */
       const manualRows = await this.ds.getRepository(MailingListMemberEntity).find({
-        where: { listId: id, suppressed: 0, unsubscribed: 0 },
+        where: { listId: id, suppressed: false, unsubscribed: false },
         select: ["contactId"],
       });
       const manualIds = new Set(manualRows.map((r) => r.contactId));
@@ -342,7 +343,7 @@ export class MailingListsService {
     /* For static lists, include suppressed/unsubscribed members in excluded (they're not in contactIds) */
     if (list.list_type === "static") {
       const suppressedRows = await this.ds.getRepository(MailingListMemberEntity).find({
-        where: [{ listId: id, suppressed: 1 }, { listId: id, unsubscribed: 1 }],
+        where: [{ listId: id, suppressed: true }, { listId: id, unsubscribed: true }],
         select: ["contactId", "suppressed", "suppressReason", "unsubscribed"],
       });
       const seenExcluded = new Set(excluded.map((e) => e.contact.id));
@@ -383,11 +384,11 @@ export class MailingListsService {
           list_id: r.listId,
           contact_id: r.contactId,
           added_by: r.addedBy ?? null,
-          added_at: r.addedAt ?? "",
+          added_at: toISOString(r.addedAt) ?? "",
           source: (r.source as MailingListMember["source"]) ?? "manual",
-          suppressed: r.suppressed === 1,
+          suppressed: r.suppressed,
           suppress_reason: r.suppressReason ?? null,
-          unsubscribed: r.unsubscribed === 1,
+          unsubscribed: r.unsubscribed,
           contact,
         });
       }
@@ -403,7 +404,7 @@ export class MailingListsService {
     let contactIds: string[] = [];
     if (list.list_type === "static") {
       const rows = await this.ds.getRepository(MailingListMemberEntity).find({
-        where: { listId, suppressed: 0, unsubscribed: 0 },
+        where: { listId, suppressed: false, unsubscribed: false },
         select: ["contactId"],
       });
       contactIds = rows.map((r) => r.contactId);
@@ -411,7 +412,7 @@ export class MailingListsService {
       contactIds = await this.evaluateDynamicCriteria(list.criteria);
     } else {
       const manualRows = await this.ds.getRepository(MailingListMemberEntity).find({
-        where: { listId, suppressed: 0, unsubscribed: 0 },
+        where: { listId, suppressed: false, unsubscribed: false },
         select: ["contactId"],
       });
       const manualIds = new Set(manualRows.map((r) => r.contactId));
@@ -565,7 +566,7 @@ export class MailingListsService {
         .select("c.id")
         .where("c.id IN (:...ids)", { ids: contactIds })
         .andWhere(
-          "(c.displayName LIKE :q OR c.organizationName LIKE :q OR c.firstName LIKE :q OR c.lastName LIKE :q OR EXISTS (SELECT 1 FROM contact_emails ce WHERE ce.contact_id = c.id AND ce.email LIKE :q))",
+          "(c.displayName ILIKE :q OR c.organizationName ILIKE :q OR c.firstName ILIKE :q OR c.lastName ILIKE :q OR EXISTS (SELECT 1 FROM contact_emails ce WHERE ce.contact_id = c.id AND ce.email ILIKE :q))",
           { q },
         );
       const rows = await qb.getMany();

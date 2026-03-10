@@ -4,7 +4,7 @@ Schema changes are managed with TypeORM migrations. Migrations run automatically
 
 ## Adding a new migration
 
-1. Create a new file in this directory named `{timestamp}-Description.ts`, e.g. `1700000001000-AddEventNotesColumn.ts`. Use a timestamp greater than existing migrations so it runs in order.
+1. Create a new file in this directory named `{timestamp}-Description.ts`, e.g. `1800000001000-AddEventNotesColumn.ts`. Use a timestamp greater than existing migrations so it runs in order.
 
 2. Implement `MigrationInterface`:
 
@@ -12,8 +12,8 @@ Schema changes are managed with TypeORM migrations. Migrations run automatically
 import type { MigrationInterface } from "typeorm";
 import type { QueryRunner } from "typeorm";
 
-export class AddEventNotesColumn1700000001000 implements MigrationInterface {
-  name = "AddEventNotesColumn1700000001000";
+export class AddEventNotesColumn1800000001000 implements MigrationInterface {
+  name = "AddEventNotesColumn1800000001000";
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -22,7 +22,9 @@ export class AddEventNotesColumn1700000001000 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    // SQLite does not support DROP COLUMN easily; document manual steps if needed
+    await queryRunner.query(
+      `ALTER TABLE events DROP COLUMN notes`
+    );
   }
 }
 ```
@@ -33,6 +35,7 @@ export class AddEventNotesColumn1700000001000 implements MigrationInterface {
 
 ## Notes
 
-- Use raw SQL in `up()` and `down()`. For SQLite/sql.js, use `queryRunner.query(sql)` or `queryRunner.query(sql, parameters)`.
-- `down()` is used for reverting; SQLite has limited ALTER support, so some migrations may have no-op or manual revert steps.
+- Use raw SQL in `up()` and `down()` with Postgres-native syntax.
+- Use `TIMESTAMPTZ` for all date/time columns, `BOOLEAN` for booleans, `BYTEA` for binary data.
 - TypeORM records applied migrations in a `migrations` table; do not edit or delete that table manually.
+- The `sqlite-archive/` directory contains the original SQLite migrations for historical reference.
