@@ -21,6 +21,7 @@ import {
 } from "../entities";
 import { uuid, memberRowToApi } from "./utils";
 import { ImageService } from "./ImageService";
+import { toISOString, toISOStringOrNull } from "../lib/date";
 
 function memberEntityToApi(m: Member) {
   return memberRowToApi({
@@ -52,7 +53,7 @@ export class EventsService {
       name: e.name,
       description: e.description ?? null,
       year: e.year ?? null,
-      event_date: e.eventDate ?? null,
+      event_date: toISOStringOrNull(e.eventDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
       event_location_embed: e.eventLocationEmbed ?? null,
@@ -64,15 +65,15 @@ export class EventsService {
       scenario_id: e.scenarioId ?? null,
       planning_notes: e.planningNotes ?? null,
       event_type: e.eventType ?? "badger",
-      show_on_website: e.showOnWebsite === 1,
-      created_at: e.createdAt ?? undefined,
+      show_on_website: e.showOnWebsite,
+      created_at: toISOString(e.createdAt),
     }));
   }
 
   async listForWebsite() {
     const repo = this.ds.getRepository(Event);
     const entities = await repo.find({
-      where: { showOnWebsite: 1 },
+      where: { showOnWebsite: true },
       order: { year: "DESC", name: "ASC" },
     });
     return entities.map((e) => ({
@@ -80,11 +81,11 @@ export class EventsService {
       name: e.name,
       description: e.description ?? null,
       year: e.year ?? null,
-      event_date: e.eventDate ?? null,
+      event_date: toISOStringOrNull(e.eventDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
       event_type: e.eventType ?? "badger",
-      created_at: e.createdAt ?? undefined,
+      created_at: toISOString(e.createdAt),
     }));
   }
 
@@ -167,7 +168,7 @@ export class EventsService {
       name: e.name,
       description: e.description ?? null,
       year: e.year ?? null,
-      event_date: e.eventDate ?? null,
+      event_date: toISOStringOrNull(e.eventDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
       event_location_embed: e.eventLocationEmbed ?? null,
@@ -179,8 +180,8 @@ export class EventsService {
       scenario_id: e.scenarioId ?? null,
       planning_notes: e.planningNotes ?? null,
       event_type: (e.eventType ?? "badger") as "badger" | "anniversary" | "pioneer_run" | "rides",
-      show_on_website: e.showOnWebsite === 1,
-      created_at: e.createdAt ?? undefined,
+      show_on_website: e.showOnWebsite,
+      created_at: toISOString(e.createdAt),
       milestones: milestones.map((m) => {
         const month = m.month;
         const year = m.year;
@@ -194,8 +195,8 @@ export class EventsService {
           year,
           description: m.description,
           sort_order: m.sortOrder ?? 0,
-          completed: m.completed === 1,
-          due_date: m.dueDate ?? defaultDueDate,
+          completed: m.completed,
+          due_date: toISOString(m.dueDate) ?? defaultDueDate,
           members: mmList.map((mm) => ({
             id: mm.id,
             milestone_id: mm.milestoneId,
@@ -219,7 +220,7 @@ export class EventsService {
         sort_order: p.sortOrder ?? 0,
         quantity: p.quantity ?? null,
         note: p.note ?? null,
-        loaded: p.loaded === 1,
+        loaded: p.loaded,
       })),
       volunteers: volunteers.map((v) => ({
         id: v.id,
@@ -252,7 +253,7 @@ export class EventsService {
         photo_url: `/api/events/${id}/photos/${p.id}?size=full`,
         photo_thumbnail_url: `/api/events/${id}/photos/${p.id}?size=thumbnail`,
         photo_display_url: `/api/events/${id}/photos/${p.id}?size=display`,
-        created_at: p.createdAt ?? undefined,
+        created_at: toISOString(p.createdAt),
       })),
       start_location: e.startLocation ?? null,
       end_location: e.endLocation ?? null,
@@ -281,7 +282,7 @@ export class EventsService {
           event_id: a.eventId,
           contact_id: a.contactId,
           sort_order: a.sortOrder ?? 0,
-          waiver_signed: a.waiverSigned === 1,
+          waiver_signed: a.waiverSigned,
           contact: c ? { id: c.id, display_name: c.displayName } : undefined,
         };
       })
@@ -303,7 +304,7 @@ export class EventsService {
           event_id: a.eventId,
           member_id: a.memberId,
           sort_order: a.sortOrder ?? 0,
-          waiver_signed: a.waiverSigned === 1,
+          waiver_signed: a.waiverSigned,
           member: memberApi ? { id: memberApi.id, name: memberApi.name, photo_thumbnail_url: memberApi.photo_thumbnail_url } : undefined,
         };
       })
@@ -322,7 +323,7 @@ export class EventsService {
       photo_url: `/api/events/${eventId}/assets/${a.id}?size=full`,
       photo_thumbnail_url: `/api/events/${eventId}/assets/${a.id}?size=thumbnail`,
       photo_display_url: `/api/events/${eventId}/assets/${a.id}?size=display`,
-      created_at: a.createdAt ?? undefined,
+      created_at: toISOString(a.createdAt),
     }));
   }
 
@@ -334,7 +335,7 @@ export class EventsService {
     return items.map((s) => ({
       id: s.id,
       event_id: s.eventId,
-      scheduled_time: s.scheduledTime,
+      scheduled_time: toISOString(s.scheduledTime),
       label: s.label,
       location: s.location ?? null,
       sort_order: s.sortOrder ?? 0,
@@ -408,8 +409,8 @@ export class EventsService {
       severity: i.severity,
       summary: i.summary,
       details: i.details ?? null,
-      occurred_at: i.occurredAt ?? null,
-      created_at: i.createdAt ?? undefined,
+      occurred_at: toISOStringOrNull(i.occurredAt),
+      created_at: toISOString(i.createdAt),
       contact: i.contactId ? contactsMap.get(i.contactId) : undefined,
       member: i.memberId
         ? membersMap.get(i.memberId) && {
@@ -501,8 +502,8 @@ export class EventsService {
         severity: i.severity,
         summary: i.summary,
         details: i.details ?? null,
-        occurred_at: i.occurredAt ?? null,
-        created_at: i.createdAt ?? undefined,
+        occurred_at: toISOStringOrNull(i.occurredAt),
+        created_at: toISOString(i.createdAt),
         event_name: event?.name,
         event_type: (event?.eventType ?? "badger") as "badger" | "anniversary" | "pioneer_run" | "rides",
         contact: i.contactId ? contactsMap.get(i.contactId) : undefined,
@@ -543,7 +544,7 @@ export class EventsService {
   }) {
     const id = uuid();
     const eventType = body.event_type ?? "badger";
-    const showOnWebsite = body.show_on_website === false ? 0 : 1;
+    const showOnWebsite = body.show_on_website !== false;
     await this.db.run(
       `INSERT INTO events (id, name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -620,7 +621,7 @@ export class EventsService {
     const facebook_event_url = body.facebook_event_url !== undefined ? body.facebook_event_url : existing.facebookEventUrl;
     const pre_ride_event_id = body.pre_ride_event_id !== undefined ? body.pre_ride_event_id : existing.preRideEventId;
     const ride_cost = body.ride_cost !== undefined ? body.ride_cost : existing.rideCost;
-    const show_on_website = body.show_on_website !== undefined ? (body.show_on_website ? 1 : 0) : existing.showOnWebsite;
+    const show_on_website = body.show_on_website !== undefined ? body.show_on_website : existing.showOnWebsite;
     await this.db.run(
       `UPDATE events SET name = ?, event_type = ?, description = ?, year = ?, event_date = ?, event_url = ?, event_location = ?, event_location_embed = ?, ga_ticket_cost = ?, day_pass_cost = ?, ga_tickets_sold = ?, day_passes_sold = ?, budget_id = ?, scenario_id = ?, planning_notes = ?, start_location = ?, end_location = ?, facebook_event_url = ?, pre_ride_event_id = ?, ride_cost = ?, show_on_website = ? WHERE id = ?`,
       [name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website, id]
@@ -779,7 +780,7 @@ export class EventsService {
       const id = uuid();
       const maxResult = await this.ds.getRepository(EventAttendee).createQueryBuilder("a").select("COALESCE(MAX(a.sortOrder), 0)", "m").where("a.eventId = :eventId", { eventId }).getRawOne<{ m: number }>();
       const sortOrder = (maxResult?.m ?? 0) + 1;
-      const waiverSigned = body.waiver_signed ? 1 : 0;
+      const waiverSigned = body.waiver_signed ?? false;
       await this.db.run(
         "INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed) VALUES (?, ?, ?, ?, ?)",
         [id, eventId, body.contact_id, sortOrder, waiverSigned]
@@ -789,7 +790,7 @@ export class EventsService {
     update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) => {
       const existing = await this.ds.getRepository(EventAttendee).findOne({ where: { id: attendeeId, eventId } });
       if (!existing) return null;
-      const waiverSigned = body.waiver_signed !== undefined ? (body.waiver_signed ? 1 : 0) : existing.waiverSigned;
+      const waiverSigned = body.waiver_signed !== undefined ? body.waiver_signed : existing.waiverSigned;
       await this.db.run("UPDATE event_attendees SET waiver_signed = ? WHERE id = ? AND event_id = ?", [waiverSigned, attendeeId, eventId]);
       const attendees = await this.getAttendees(eventId);
       return attendees.find((a) => a.id === attendeeId) ?? null;
@@ -934,7 +935,7 @@ export class EventsService {
       const id = uuid();
       const maxResult = await this.ds.getRepository(EventRideMemberAttendee).createQueryBuilder("a").select("COALESCE(MAX(a.sortOrder), 0)", "m").where("a.eventId = :eventId", { eventId }).getRawOne<{ m: number }>();
       const sortOrder = (maxResult?.m ?? 0) + 1;
-      const waiverSigned = body.waiver_signed ? 1 : 0;
+      const waiverSigned = body.waiver_signed ?? false;
       await this.db.run(
         "INSERT INTO event_ride_member_attendees (id, event_id, member_id, sort_order, waiver_signed) VALUES (?, ?, ?, ?, ?)",
         [id, eventId, body.member_id, sortOrder, waiverSigned]
@@ -944,7 +945,7 @@ export class EventsService {
     update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) => {
       const existing = await this.ds.getRepository(EventRideMemberAttendee).findOne({ where: { id: attendeeId, eventId } });
       if (!existing) return null;
-      const waiverSigned = body.waiver_signed !== undefined ? (body.waiver_signed ? 1 : 0) : existing.waiverSigned;
+      const waiverSigned = body.waiver_signed !== undefined ? body.waiver_signed : existing.waiverSigned;
       await this.db.run("UPDATE event_ride_member_attendees SET waiver_signed = ? WHERE id = ? AND event_id = ?", [waiverSigned, attendeeId, eventId]);
       const attendees = await this.getMemberAttendees(eventId);
       return attendees.find((a) => a.id === attendeeId) ?? null;
@@ -1063,7 +1064,7 @@ export class EventsService {
       const dueDate = body.due_date ?? `${body.year}-${String(body.month).padStart(2, "0")}-${String(lastDay.getDate()).padStart(2, "0")}`;
       await this.db.run(
         "INSERT INTO event_planning_milestones (id, event_id, month, year, description, sort_order, completed, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [id, eventId, body.month, body.year, body.description, (maxResult?.m ?? 0) + 1, 0, dueDate]
+        [id, eventId, body.month, body.year, body.description, (maxResult?.m ?? 0) + 1, false, dueDate]
       );
       return { id, event_id: eventId, ...body, sort_order: (maxResult?.m ?? 0) + 1, completed: false, due_date: dueDate };
     },
@@ -1074,10 +1075,10 @@ export class EventsService {
       const month = body.month ?? existing.month;
       const year = body.year ?? existing.year;
       const description = body.description ?? existing.description;
-      const completed = body.completed !== undefined ? (body.completed ? 1 : 0) : existing.completed;
+      const completed = body.completed !== undefined ? body.completed : existing.completed;
       const dueDate = body.due_date ?? existing.dueDate;
       await this.db.run("UPDATE event_planning_milestones SET month = ?, year = ?, description = ?, completed = ?, due_date = ? WHERE id = ? AND event_id = ?", [month, year, description, completed, dueDate, mid, eventId]);
-      return { id: mid, event_id: eventId, month, year, description, sort_order: existing.sortOrder, completed: completed === 1, due_date: dueDate };
+      return { id: mid, event_id: eventId, month, year, description, sort_order: existing.sortOrder, completed, due_date: dueDate };
     },
     delete: async (eventId: string, mid: string) => {
       await this.db.run("DELETE FROM event_planning_milestones WHERE id = ? AND event_id = ?", [mid, eventId]);
@@ -1134,7 +1135,7 @@ export class EventsService {
       const maxResult = await this.ds.getRepository(EventPackingItem).createQueryBuilder("p").select("COALESCE(MAX(p.sortOrder), 0)", "m").where("p.eventId = :eventId", { eventId }).andWhere("p.categoryId = :categoryId", { categoryId: body.category_id }).getRawOne<{ m: number }>();
       await this.db.run(
         "INSERT INTO event_packing_items (id, event_id, category_id, name, sort_order, quantity, note, loaded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [id, eventId, body.category_id, body.name, (maxResult?.m ?? 0) + 1, body.quantity ?? null, body.note ?? null, 0]
+        [id, eventId, body.category_id, body.name, (maxResult?.m ?? 0) + 1, body.quantity ?? null, body.note ?? null, false]
       );
       return { id, event_id: eventId, category_id: body.category_id, name: body.name, sort_order: (maxResult?.m ?? 0) + 1, quantity: body.quantity ?? null, note: body.note ?? null, loaded: false };
     },
@@ -1146,9 +1147,9 @@ export class EventsService {
       const name = body.name ?? existing.name;
       const quantity = body.quantity !== undefined ? body.quantity : existing.quantity;
       const note = body.note !== undefined ? body.note : existing.note;
-      const loaded = body.loaded !== undefined ? (body.loaded ? 1 : 0) : existing.loaded;
+      const loaded = body.loaded !== undefined ? body.loaded : existing.loaded;
       await this.db.run("UPDATE event_packing_items SET category_id = ?, name = ?, quantity = ?, note = ?, loaded = ? WHERE id = ? AND event_id = ?", [category_id, name, quantity, note, loaded, pid, eventId]);
-      return { id: pid, event_id: eventId, category_id, name, sort_order: existing.sortOrder, quantity, note, loaded: loaded === 1 };
+      return { id: pid, event_id: eventId, category_id, name, sort_order: existing.sortOrder, quantity, note, loaded };
     },
     delete: async (eventId: string, pid: string) => {
       await this.db.run("DELETE FROM event_packing_items WHERE id = ? AND event_id = ?", [pid, eventId]);

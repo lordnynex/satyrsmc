@@ -14,6 +14,6 @@ export class Budget {
   @Column({ type: "text", nullable: true })
   description!: string | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 }

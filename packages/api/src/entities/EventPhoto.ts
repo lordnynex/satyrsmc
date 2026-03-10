@@ -11,12 +11,12 @@ export class EventPhoto {
   @Column({ name: "sort_order", type: "integer", default: 0 })
   sortOrder!: number;
 
-  @Column({ type: "blob", nullable: true })
+  @Column({ type: "bytea", nullable: true })
   photo!: Buffer | null;
 
-  @Column({ name: "photo_thumbnail", type: "blob", nullable: true })
+  @Column({ name: "photo_thumbnail", type: "bytea", nullable: true })
   photoThumbnail!: Buffer | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 }

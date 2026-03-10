@@ -14,6 +14,6 @@ export class ContactPhone {
   @Column({ type: "text", default: "other" })
   type!: string;
 
-  @Column({ name: "is_primary", type: "integer", default: 0 })
-  isPrimary!: number;
+  @Column({ name: "is_primary", type: "boolean", default: false })
+  isPrimary!: boolean;
 }

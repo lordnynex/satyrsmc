@@ -2,6 +2,7 @@ import type { DataSource } from "typeorm";
 import type { DbLike } from "../db/dbAdapter";
 import { Scenario } from "../entities";
 import { uuid, DEFAULT_SCENARIO_INPUTS } from "./utils";
+import { toISOString } from "../lib/date";
 
 export class ScenariosService {
   constructor(
@@ -17,7 +18,7 @@ export class ScenariosService {
       name: e.name,
       description: e.description,
       inputs: e.inputs,
-      created_at: e.createdAt ?? "",
+      created_at: toISOString(e.createdAt) ?? "",
     }));
   }
 
@@ -30,7 +31,7 @@ export class ScenariosService {
       name: entity.name,
       description: entity.description,
       inputs: JSON.parse(entity.inputs),
-      created_at: entity.createdAt ?? "",
+      created_at: toISOString(entity.createdAt) ?? "",
     };
   }
 

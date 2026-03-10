@@ -70,9 +70,8 @@ docker-api:
 	@printf '$(GRN)Image built: satyrsmc-api:latest$(RST)\n'
 
 docker-api-run:
-	@mkdir -p data/data
 	@printf '$(CYN)Starting API container at http://localhost:3000$(RST)\n'
-	@docker run -it --rm -p 3000:3000 -v "$(PWD)/data:/data" -e DATA_DIR=/data satyrsmc-api:latest
+	@docker run -it --rm -p 3000:3000 -e DATABASE_URL="$(DATABASE_URL)" satyrsmc-api:latest
 
 dev:
 	@bun run dev

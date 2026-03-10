@@ -4,6 +4,7 @@ import { Member } from "../entities";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
 import { uuid, VALID_POSITIONS, parsePhotoToBlob, memberRowToApi } from "./utils";
 import { ImageService } from "./ImageService";
+import { toISOString } from "../lib/date";
 
 export type PhotoSize = "thumbnail" | "medium" | "full";
 
@@ -17,14 +18,14 @@ function rowToMember(m: Record<string, unknown>) {
     address: m.address ?? null,
     birthday: m.birthday ?? null,
     member_since: m.member_since ?? null,
-    is_baby: (m.is_baby as number) === 1,
+    is_baby: m.is_baby as boolean,
     position: m.position ?? null,
     emergency_contact_name: m.emergency_contact_name ?? null,
     emergency_contact_phone: m.emergency_contact_phone ?? null,
     photo_url,
     photo_thumbnail_url,
-    show_on_website: (m.show_on_website as number) === 1,
-    created_at: m.created_at as string | undefined,
+    show_on_website: m.show_on_website as boolean,
+    created_at: toISOString(m.created_at as Date | string | null | undefined),
   };
 }
 
@@ -69,7 +70,7 @@ export class MembersService {
       .addSelect("m.position", "position")
       .addSelect("(m.photo IS NOT NULL)", "has_photo")
       .where("m.id != :excludeId", { excludeId: ALL_MEMBERS_ID })
-      .andWhere("m.showOnWebsite = :on", { on: 1 })
+      .andWhere("m.showOnWebsite = :on", { on: true })
       .orderBy("m.name")
       .getRawMany()) as Array<Record<string, unknown>>;
     return rows.map((m) => {
@@ -169,7 +170,7 @@ export class MembersService {
         body.address ?? null,
         body.birthday ?? null,
         body.member_since ?? null,
-        body.is_baby ? 1 : 0,
+        body.is_baby ? true : false,
         body.position && VALID_POSITIONS.has(body.position) ? body.position : null,
         body.emergency_contact_name ?? null,
         body.emergency_contact_phone ?? null,
@@ -203,7 +204,7 @@ export class MembersService {
     const address = body.address !== undefined ? body.address : existing.address;
     const birthday = body.birthday !== undefined ? body.birthday : existing.birthday;
     const member_since = body.member_since !== undefined ? body.member_since : existing.memberSince;
-    const is_baby = body.is_baby !== undefined ? (body.is_baby ? 1 : 0) : (existing.isBaby === 1 ? 1 : 0);
+    const is_baby = body.is_baby !== undefined ? body.is_baby : existing.isBaby;
     const positionRaw = body.position !== undefined ? body.position : existing.position;
     const position = positionRaw && VALID_POSITIONS.has(positionRaw) ? positionRaw : null;
     const emergency_contact_name = body.emergency_contact_name !== undefined ? body.emergency_contact_name : existing.emergencyContactName;
@@ -220,7 +221,7 @@ export class MembersService {
       body.photo !== undefined
         ? (photoBlob ? await ImageService.createThumbnail(Buffer.from(photoBlob)) : null)
         : existing.photoThumbnail ?? null;
-    const show_on_website = body.show_on_website !== undefined ? (body.show_on_website ? 1 : 0) : existing.showOnWebsite;
+    const show_on_website = body.show_on_website !== undefined ? body.show_on_website : existing.showOnWebsite;
     await this.db.run(
       `UPDATE members SET name = ?, phone_number = ?, email = ?, address = ?, birthday = ?, member_since = ?, is_baby = ?, position = ?, emergency_contact_name = ?, emergency_contact_phone = ?, photo = ?, photo_thumbnail = ?, show_on_website = ? WHERE id = ?`,
       [name, phone_number, email, address, birthday, member_since, is_baby, position, emergency_contact_name, emergency_contact_phone, photoBlob, photoThumbnailBlob, show_on_website, id]

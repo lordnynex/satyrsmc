@@ -29,6 +29,6 @@ export class ContactAddress {
   @Column({ type: "text", default: "home" })
   type!: string;
 
-  @Column({ name: "is_primary_mailing", type: "integer", default: 0 })
-  isPrimaryMailing!: number;
+  @Column({ name: "is_primary_mailing", type: "boolean", default: false })
+  isPrimaryMailing!: boolean;
 }

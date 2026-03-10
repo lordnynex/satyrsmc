@@ -2,6 +2,7 @@ import type { DataSource } from "typeorm";
 import QRCode from "qrcode";
 import { QrCode as QrCodeEntity, type QrCodeConfig } from "../entities/QrCode";
 import { uuid } from "./utils";
+import { toISOStringOrNull } from "../lib/date";
 
 export interface QrCodeRecord {
   id: string;
@@ -157,8 +158,8 @@ export class QrCodesService {
       name: r.name,
       url: r.url,
       config: r.config ? (JSON.parse(r.config) as QrCodeConfig) : null,
-      created_at: r.createdAt,
-      updated_at: r.updatedAt,
+      created_at: toISOStringOrNull(r.createdAt),
+      updated_at: toISOStringOrNull(r.updatedAt),
     };
   }
 }

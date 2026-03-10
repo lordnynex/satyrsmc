@@ -1,6 +1,7 @@
 import type { DataSource } from "typeorm";
 import { ContactSubmission, ContactMemberSubmission } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 export class ContactSubmissionsService {
   constructor(private ds: DataSource) {}
@@ -53,7 +54,7 @@ export class ContactSubmissionsService {
       subject: r.subject ?? null,
       message: r.message,
       status: r.status,
-      created_at: r.createdAt ?? undefined,
+      created_at: toISOString(r.createdAt),
     }));
   }
 
@@ -68,7 +69,7 @@ export class ContactSubmissionsService {
       sender_email: r.senderEmail,
       message: r.message,
       status: r.status,
-      created_at: r.createdAt ?? undefined,
+      created_at: toISOString(r.createdAt),
     }));
   }
 }

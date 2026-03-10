@@ -1,5 +1,6 @@
 import type { DataSource } from "typeorm";
 import { SiteSettings } from "../entities";
+import { toISOString } from "../lib/date";
 
 const DEFAULT_ID = "default";
 
@@ -79,7 +80,7 @@ export class SiteSettingsService {
       footer_text: s.footerText ?? null,
       default_meta_description: s.defaultMetaDescription ?? null,
       contact_email: s.contactEmail ?? null,
-      updated_at: s.updatedAt ?? undefined,
+      updated_at: toISOString(s.updatedAt),
     };
   }
 }

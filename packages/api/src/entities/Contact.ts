@@ -38,8 +38,8 @@ export class Contact {
   @Column({ name: "ok_to_sms", type: "text", default: "unknown" })
   okToSms!: string;
 
-  @Column({ name: "do_not_contact", type: "integer", default: 0 })
-  doNotContact!: number;
+  @Column({ name: "do_not_contact", type: "boolean", default: false })
+  doNotContact!: boolean;
 
   @Column({ name: "club_name", type: "text", nullable: true })
   clubName!: string | null;
@@ -50,20 +50,20 @@ export class Contact {
   @Column({ type: "text", nullable: true, unique: true })
   uid!: string | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
-  @Column({ name: "updated_at", type: "text", nullable: true })
-  updatedAt!: string | null;
+  @Column({ name: "updated_at", type: "timestamptz", nullable: true })
+  updatedAt!: Date | null;
 
-  @Column({ name: "deleted_at", type: "text", nullable: true })
-  deletedAt!: string | null;
+  @Column({ name: "deleted_at", type: "timestamptz", nullable: true })
+  deletedAt!: Date | null;
 
-  @Column({ name: "hellenic", type: "integer", default: 0 })
-  hellenic!: number;
+  @Column({ name: "hellenic", type: "boolean", default: false })
+  hellenic!: boolean;
 
-  @Column({ name: "deceased", type: "integer", default: 0 })
-  deceased!: number;
+  @Column({ name: "deceased", type: "boolean", default: false })
+  deceased!: boolean;
 
   @Column({ name: "deceased_year", type: "integer", nullable: true })
   deceasedYear!: number | null;

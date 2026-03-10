@@ -4,6 +4,7 @@ import type { Contact, MailingList, MailingBatch, MailingBatchRecipient } from "
 import type { MailingListsService } from "./MailingListsService";
 import { MailingBatch as MailingBatchEntity, MailingBatchRecipient as MailingBatchRecipientEntity } from "../entities";
 import { uuid } from "./utils";
+import { toISOString } from "../lib/date";
 
 export class MailingBatchesService {
   constructor(
@@ -80,7 +81,7 @@ export class MailingBatchesService {
       event_id: row.mb_event_id ?? null,
       name: row.mb_name,
       created_by: row.mb_created_by ?? null,
-      created_at: row.mb_created_at ?? "",
+      created_at: toISOString(row.mb_created_at) ?? "",
       recipient_count: row.mb_recipient_count ?? 0,
       list: { id: row.mb_list_id, name: row.list_name } as MailingList,
       event: row.mb_event_id ? { id: row.mb_event_id, name: row.event_name } : undefined,
@@ -121,7 +122,7 @@ export class MailingBatchesService {
       event_id: r.mb_event_id ?? null,
       name: r.mb_name,
       created_by: r.mb_created_by ?? null,
-      created_at: r.mb_created_at ?? "",
+      created_at: toISOString(r.mb_created_at) ?? "",
       recipient_count: r.mb_recipient_count ?? 0,
       list: { id: r.mb_list_id, name: r.list_name } as MailingList,
       event: r.mb_event_id ? { id: r.mb_event_id, name: r.event_name } : undefined,

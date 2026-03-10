@@ -1,7 +1,5 @@
 import type { DataSource } from "typeorm";
-import { join } from "path";
-import { mkdir } from "fs/promises";
-import { getDataSource, getProjectRoot } from "./dataSource";
+import { getDataSource } from "./dataSource";
 
 export interface DbLike {
   query(sql: string, ...bound: unknown[]): {
@@ -13,24 +11,56 @@ export interface DbLike {
 
 const globalForDb = globalThis as unknown as { __badgerDbInstancePromise?: Promise<DbLike> };
 
-function makeDbLike(ds: DataSource): DbLike {
+/**
+ * Converts `?` placeholders to Postgres-style `$1, $2, ...` parameters.
+ * Skips `?` inside single-quoted string literals.
+ */
+function toPostgresParams(sql: string): string {
+  let idx = 0;
+  let inString = false;
+  let result = "";
+  for (let i = 0; i < sql.length; i++) {
+    const ch = sql.charAt(i);
+    if (ch === "'" && !inString) {
+      inString = true;
+      result += ch;
+    } else if (ch === "'" && inString) {
+      if (i + 1 < sql.length && sql.charAt(i + 1) === "'") {
+        result += "''";
+        i++;
+      } else {
+        inString = false;
+        result += ch;
+      }
+    } else if (ch === "?" && !inString) {
+      idx++;
+      result += `$${idx}`;
+    } else {
+      result += ch;
+    }
+  }
+  return result;
+}
+
+export function makeDbLike(ds: DataSource): DbLike {
   return {
     query(sql: string, ...bound: unknown[]) {
+      const pgSql = toPostgresParams(sql);
       return {
         get: async (...args: unknown[]) => {
           const flat = [...bound, ...args].flat();
-          const rows = await ds.query(sql, flat as unknown[]);
+          const rows = await ds.query(pgSql, flat as unknown[]);
           return Array.isArray(rows) ? rows[0] : rows;
         },
         all: async (...args: unknown[]) => {
           const flat = [...bound, ...args].flat();
-          const rows = await ds.query(sql, flat as unknown[]);
+          const rows = await ds.query(pgSql, flat as unknown[]);
           return Array.isArray(rows) ? rows : [];
         },
       };
     },
     run: async (sql: string, params: unknown[] = []) => {
-      await ds.query(sql, params as unknown[]);
+      await ds.query(toPostgresParams(sql), params as unknown[]);
     },
   };
 }
@@ -41,8 +71,6 @@ function makeDbLike(ds: DataSource): DbLike {
  */
 export async function getDbInstance(): Promise<DbLike> {
   if (!globalForDb.__badgerDbInstancePromise) {
-    const dataDir = join(getProjectRoot(), "data");
-    await mkdir(dataDir, { recursive: true });
     const ds = await getDataSource();
     globalForDb.__badgerDbInstancePromise = Promise.resolve(makeDbLike(ds));
   }

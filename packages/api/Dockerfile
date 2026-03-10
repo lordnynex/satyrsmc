@@ -1,5 +1,5 @@
 # Single stage: install only API + shared deps, run source (no bundle). Small image.
-# Build context: repo root. Env: NODE_ENV, LOG_LEVEL, PORT (default 3000), DATA_DIR.
+# Build context: repo root. Env: NODE_ENV, DATABASE_URL, LOG_LEVEL, PORT (default 3000).
 
 FROM oven/bun:1-slim
 WORKDIR /app

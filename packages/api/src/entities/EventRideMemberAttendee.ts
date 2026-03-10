@@ -14,6 +14,6 @@ export class EventRideMemberAttendee {
   @Column({ name: "sort_order", type: "integer", default: 0 })
   sortOrder!: number;
 
-  @Column({ name: "waiver_signed", type: "integer", default: 0 })
-  waiverSigned!: number;
+  @Column({ name: "waiver_signed", type: "boolean", default: false })
+  waiverSigned!: boolean;
 }

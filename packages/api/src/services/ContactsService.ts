@@ -1,6 +1,7 @@
 import { In, IsNull } from "typeorm";
 import type { DataSource } from "typeorm";
 import type { DbLike } from "../db/dbAdapter";
+import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
   Contact,
   ContactEmail,
@@ -43,15 +44,15 @@ function entityToContact(e: ContactEntity): Contact {
     ok_to_email: (e.okToEmail as Contact["ok_to_email"]) ?? "unknown",
     ok_to_mail: (e.okToMail as Contact["ok_to_mail"]) ?? "unknown",
     ok_to_sms: (e.okToSms as Contact["ok_to_sms"]) ?? "unknown",
-    do_not_contact: e.doNotContact === 1,
+    do_not_contact: e.doNotContact,
     club_name: e.clubName,
     role: e.role,
     uid: e.uid,
-    created_at: e.createdAt ?? undefined,
-    updated_at: e.updatedAt ?? undefined,
-    deleted_at: e.deletedAt,
-    hellenic: e.hellenic === 1,
-    deceased: e.deceased === 1,
+    created_at: toISOString(e.createdAt),
+    updated_at: toISOString(e.updatedAt),
+    deleted_at: toISOStringOrNull(e.deletedAt),
+    hellenic: e.hellenic,
+    deceased: e.deceased,
     deceased_year: e.deceasedYear ?? null,
   };
 }
@@ -70,15 +71,15 @@ function rowToContact(row: Record<string, unknown>): Contact {
     ok_to_email: (row.ok_to_email as Contact["ok_to_email"]) ?? "unknown",
     ok_to_mail: (row.ok_to_mail as Contact["ok_to_mail"]) ?? "unknown",
     ok_to_sms: (row.ok_to_sms as Contact["ok_to_sms"]) ?? "unknown",
-    do_not_contact: (row.do_not_contact as number) === 1,
+    do_not_contact: row.do_not_contact as boolean,
     club_name: (row.club_name as string) ?? null,
     role: (row.role as string) ?? null,
     uid: (row.uid as string) ?? null,
-    created_at: row.created_at as string | undefined,
-    updated_at: row.updated_at as string | undefined,
-    deleted_at: (row.deleted_at as string) ?? null,
-    hellenic: (row.hellenic as number) === 1,
-    deceased: (row.deceased as number) === 1,
+    created_at: toISOString(row.created_at as Date | string | null | undefined),
+    updated_at: toISOString(row.updated_at as Date | string | null | undefined),
+    deleted_at: toISOStringOrNull(row.deleted_at as Date | string | null | undefined),
+    hellenic: row.hellenic as boolean,
+    deceased: row.deceased as boolean,
     deceased_year: (row.deceased_year as number) ?? null,
   };
 }
@@ -154,14 +155,14 @@ export class ContactsService {
         contact_id: e.contactId,
         email: e.email,
         type: (e.type as ContactEmail["type"]) ?? "other",
-        is_primary: e.isPrimary === 1,
+        is_primary: e.isPrimary,
       })),
       phones: phones.map((p) => ({
         id: p.id,
         contact_id: p.contactId,
         phone: p.phone,
         type: (p.type as ContactPhone["type"]) ?? "other",
-        is_primary: p.isPrimary === 1,
+        is_primary: p.isPrimary,
       })),
       addresses: addresses.map((a) => ({
         id: a.id,
@@ -173,7 +174,7 @@ export class ContactsService {
         postal_code: a.postalCode,
         country: a.country,
         type: (a.type as ContactAddress["type"]) ?? "home",
-        is_primary_mailing: a.isPrimaryMailing === 1,
+        is_primary_mailing: a.isPrimaryMailing,
       })),
       emergency_contacts: emergencyContacts.map((ec) => ({
         id: ec.id,
@@ -187,7 +188,7 @@ export class ContactsService {
         id: n.id,
         contact_id: n.contactId,
         content: n.content,
-        created_at: n.createdAt,
+        created_at: toISOStringOrNull(n.createdAt),
       })),
       contact_photos: sortedPhotos.map((p) => ({
         id: p.id,
@@ -197,7 +198,7 @@ export class ContactsService {
         photo_url: `/api/contacts/${contactId}/photos/${p.id}?size=full`,
         photo_thumbnail_url: `/api/contacts/${contactId}/photos/${p.id}?size=thumbnail`,
         photo_display_url: `/api/contacts/${contactId}/photos/${p.id}?size=display`,
-        created_at: p.createdAt,
+        created_at: toISOStringOrNull(p.createdAt),
       })),
       tags: tagRows.map((t) => ({ id: t.id, name: t.name })),
     };
@@ -351,23 +352,23 @@ export class ContactsService {
       );
     }
     if (params.organization) {
-      qb.andWhere("c.organizationName LIKE :org", {
+      qb.andWhere("c.organizationName ILIKE :org", {
         org: `%${params.organization}%`,
       });
     }
     if (params.role) {
-      qb.andWhere("c.role LIKE :role", { role: `%${params.role}%` });
+      qb.andWhere("c.role ILIKE :role", { role: `%${params.role}%` });
     }
     if (params.hellenic === true) {
-      qb.andWhere("c.hellenic = 1");
+      qb.andWhere("c.hellenic = true");
     }
     if (params.excludeDeceased === true) {
-      qb.andWhere("(c.deceased IS NULL OR c.deceased = 0)");
+      qb.andWhere("(c.deceased IS NULL OR c.deceased = false)");
     }
     if (params.q && params.q.trim()) {
       const q = `%${params.q.trim()}%`;
       qb.andWhere(
-        `(c.displayName LIKE :q OR c.firstName LIKE :q OR c.lastName LIKE :q OR c.organizationName LIKE :q OR c.notes LIKE :q OR c.clubName LIKE :q OR c.role LIKE :q OR EXISTS (SELECT 1 FROM contact_emails ce WHERE ce.contact_id = c.id AND ce.email LIKE :q) OR EXISTS (SELECT 1 FROM contact_phones cp WHERE cp.contact_id = c.id AND cp.phone LIKE :q) OR EXISTS (SELECT 1 FROM contact_addresses ca WHERE ca.contact_id = c.id AND (ca.city LIKE :q OR ca.state LIKE :q)) OR EXISTS (SELECT 1 FROM contact_tags ct JOIN tags t ON t.id = ct.tag_id WHERE ct.contact_id = c.id AND t.name LIKE :q) OR EXISTS (SELECT 1 FROM contact_notes cn WHERE cn.contact_id = c.id AND cn.content LIKE :q))`,
+        `(c.displayName ILIKE :q OR c.firstName ILIKE :q OR c.lastName ILIKE :q OR c.organizationName ILIKE :q OR c.notes ILIKE :q OR c.clubName ILIKE :q OR c.role ILIKE :q OR EXISTS (SELECT 1 FROM contact_emails ce WHERE ce.contact_id = c.id AND ce.email ILIKE :q) OR EXISTS (SELECT 1 FROM contact_phones cp WHERE cp.contact_id = c.id AND cp.phone ILIKE :q) OR EXISTS (SELECT 1 FROM contact_addresses ca WHERE ca.contact_id = c.id AND (ca.city ILIKE :q OR ca.state ILIKE :q)) OR EXISTS (SELECT 1 FROM contact_tags ct JOIN tags t ON t.id = ct.tag_id WHERE ct.contact_id = c.id AND t.name ILIKE :q) OR EXISTS (SELECT 1 FROM contact_notes cn WHERE cn.contact_id = c.id AND cn.content ILIKE :q))`,
         { q },
       );
     }
@@ -465,8 +466,8 @@ export class ContactsService {
     const type = body.type ?? "person";
     const status = body.status ?? "active";
 
-    const hellenic = body.hellenic ? 1 : 0;
-    const deceased = body.deceased ? 1 : 0;
+    const hellenic = body.hellenic ?? false;
+    const deceased = body.deceased ?? false;
     const deceasedYear = body.deceased_year ?? null;
     await this.db.run(
       `INSERT INTO contacts (id, type, status, display_name, first_name, last_name, organization_name, notes, how_we_know_them, ok_to_email, ok_to_mail, ok_to_sms, do_not_contact, club_name, role, uid, hellenic, deceased, deceased_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -483,7 +484,7 @@ export class ContactsService {
         body.ok_to_email ?? "unknown",
         body.ok_to_mail ?? "unknown",
         body.ok_to_sms ?? "unknown",
-        body.do_not_contact ? 1 : 0,
+        body.do_not_contact ?? false,
         body.club_name ?? null,
         body.role ?? null,
         uid,
@@ -498,7 +499,7 @@ export class ContactsService {
         const eid = uuid();
         await this.db.run(
           "INSERT INTO contact_emails (id, contact_id, email, type, is_primary) VALUES (?, ?, ?, ?, ?)",
-          [eid, id, e.email, e.type ?? "other", e.is_primary ? 1 : 0],
+          [eid, id, e.email, e.type ?? "other", e.is_primary ?? false],
         );
       }
     }
@@ -507,7 +508,7 @@ export class ContactsService {
         const pid = uuid();
         await this.db.run(
           "INSERT INTO contact_phones (id, contact_id, phone, type, is_primary) VALUES (?, ?, ?, ?, ?)",
-          [pid, id, p.phone, p.type ?? "other", p.is_primary ? 1 : 0],
+          [pid, id, p.phone, p.type ?? "other", p.is_primary ?? false],
         );
       }
     }
@@ -526,7 +527,7 @@ export class ContactsService {
             a.postal_code ?? null,
             a.country ?? "US",
             a.type ?? "home",
-            a.is_primary_mailing ? 1 : 0,
+            a.is_primary_mailing ?? false,
           ],
         );
       }
@@ -611,19 +612,19 @@ export class ContactsService {
     const ok_to_sms = (body.ok_to_sms ??
       existing.okToSms) as Contact["ok_to_sms"];
     const do_not_contact =
-      (body.do_not_contact ?? existing.doNotContact === 1) ? 1 : 0;
+      body.do_not_contact ?? existing.doNotContact;
     const club_name =
       body.club_name !== undefined ? body.club_name : existing.clubName;
     const role = body.role !== undefined ? body.role : existing.role;
     const hellenic =
-      body.hellenic !== undefined ? (body.hellenic ? 1 : 0) : existing.hellenic ?? 0;
+      body.hellenic !== undefined ? body.hellenic : existing.hellenic ?? false;
     const deceased =
-      body.deceased !== undefined ? (body.deceased ? 1 : 0) : existing.deceased ?? 0;
+      body.deceased !== undefined ? body.deceased : existing.deceased ?? false;
     const deceased_year =
       body.deceased_year !== undefined ? body.deceased_year : existing.deceasedYear ?? null;
 
     await this.db.run(
-      `UPDATE contacts SET display_name=?, type=?, status=?, first_name=?, last_name=?, organization_name=?, notes=?, how_we_know_them=?, ok_to_email=?, ok_to_mail=?, ok_to_sms=?, do_not_contact=?, club_name=?, role=?, hellenic=?, deceased=?, deceased_year=?, updated_at=datetime('now') WHERE id=?`,
+      `UPDATE contacts SET display_name=?, type=?, status=?, first_name=?, last_name=?, organization_name=?, notes=?, how_we_know_them=?, ok_to_email=?, ok_to_mail=?, ok_to_sms=?, do_not_contact=?, club_name=?, role=?, hellenic=?, deceased=?, deceased_year=?, updated_at=? WHERE id=?`,
       [
         display_name,
         type,
@@ -642,6 +643,7 @@ export class ContactsService {
         hellenic,
         deceased,
         deceased_year,
+        new Date().toISOString(),
         id,
       ],
     );
@@ -662,7 +664,7 @@ export class ContactsService {
             id,
             String(e.email).trim(),
             e.type ?? "other",
-            e.is_primary ? 1 : 0,
+            e.is_primary ?? false,
           ],
         );
       }
@@ -683,7 +685,7 @@ export class ContactsService {
             id,
             String(p.phone).trim(),
             p.type ?? "other",
-            p.is_primary ? 1 : 0,
+            p.is_primary ?? false,
           ],
         );
       }
@@ -706,7 +708,7 @@ export class ContactsService {
             a.postal_code ?? null,
             a.country ?? "US",
             a.type ?? "home",
-            a.is_primary_mailing ? 1 : 0,
+            a.is_primary_mailing ?? false,
           ],
         );
       }
@@ -768,16 +770,16 @@ export class ContactsService {
 
   async delete(id: string) {
     await this.db.run(
-      "UPDATE contacts SET status = 'deleted', deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?",
-      [id],
+      "UPDATE contacts SET status = 'deleted', deleted_at = ?, updated_at = ? WHERE id = ?",
+      [new Date().toISOString(), new Date().toISOString(), id],
     );
     return { ok: true };
   }
 
   async restore(id: string) {
     await this.db.run(
-      "UPDATE contacts SET status = 'active', deleted_at = NULL, updated_at = datetime('now') WHERE id = ?",
-      [id],
+      "UPDATE contacts SET status = 'active', deleted_at = NULL, updated_at = ? WHERE id = ?",
+      [new Date().toISOString(), id],
     );
     return this.get(id)!;
   }
@@ -789,8 +791,8 @@ export class ContactsService {
     for (const id of ids) {
       if (updates.status) {
         await this.db.run(
-          "UPDATE contacts SET status = ?, updated_at = datetime('now') WHERE id = ?",
-          [updates.status, id],
+          "UPDATE contacts SET status = ?, updated_at = ? WHERE id = ?",
+          [updates.status, new Date().toISOString(), id],
         );
       }
       if (updates.tags) {
@@ -945,7 +947,7 @@ export class ContactsService {
         id: r.id as string,
         contact_id: r.contact_id as string,
         content: r.content as string,
-        created_at: (r.created_at as string) ?? null,
+        created_at: toISOStringOrNull(r.created_at as Date | string | null | undefined),
       };
     },
     update: async (
@@ -974,7 +976,7 @@ export class ContactsService {
             id: r.id as string,
             contact_id: r.contact_id as string,
             content: r.content as string,
-            created_at: (r.created_at as string) ?? null,
+            created_at: toISOStringOrNull(r.created_at as Date | string | null | undefined),
           }
         : null;
     },

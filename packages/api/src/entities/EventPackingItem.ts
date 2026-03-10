@@ -23,6 +23,6 @@ export class EventPackingItem {
   @Column({ type: "text", nullable: true })
   note!: string | null;
 
-  @Column({ type: "integer", default: 0 })
-  loaded!: number;
+  @Column({ type: "boolean", default: false })
+  loaded!: boolean;
 }

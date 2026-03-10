@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, ExternalLink, MapPin } from "lucide-react";
 import type { Event } from "@satyrsmc/shared/types/budget";
+import { formatDateOnly } from "@/lib/date-utils";
 
 interface EventDetailsCardProps {
   event: Event;
@@ -19,7 +20,7 @@ export function EventDetailsCard({ event, budgetName, scenarioName }: EventDetai
         {event.event_date && (
           <div className="flex items-center gap-2">
             <Calendar className="size-4 text-muted-foreground" />
-            <span>{event.event_date}</span>
+            <span>{formatDateOnly(event.event_date!)}</span>
           </div>
         )}
         {event.event_url && (

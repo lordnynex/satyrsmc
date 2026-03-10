@@ -17,8 +17,8 @@ export class BlogPost {
   @Column({ type: "text" })
   body!: string;
 
-  @Column({ name: "published_at", type: "text", nullable: true })
-  publishedAt!: string | null;
+  @Column({ name: "published_at", type: "timestamptz", nullable: true })
+  publishedAt!: Date | null;
 
   @Column({ name: "meta_title", type: "text", nullable: true })
   metaTitle!: string | null;
@@ -26,9 +26,9 @@ export class BlogPost {
   @Column({ name: "meta_description", type: "text", nullable: true })
   metaDescription!: string | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
-  @Column({ name: "updated_at", type: "text", nullable: true })
-  updatedAt!: string | null;
+  @Column({ name: "updated_at", type: "timestamptz", nullable: true })
+  updatedAt!: Date | null;
 }

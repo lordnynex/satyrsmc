@@ -26,10 +26,10 @@ export class Incident {
   @Column({ type: "text", nullable: true })
   details!: string | null;
 
-  @Column({ name: "occurred_at", type: "text", nullable: true })
-  occurredAt!: string | null;
+  @Column({ name: "occurred_at", type: "timestamptz", nullable: true })
+  occurredAt!: Date | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 }
 

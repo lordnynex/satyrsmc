@@ -14,8 +14,8 @@ export class OldBusinessItem {
   @Column({ type: "text", default: "open" })
   status!: string;
 
-  @Column({ name: "closed_at", type: "text", nullable: true })
-  closedAt!: string | null;
+  @Column({ name: "closed_at", type: "timestamptz", nullable: true })
+  closedAt!: Date | null;
 
   @Column({ name: "closed_in_meeting_id", type: "text", nullable: true })
   closedInMeetingId!: string | null;
@@ -23,6 +23,6 @@ export class OldBusinessItem {
   @Column({ name: "order_index", type: "integer", default: 0 })
   orderIndex!: number;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 }

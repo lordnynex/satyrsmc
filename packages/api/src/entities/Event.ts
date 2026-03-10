@@ -14,11 +14,11 @@ export class Event {
   @Column({ type: "integer", nullable: true })
   year!: number | null;
 
-  @Column({ name: "created_at", type: "text", nullable: true })
-  createdAt!: string | null;
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
 
-  @Column({ name: "event_date", type: "text", nullable: true })
-  eventDate!: string | null;
+  @Column({ name: "event_date", type: "timestamptz", nullable: true })
+  eventDate!: Date | null;
 
   @Column({ name: "event_url", type: "text", nullable: true })
   eventUrl!: string | null;
@@ -68,6 +68,6 @@ export class Event {
   @Column({ name: "ride_cost", type: "real", nullable: true })
   rideCost!: number | null;
 
-  @Column({ name: "show_on_website", type: "integer", default: 0 })
-  showOnWebsite!: number;
+  @Column({ name: "show_on_website", type: "boolean", default: false })
+  showOnWebsite!: boolean;
 }
