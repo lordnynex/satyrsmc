@@ -33,8 +33,8 @@ jobs:
       - name: Run tests with coverage
         run: bun run test:coverage
 
-      - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install -y lcov
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
 
       - name: Report code coverage
         uses: zgosalvez/github-actions-report-lcov@v4
