@@ -17,12 +17,14 @@ describe("MeetingsService", () => {
   describe("list", () => {
     test("returns created meetings", async () => {
       const m = await createMeeting(api, { date: "2025-01-15", meeting_number: 100 });
+      if (!m) throw new Error("createMeeting failed");
       const result = await api.meetings.list();
       expect(result.some((e) => e.id === m.id)).toBe(true);
     });
 
     test("list(sort) by date and meeting_number", async () => {
       const m = await createMeeting(api, { date: "2025-02-01", meeting_number: 101 });
+      if (!m) throw new Error("createMeeting failed");
       const byDate = await api.meetings.list("date");
       const byNum = await api.meetings.list("meeting_number");
       expect(byDate.some((e) => e.id === m.id)).toBe(true);
@@ -33,6 +35,7 @@ describe("MeetingsService", () => {
   describe("get", () => {
     test("returns meeting detail", async () => {
       const m = await createMeeting(api, { date: "2025-03-01", meeting_number: 102 });
+      if (!m) throw new Error("createMeeting failed");
       const got = await api.meetings.get(m.id);
       expect(got).not.toBeNull();
       expect(got!.id).toBe(m.id);
@@ -52,8 +55,9 @@ describe("MeetingsService", () => {
   describe("create", () => {
     test("creates meeting", async () => {
       const m = await createMeeting(api, { date: "2025-04-01", meeting_number: 103 });
+      if (!m) throw new Error("createMeeting failed");
       expect(m.id).toBeDefined();
-      const dateVal = m.date instanceof Date ? m.date : new Date(String(m.date));
+      const dateVal = new Date(m.date);
       expect(dateVal.getFullYear()).toBe(2025);
       expect(dateVal.getMonth()).toBe(3);
       expect(dateVal.getDate()).toBe(1);
@@ -64,6 +68,7 @@ describe("MeetingsService", () => {
   describe("update", () => {
     test("updates meeting", async () => {
       const m = await createMeeting(api, { date: "2025-05-01", meeting_number: 104 });
+      if (!m) throw new Error("createMeeting failed");
       const updated = await api.meetings.update(m.id, { location: "Room A", meeting_number: 105 });
       expect(updated).not.toBeNull();
       expect(updated!.location).toBe("Room A");
@@ -79,21 +84,21 @@ describe("MeetingsService", () => {
   describe("delete", () => {
     test("deletes meeting", async () => {
       const m = await createMeeting(api, { date: "2025-06-01", meeting_number: 106 });
-      const ok = await api.meetings.delete(m.id);
-      expect(ok).toBe(true);
+      if (!m) throw new Error("createMeeting failed");
+      await api.meetings.delete(m.id);
       const got = await api.meetings.get(m.id);
       expect(got).toBeNull();
     });
 
-    test("delete(badId) returns false", async () => {
-      const result = await api.meetings.delete(BAD_ID);
-      expect(result).toBe(false);
+    test("delete(badId) does not throw", async () => {
+      await expect(api.meetings.delete(BAD_ID)).resolves.toBeUndefined();
     });
   });
 
   describe("motions", () => {
     test("createMotion, updateMotion, deleteMotion", async () => {
       const m = await createMeeting(api, { date: "2025-07-01", meeting_number: 107 });
+      if (!m) throw new Error("createMeeting failed");
       const mover = await createMember(api, { name: "Mover" });
       const seconder = await createMember(api, { name: "Seconder" });
       const motion = await api.meetings.createMotion(m.id, {
@@ -112,6 +117,7 @@ describe("MeetingsService", () => {
 
     test("updateMotion(meetingId, badMotionId) returns null", async () => {
       const m = await createMeeting(api, { date: "2025-08-01", meeting_number: 108 });
+      if (!m) throw new Error("createMeeting failed");
       const result = await api.meetings.updateMotion(m.id, BAD_ID, { result: "carried" });
       expect(result).toBeNull();
     });
@@ -120,6 +126,7 @@ describe("MeetingsService", () => {
   describe("action items", () => {
     test("createActionItem, updateActionItem, deleteActionItem", async () => {
       const m = await createMeeting(api, { date: "2025-09-01", meeting_number: 109 });
+      if (!m) throw new Error("createMeeting failed");
       const item = await api.meetings.createActionItem(m.id, { description: "Do something" });
       expect(item.id).toBeDefined();
       const updated = await api.meetings.updateActionItem(m.id, item.id, { description: "Updated", status: "completed" });
@@ -133,6 +140,7 @@ describe("MeetingsService", () => {
   describe("old business", () => {
     test("createOldBusiness, updateOldBusiness, deleteOldBusiness", async () => {
       const m = await createMeeting(api, { date: "2025-10-01", meeting_number: 110 });
+      if (!m) throw new Error("createMeeting failed");
       const ob = await api.meetings.createOldBusiness(m.id, { description: "Old item" });
       expect(ob.id).toBeDefined();
       const updated = await api.meetings.updateOldBusiness(m.id, ob.id, { status: "closed" });

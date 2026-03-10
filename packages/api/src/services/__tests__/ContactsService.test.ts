@@ -250,22 +250,26 @@ describe("ContactsService", () => {
   });
 
   describe("photos", () => {
+    type AddPhotoResult = { id: string; contact_id: string; photo_url: string; photo_thumbnail_url: string };
+
     test("addPhoto returns photo with urls", async () => {
       const contact = await createContact(api, { display_name: "Photo Contact" });
       const photo = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER);
       expect(photo).not.toBeNull();
-      expect(photo!.id).toBeDefined();
-      expect(photo!.contact_id).toBe(contact.id);
-      expect(photo!.photo_url).toContain(contact.id);
-      expect(photo!.photo_thumbnail_url).toContain(contact.id);
+      const p = photo as AddPhotoResult;
+      expect(p.id).toBeDefined();
+      expect(p.contact_id).toBe(contact.id);
+      expect(p.photo_url).toContain(contact.id);
+      expect(p.photo_thumbnail_url).toContain(contact.id);
     });
 
     test("getPhoto returns buffer for thumbnail and full", async () => {
       const contact = await createContact(api, { display_name: "Get Photo Contact" });
       const added = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER);
       expect(added).not.toBeNull();
-      const thumb = await api.contacts.getPhoto(contact.id, added!.id, "thumbnail");
-      const full = await api.contacts.getPhoto(contact.id, added!.id, "full");
+      const p = added as AddPhotoResult;
+      const thumb = await api.contacts.getPhoto(contact.id, p.id, "thumbnail");
+      const full = await api.contacts.getPhoto(contact.id, p.id, "full");
       expect(thumb).toBeInstanceOf(Buffer);
       expect(full).toBeInstanceOf(Buffer);
     });
@@ -274,7 +278,8 @@ describe("ContactsService", () => {
       const contact = await createContact(api, { display_name: "Profile Photo Contact" });
       const photo = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER, "contact", false);
       expect(photo).not.toBeNull();
-      const set = await api.contacts.setProfilePhoto(contact.id, photo!.id);
+      const p = photo as AddPhotoResult;
+      const set = await api.contacts.setProfilePhoto(contact.id, p.id);
       expect(set).toBe(true);
     });
 
@@ -282,15 +287,18 @@ describe("ContactsService", () => {
       const contact = await createContact(api, { display_name: "Delete Photo Contact" });
       const photo = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER);
       expect(photo).not.toBeNull();
-      await api.contacts.deletePhoto(contact.id, photo!.id);
-      const getAfter = await api.contacts.getPhoto(contact.id, photo!.id, "full");
+      const p = photo as AddPhotoResult;
+      await api.contacts.deletePhoto(contact.id, p.id);
+      const getAfter = await api.contacts.getPhoto(contact.id, p.id, "full");
       expect(getAfter).toBeNull();
     });
 
     test("getPhoto(badContactId) returns null", async () => {
       const contact = await createContact(api, { display_name: "Bad Contact Photo" });
       const photo = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER);
-      const result = await api.contacts.getPhoto(BAD_ID, photo!.id, "full");
+      expect(photo).not.toBeNull();
+      const p = photo as AddPhotoResult;
+      const result = await api.contacts.getPhoto(BAD_ID, p.id, "full");
       expect(result).toBeNull();
     });
 

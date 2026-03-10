@@ -1,6 +1,8 @@
 import type { DataSource } from "typeorm";
 import type { DbLike } from "../db/dbAdapter";
-import type { Contact, MailingList, MailingBatch, MailingBatchRecipient } from "@satyrsmc/shared/types/contact";
+import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
+import type { MailingList } from "@satyrsmc/shared/dto/admin/mailingList";
+import type { MailingBatch, MailingBatchRecipient } from "@satyrsmc/shared/dto/admin/mailingBatch";
 import type { MailingListsService } from "./MailingListsService";
 import { MailingBatch as MailingBatchEntity, MailingBatchRecipient as MailingBatchRecipientEntity } from "../entities";
 import { uuid } from "./utils";
@@ -13,7 +15,7 @@ export class MailingBatchesService {
     private mailingListsService: MailingListsService
   ) {}
 
-  async create(listId: string, name: string) {
+  async create(listId: string, name: string): Promise<MailingBatch | null> {
     const preview = await this.mailingListsService.preview(listId);
     const list = await this.mailingListsService.get(listId);
     if (!list) return null;
@@ -32,7 +34,8 @@ export class MailingBatchesService {
       return primary;
     };
 
-    for (const { contact } of preview.included) {
+    for (const item of preview.included as Array<{ contact: Contact }>) {
+      const contact = item.contact;
       const addr = primaryAddress(contact);
       const rid = uuid();
       await this.db.run(

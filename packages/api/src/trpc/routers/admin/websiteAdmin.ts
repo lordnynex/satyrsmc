@@ -1,12 +1,44 @@
-import { z } from "zod";
 import { t } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import {
+  WebsiteAdminCreateBlogPostInputSchema,
+  WebsiteAdminCreateBlogPostOutputSchema,
+  WebsiteAdminCreatePageInputSchema,
+  WebsiteAdminCreatePageOutputSchema,
+  WebsiteAdminDeleteBlogPostInputSchema,
+  WebsiteAdminDeleteBlogPostOutputSchema,
+  WebsiteAdminDeletePageInputSchema,
+  WebsiteAdminDeletePageOutputSchema,
+  WebsiteAdminGetBlogByIdInputSchema,
+  WebsiteAdminGetBlogByIdOutputSchema,
+  WebsiteAdminGetMenusOutputSchema,
+  WebsiteAdminGetPageByIdInputSchema,
+  WebsiteAdminGetPageByIdOutputSchema,
+  WebsiteAdminGetSettingsOutputSchema,
+  WebsiteAdminListBlogAllOutputSchema,
+  WebsiteAdminListContactMemberSubmissionsOutputSchema,
+  WebsiteAdminListContactSubmissionsOutputSchema,
+  WebsiteAdminListPagesOutputSchema,
+  WebsiteAdminUpdateBlogPostInputSchema,
+  WebsiteAdminUpdateBlogPostOutputSchema,
+  WebsiteAdminUpdateMenuInputSchema,
+  WebsiteAdminUpdateMenuOutputSchema,
+  WebsiteAdminUpdatePageInputSchema,
+  WebsiteAdminUpdatePageOutputSchema,
+  WebsiteAdminUpdateSettingsInputSchema,
+  WebsiteAdminUpdateSettingsOutputSchema,
+} from "@satyrsmc/shared/dto/admin/websiteAdmin";
 
 export const websiteAdminRouter = t.router({
-  listPages: t.procedure.query(({ ctx }) => ctx.api.sitePages.list()),
+  listPages: t.procedure
+    .output(WebsiteAdminListPagesOutputSchema)
+    .meta({ description: "List all site pages." })
+    .query(({ ctx }) => ctx.api.sitePages.list()),
 
   getPageById: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(WebsiteAdminGetPageByIdInputSchema)
+    .output(WebsiteAdminGetPageByIdOutputSchema)
+    .meta({ description: "Get a site page by id." })
     .query(async ({ ctx, input }) => {
       const p = await ctx.api.sitePages.getById(input.id);
       if (!p) throw new TRPCError({ code: "NOT_FOUND" });
@@ -14,28 +46,15 @@ export const websiteAdminRouter = t.router({
     }),
 
   createPage: t.procedure
-    .input(
-      z.object({
-        slug: z.string(),
-        title: z.string(),
-        body: z.string().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-      })
-    )
+    .input(WebsiteAdminCreatePageInputSchema)
+    .output(WebsiteAdminCreatePageOutputSchema)
+    .meta({ description: "Create a new site page." })
     .mutation(({ ctx, input }) => ctx.api.sitePages.create(input)),
 
   updatePage: t.procedure
-    .input(
-      z.object({
-        id: z.string(),
-        slug: z.string().optional(),
-        title: z.string().optional(),
-        body: z.string().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-      })
-    )
+    .input(WebsiteAdminUpdatePageInputSchema)
+    .output(WebsiteAdminUpdatePageOutputSchema)
+    .meta({ description: "Update a site page." })
     .mutation(async ({ ctx, input }) => {
       const { id, ...body } = input;
       const p = await ctx.api.sitePages.update(id, body);
@@ -44,16 +63,23 @@ export const websiteAdminRouter = t.router({
     }),
 
   deletePage: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(WebsiteAdminDeletePageInputSchema)
+    .output(WebsiteAdminDeletePageOutputSchema)
+    .meta({ description: "Delete a site page." })
     .mutation(async ({ ctx, input }) => {
       await ctx.api.sitePages.delete(input.id);
-      return { ok: true };
+      return { ok: true as const };
     }),
 
-  listBlogAll: t.procedure.query(({ ctx }) => ctx.api.blog.listAll()),
+  listBlogAll: t.procedure
+    .output(WebsiteAdminListBlogAllOutputSchema)
+    .meta({ description: "List all blog posts." })
+    .query(({ ctx }) => ctx.api.blog.listAll()),
 
   getBlogById: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(WebsiteAdminGetBlogByIdInputSchema)
+    .output(WebsiteAdminGetBlogByIdOutputSchema)
+    .meta({ description: "Get a blog post by id." })
     .query(async ({ ctx, input }) => {
       const p = await ctx.api.blog.getById(input.id);
       if (!p) throw new TRPCError({ code: "NOT_FOUND" });
@@ -61,32 +87,15 @@ export const websiteAdminRouter = t.router({
     }),
 
   createBlogPost: t.procedure
-    .input(
-      z.object({
-        slug: z.string(),
-        title: z.string(),
-        excerpt: z.string().nullable().optional(),
-        body: z.string().optional(),
-        published_at: z.string().nullable().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-      })
-    )
+    .input(WebsiteAdminCreateBlogPostInputSchema)
+    .output(WebsiteAdminCreateBlogPostOutputSchema)
+    .meta({ description: "Create a new blog post." })
     .mutation(({ ctx, input }) => ctx.api.blog.create(input)),
 
   updateBlogPost: t.procedure
-    .input(
-      z.object({
-        id: z.string(),
-        slug: z.string().optional(),
-        title: z.string().optional(),
-        excerpt: z.string().nullable().optional(),
-        body: z.string().optional(),
-        published_at: z.string().nullable().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-      })
-    )
+    .input(WebsiteAdminUpdateBlogPostInputSchema)
+    .output(WebsiteAdminUpdateBlogPostOutputSchema)
+    .meta({ description: "Update a blog post." })
     .mutation(async ({ ctx, input }) => {
       const { id, ...body } = input;
       const p = await ctx.api.blog.update(id, body);
@@ -95,45 +104,43 @@ export const websiteAdminRouter = t.router({
     }),
 
   deleteBlogPost: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(WebsiteAdminDeleteBlogPostInputSchema)
+    .output(WebsiteAdminDeleteBlogPostOutputSchema)
+    .meta({ description: "Delete a blog post." })
     .mutation(async ({ ctx, input }) => {
       await ctx.api.blog.delete(input.id);
-      return { ok: true };
+      return { ok: true as const };
     }),
 
-  getMenus: t.procedure.query(({ ctx }) => ctx.api.siteMenus.listAll()),
+  getMenus: t.procedure
+    .output(WebsiteAdminGetMenusOutputSchema)
+    .meta({ description: "Get all site menus." })
+    .query(({ ctx }) => ctx.api.siteMenus.listAll()),
 
   updateMenu: t.procedure
-    .input(
-      z.object({
-        key: z.string(),
-        items: z.array(
-          z.object({
-            label: z.string(),
-            url: z.string().nullable().optional(),
-            internal_ref: z.string().nullable().optional(),
-            sort_order: z.number().optional(),
-          })
-        ),
-      })
-    )
+    .input(WebsiteAdminUpdateMenuInputSchema)
+    .output(WebsiteAdminUpdateMenuOutputSchema)
+    .meta({ description: "Update a menu by key." })
     .mutation(({ ctx, input }) => ctx.api.siteMenus.updateMenu(input.key, input.items)),
 
-  getSettings: t.procedure.query(({ ctx }) => ctx.api.siteSettings.get()),
+  getSettings: t.procedure
+    .output(WebsiteAdminGetSettingsOutputSchema)
+    .meta({ description: "Get site settings." })
+    .query(({ ctx }) => ctx.api.siteSettings.get()),
 
   updateSettings: t.procedure
-    .input(
-      z.object({
-        title: z.string().nullable().optional(),
-        logo_url: z.string().nullable().optional(),
-        footer_text: z.string().nullable().optional(),
-        default_meta_description: z.string().nullable().optional(),
-        contact_email: z.string().nullable().optional(),
-      })
-    )
+    .input(WebsiteAdminUpdateSettingsInputSchema)
+    .output(WebsiteAdminUpdateSettingsOutputSchema)
+    .meta({ description: "Update site settings." })
     .mutation(({ ctx, input }) => ctx.api.siteSettings.update(input)),
 
-  listContactSubmissions: t.procedure.query(({ ctx }) => ctx.api.contactSubmissions.listContactSubmissions()),
+  listContactSubmissions: t.procedure
+    .output(WebsiteAdminListContactSubmissionsOutputSchema)
+    .meta({ description: "List general contact form submissions." })
+    .query(({ ctx }) => ctx.api.contactSubmissions.listContactSubmissions()),
 
-  listContactMemberSubmissions: t.procedure.query(({ ctx }) => ctx.api.contactSubmissions.listContactMemberSubmissions()),
+  listContactMemberSubmissions: t.procedure
+    .output(WebsiteAdminListContactMemberSubmissionsOutputSchema)
+    .meta({ description: "List member contact form submissions." })
+    .query(({ ctx }) => ctx.api.contactSubmissions.listContactMemberSubmissions()),
 });

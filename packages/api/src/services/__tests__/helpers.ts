@@ -1,6 +1,7 @@
-import type { Contact, MailingList } from "@satyrsmc/shared/types/contact";
-import type { Event } from "@satyrsmc/shared/types/event";
-import type { Member } from "@satyrsmc/shared/types/member";
+import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
+import type { Event } from "@satyrsmc/shared/dto/admin/event";
+import type { MailingList } from "@satyrsmc/shared/dto/admin/mailingList";
+import type { Member } from "@satyrsmc/shared/dto/admin/member";
 import type { Api } from "../api";
 
 /** Non-existent UUID for negative tests (never inserted). */
@@ -30,7 +31,7 @@ export async function createMember(
 ): Promise<Member> {
   const name = overrides.name ?? unique("Member");
   const member = await api.members.create({ ...overrides, name });
-  return member as Member;
+  return member!;
 }
 
 export async function createEvent(
@@ -39,7 +40,7 @@ export async function createEvent(
 ): Promise<Event> {
   const name = overrides.name ?? unique("Event");
   const event = await api.events.create({ ...overrides, name });
-  return event as Event;
+  return event!;
 }
 
 export async function createBudget(
@@ -73,7 +74,7 @@ export async function createMailingList(
     list_type,
     delivery_type: (overrides.delivery_type as "physical" | "email" | "both") ?? "email",
   });
-  return list as MailingList;
+  return list!;
 }
 
 export async function createMeeting(

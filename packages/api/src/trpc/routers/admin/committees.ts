@@ -1,14 +1,45 @@
-import { z } from "zod";
 import { t } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import {
+  CommitteeAddMemberInputSchema,
+  CommitteeAddMemberOutputSchema,
+  CommitteeCreateInputSchema,
+  CommitteeCreateMeetingInputSchema,
+  CommitteeCreateMeetingOutputSchema,
+  CommitteeCreateOutputSchema,
+  CommitteeDeleteInputSchema,
+  CommitteeDeleteMeetingInputSchema,
+  CommitteeDeleteMeetingOutputSchema,
+  CommitteeDeleteOutputSchema,
+  CommitteeGetInputSchema,
+  CommitteeGetMeetingInputSchema,
+  CommitteeGetMeetingOutputSchema,
+  CommitteeGetOutputSchema,
+  CommitteeListInputSchema,
+  CommitteeListMeetingsInputSchema,
+  CommitteeListMeetingsOutputSchema,
+  CommitteeListOutputSchema,
+  CommitteeRemoveMemberInputSchema,
+  CommitteeRemoveMemberOutputSchema,
+  CommitteeReorderMembersInputSchema,
+  CommitteeReorderMembersOutputSchema,
+  CommitteeUpdateInputSchema,
+  CommitteeUpdateMeetingInputSchema,
+  CommitteeUpdateMeetingOutputSchema,
+  CommitteeUpdateOutputSchema,
+} from "@satyrsmc/shared/dto/admin/committee";
 
 export const committeesRouter = t.router({
   list: t.procedure
-    .input(z.object({ sort: z.enum(["formed_date", "name"]).optional() }).optional())
+    .input(CommitteeListInputSchema)
+    .output(CommitteeListOutputSchema)
+    .meta({ description: "List committees with optional sort." })
     .query(({ ctx, input }) => ctx.api.committees.list(input?.sort)),
 
   get: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(CommitteeGetInputSchema)
+    .output(CommitteeGetOutputSchema)
+    .meta({ description: "Get a committee by id with members and meetings." })
     .query(async ({ ctx, input }) => {
       const c = await ctx.api.committees.get(input.id);
       if (!c) throw new TRPCError({ code: "NOT_FOUND" });
@@ -16,20 +47,23 @@ export const committeesRouter = t.router({
     }),
 
   create: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-        description: z.string().optional(),
-        purpose: z.string().optional(),
-        formed_date: z.string(),
-        closed_date: z.string().optional(),
-        chairperson_member_id: z.string().optional(),
-      })
-    )
-    .mutation(({ ctx, input }) => ctx.api.committees.create(input)),
+    .input(CommitteeCreateInputSchema)
+    .output(CommitteeCreateOutputSchema)
+    .meta({ description: "Create a new committee." })
+    .mutation(async ({ ctx, input }) => {
+      const c = await ctx.api.committees.create(input);
+      if (!c)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Committee create returned null",
+        });
+      return c;
+    }),
 
   update: t.procedure
-    .input(z.object({ id: z.string() }).passthrough())
+    .input(CommitteeUpdateInputSchema)
+    .output(CommitteeUpdateOutputSchema)
+    .meta({ description: "Update a committee." })
     .mutation(async ({ ctx, input }) => {
       const { id, ...body } = input;
       const c = await ctx.api.committees.update(id, body);
@@ -38,65 +72,97 @@ export const committeesRouter = t.router({
     }),
 
   delete: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(CommitteeDeleteInputSchema)
+    .output(CommitteeDeleteOutputSchema)
+    .meta({ description: "Delete a committee." })
     .mutation(async ({ ctx, input }) => {
       await ctx.api.committees.delete(input.id);
-      return { ok: true };
+      return { ok: true as const };
     }),
 
   addMember: t.procedure
-    .input(z.object({ committeeId: z.string(), memberId: z.string() }))
-    .mutation(({ ctx, input }) => ctx.api.committees.addMember(input.committeeId, input.memberId)),
+    .input(CommitteeAddMemberInputSchema)
+    .output(CommitteeAddMemberOutputSchema)
+    .meta({ description: "Add a member to a committee." })
+    .mutation(async ({ ctx, input }) => {
+      const c = await ctx.api.committees.addMember(
+        input.committeeId,
+        input.memberId,
+      );
+      if (!c) throw new TRPCError({ code: "NOT_FOUND" });
+      return c;
+    }),
 
   removeMember: t.procedure
-    .input(z.object({ committeeId: z.string(), memberId: z.string() }))
-    .mutation(({ ctx, input }) => ctx.api.committees.removeMember(input.committeeId, input.memberId)),
+    .input(CommitteeRemoveMemberInputSchema)
+    .output(CommitteeRemoveMemberOutputSchema)
+    .meta({ description: "Remove a member from a committee." })
+    .mutation(({ ctx, input }) =>
+      ctx.api.committees.removeMember(input.committeeId, input.memberId),
+    ),
 
   reorderMembers: t.procedure
-    .input(z.object({ committeeId: z.string(), memberIds: z.array(z.string()) }))
-    .mutation(({ ctx, input }) => ctx.api.committees.updateMemberOrder(input.committeeId, input.memberIds)),
+    .input(CommitteeReorderMembersInputSchema)
+    .output(CommitteeReorderMembersOutputSchema)
+    .meta({ description: "Reorder committee members." })
+    .mutation(({ ctx, input }) =>
+      ctx.api.committees.updateMemberOrder(input.committeeId, input.memberIds),
+    ),
 
   listMeetings: t.procedure
-    .input(z.object({ committeeId: z.string() }))
-    .query(({ ctx, input }) => ctx.api.committees.listMeetings(input.committeeId)),
+    .input(CommitteeListMeetingsInputSchema)
+    .output(CommitteeListMeetingsOutputSchema)
+    .meta({ description: "List meetings for a committee." })
+    .query(async ({ ctx, input }) => {
+      const list = await ctx.api.committees.listMeetings(input.committeeId);
+      if (list === null) throw new TRPCError({ code: "NOT_FOUND" });
+      return list;
+    }),
 
   createMeeting: t.procedure
-    .input(
-      z.object({
-        committeeId: z.string(),
-        date: z.string(),
-        meeting_number: z.number(),
-        location: z.string().nullable().optional(),
-        start_time: z.string().nullable().optional(),
-        end_time: z.string().nullable().optional(),
-        video_conference_url: z.string().nullable().optional(),
-        previous_meeting_id: z.string().nullable().optional(),
-        agenda_content: z.string().optional(),
-        minutes_content: z.string().nullable().optional(),
-        agenda_template_id: z.string().optional(),
-      })
-    )
-    .mutation(({ ctx, input }) => {
+    .input(CommitteeCreateMeetingInputSchema)
+    .output(CommitteeCreateMeetingOutputSchema)
+    .meta({ description: "Create a meeting for a committee." })
+    .mutation(async ({ ctx, input }) => {
       const { committeeId, ...body } = input;
-      return ctx.api.committees.createMeeting(committeeId, body);
+      const m = await ctx.api.committees.createMeeting(committeeId, body);
+      if (!m) throw new TRPCError({ code: "NOT_FOUND" });
+      return m;
     }),
 
   getMeeting: t.procedure
-    .input(z.object({ committeeId: z.string(), meetingId: z.string() }))
+    .input(CommitteeGetMeetingInputSchema)
+    .output(CommitteeGetMeetingOutputSchema)
+    .meta({ description: "Get a committee meeting by id." })
     .query(async ({ ctx, input }) => {
-      const m = await ctx.api.committees.getMeeting(input.committeeId, input.meetingId);
+      const m = await ctx.api.committees.getMeeting(
+        input.committeeId,
+        input.meetingId,
+      );
       if (!m) throw new TRPCError({ code: "NOT_FOUND" });
       return m;
     }),
 
   updateMeeting: t.procedure
-    .input(z.object({ committeeId: z.string(), meetingId: z.string() }).passthrough())
-    .mutation(({ ctx, input }) => {
+    .input(CommitteeUpdateMeetingInputSchema)
+    .output(CommitteeUpdateMeetingOutputSchema)
+    .meta({ description: "Update a committee meeting." })
+    .mutation(async ({ ctx, input }) => {
       const { committeeId, meetingId, ...body } = input;
-      return ctx.api.committees.updateMeeting(committeeId, meetingId, body);
+      const m = await ctx.api.committees.updateMeeting(
+        committeeId,
+        meetingId,
+        body,
+      );
+      if (!m) throw new TRPCError({ code: "NOT_FOUND" });
+      return m;
     }),
 
   deleteMeeting: t.procedure
-    .input(z.object({ committeeId: z.string(), meetingId: z.string() }))
-    .mutation(({ ctx, input }) => ctx.api.committees.deleteMeeting(input.committeeId, input.meetingId)),
+    .input(CommitteeDeleteMeetingInputSchema)
+    .output(CommitteeDeleteMeetingOutputSchema)
+    .meta({ description: "Delete a committee meeting." })
+    .mutation(({ ctx, input }) =>
+      ctx.api.committees.deleteMeeting(input.committeeId, input.meetingId),
+    ),
 });

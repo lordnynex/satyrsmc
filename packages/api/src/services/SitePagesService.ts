@@ -2,33 +2,20 @@ import type { DataSource } from "typeorm";
 import { SitePage } from "../entities";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
+import type {
+  SitePageCreateInput,
+  SitePageResponse,
+  SitePageUpdateInput,
+  WebsiteAdminGetPageByIdOutput,
+  WebsiteAdminListPagesOutput,
+} from "@satyrsmc/shared/dto/admin/websiteAdmin";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
-
-export interface SitePagePayload {
-  id?: string;
-  slug: string;
-  title: string;
-  body?: string;
-  meta_title?: string | null;
-  meta_description?: string | null;
-}
-
-export interface SitePageResponse {
-  id: string;
-  slug: string;
-  title: string;
-  body: string;
-  meta_title: string | null;
-  meta_description: string | null;
-  created_at: string | undefined;
-  updated_at: string | undefined;
-}
 
 export class SitePagesService {
   constructor(private ds: DataSource) {}
 
-  async list(): Promise<SitePageResponse[]> {
+  async list(): Promise<WebsiteAdminListPagesOutput> {
     const pages = await this.ds.getRepository(SitePage).find({
       order: { slug: "ASC" },
     });
@@ -45,7 +32,7 @@ export class SitePagesService {
     return page ? this.toResponse(page) : null;
   }
 
-  async create(body: SitePagePayload): Promise<SitePageResponse> {
+  async create(body: SitePageCreateInput & { id?: string }): Promise<WebsiteAdminGetPageByIdOutput> {
     const now = new Date().toISOString();
     const page = this.ds.getRepository(SitePage).create({
       id: body.id ?? uuid(),
@@ -61,17 +48,16 @@ export class SitePagesService {
     return this.toResponse(page);
   }
 
-  async update(id: string, body: Partial<SitePagePayload>): Promise<SitePageResponse | null> {
+  async update(id: string, body: Partial<SitePageUpdateInput>): Promise<SitePageResponse | null> {
     const page = await this.ds.getRepository(SitePage).findOne({ where: { id } });
     if (!page) return null;
 
-    const now = new Date().toISOString();
     if (body.slug !== undefined) page.slug = body.slug;
     if (body.title !== undefined) page.title = body.title;
     if (body.body !== undefined) page.body = body.body;
     if (body.meta_title !== undefined) page.metaTitle = body.meta_title;
     if (body.meta_description !== undefined) page.metaDescription = body.meta_description;
-    page.updatedAt = now;
+    page.updatedAt = new Date();
 
     await this.ds.getRepository(SitePage).save(page);
     return this.toResponse(page);
@@ -82,7 +68,7 @@ export class SitePagesService {
     return (result.affected ?? 0) > 0;
   }
 
-  private toResponse(p: SitePage): SitePageResponse {
+  private toResponse(p: SitePage): WebsiteAdminGetPageByIdOutput {
     return {
       id: p.id,
       slug: p.slug,

@@ -3,6 +3,16 @@ import type { DbLike } from "../db/dbAdapter";
 import { Budget, LineItem } from "../entities";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
+import type {
+  BudgetAddLineItemOutput,
+  BudgetCreateOutput,
+  BudgetDeleteOutput,
+  BudgetDeleteLineItemOutput,
+  BudgetGetOutput,
+  BudgetListOutput,
+  BudgetUpdateOutput,
+  BudgetUpdateLineItemOutput,
+} from "@satyrsmc/shared/dto/admin/budget";
 
 export class BudgetsService {
   constructor(
@@ -10,7 +20,7 @@ export class BudgetsService {
     private ds: DataSource
   ) {}
 
-  async list() {
+  async list(): Promise<BudgetListOutput> {
     /* Original: SELECT * FROM budgets ORDER BY year DESC, name */
     const entities = await this.ds.getRepository(Budget).find({
       order: { year: "DESC", name: "ASC" },
@@ -24,7 +34,7 @@ export class BudgetsService {
     }));
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<BudgetGetOutput | null> {
     /* Original: SELECT * FROM budgets WHERE id = ? */
     const budget = await this.ds.getRepository(Budget).findOne({ where: { id } });
     if (!budget) return null;
@@ -51,16 +61,16 @@ export class BudgetsService {
     };
   }
 
-  async create(body: { name: string; year: number; description?: string }) {
+  async create(body: { name: string; year: number; description?: string }): Promise<BudgetCreateOutput | null> {
     const id = uuid();
     await this.db.run(
       "INSERT INTO budgets (id, name, year, description) VALUES (?, ?, ?, ?)",
       [id, body.name, body.year, body.description ?? null]
     );
-    return { id, ...body };
+    return { id, ...body, lineItems: [] };
   }
 
-  async update(id: string, body: { name?: string; year?: number; description?: string }) {
+  async update(id: string, body: { name?: string; year?: number; description?: string }): Promise<BudgetUpdateOutput | null> {
     /* Original: SELECT * FROM budgets WHERE id = ? */
     const existing = await this.ds.getRepository(Budget).findOne({ where: { id } });
     if (!existing) return null;
@@ -68,13 +78,13 @@ export class BudgetsService {
     const year = body.year ?? existing.year;
     const description = body.description !== undefined ? body.description : existing.description;
     await this.db.run("UPDATE budgets SET name = ?, year = ?, description = ? WHERE id = ?", [name, year, description, id]);
-    return { id, name, year, description };
+    return { id, name, year, description, lineItems: [] };
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<BudgetDeleteOutput> {
     await this.db.run("DELETE FROM line_items WHERE budget_id = ?", [id]);
     await this.db.run("DELETE FROM budgets WHERE id = ?", [id]);
-    return { ok: true };
+    return { ok: true as const };
   }
 
   async addLineItem(
@@ -87,7 +97,7 @@ export class BudgetsService {
       quantity: number;
       historicalCosts?: Record<string, number>;
     }
-  ) {
+  ): Promise<BudgetAddLineItemOutput> {
     const itemId = uuid();
     await this.db.run(
       "INSERT INTO line_items (id, budget_id, name, category, comments, unit_cost, quantity, historical_costs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -110,7 +120,7 @@ export class BudgetsService {
       quantity: number;
       historicalCosts: Record<string, number>;
     }>
-  ) {
+  ): Promise<BudgetUpdateLineItemOutput | null> {
     /* Original: SELECT * FROM line_items WHERE id = ? AND budget_id = ? */
     const existing = await this.ds.getRepository(LineItem).findOne({
       where: { id: itemId, budgetId },
@@ -129,11 +139,19 @@ export class BudgetsService {
       "UPDATE line_items SET name = ?, category = ?, comments = ?, unit_cost = ?, quantity = ?, historical_costs = ? WHERE id = ? AND budget_id = ?",
       [name, category, comments, unitCost, quantity, historicalCosts, itemId, budgetId]
     );
-    return { id: itemId, name, category, comments, unitCost, quantity, historicalCosts };
+    return {
+      id: itemId,
+      name,
+      category,
+      comments,
+      unitCost,
+      quantity,
+      historicalCosts: historicalCosts ? (JSON.parse(historicalCosts) as Record<string, number>) : undefined,
+    };
   }
 
-  async deleteLineItem(budgetId: string, itemId: string) {
+  async deleteLineItem(budgetId: string, itemId: string): Promise<BudgetDeleteLineItemOutput> {
     await this.db.run("DELETE FROM line_items WHERE id = ? AND budget_id = ?", [itemId, budgetId]);
-    return { ok: true };
+    return { ok: true as const };
   }
 }

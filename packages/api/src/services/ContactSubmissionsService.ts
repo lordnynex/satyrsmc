@@ -54,7 +54,7 @@ export class ContactSubmissionsService {
       subject: r.subject ?? null,
       message: r.message,
       status: r.status,
-      created_at: toISOString(r.createdAt),
+      created_at: toISOString(r.createdAt) ?? "",
     }));
   }
 
@@ -69,7 +69,7 @@ export class ContactSubmissionsService {
       sender_email: r.senderEmail,
       message: r.message,
       status: r.status,
-      created_at: toISOString(r.createdAt),
+      created_at: toISOString(r.createdAt) ?? "",
     }));
   }
 }

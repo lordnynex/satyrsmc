@@ -3,15 +3,12 @@ import QRCode from "qrcode";
 import { QrCode as QrCodeEntity, type QrCodeConfig } from "../entities/QrCode";
 import { uuid } from "./utils";
 import { toISOStringOrNull } from "../lib/date";
-
-export interface QrCodeRecord {
-  id: string;
-  name: string | null;
-  url: string;
-  config: QrCodeConfig | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+import type {
+  QrCode,
+  QrCodeCreateOutput,
+  QrCodeListOutput,
+  QrCodeUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/qrCode";
 
 const DEFAULT_CONFIG: Required<Omit<QrCodeConfig, "color">> & {
   color: { dark: string; light: string };
@@ -67,14 +64,14 @@ async function generateQrImage(url: string, config: QrCodeConfig): Promise<Buffe
 export class QrCodesService {
   constructor(private ds: DataSource) {}
 
-  async list(): Promise<QrCodeRecord[]> {
+  async list(): Promise<QrCodeListOutput> {
     const rows = await this.ds.getRepository(QrCodeEntity).find({
       order: { createdAt: "DESC" },
     });
     return rows.map((r) => this.rowToRecord(r));
   }
 
-  async get(id: string): Promise<QrCodeRecord | null> {
+  async get(id: string): Promise<QrCode | null> {
     const row = await this.ds.getRepository(QrCodeEntity).findOne({ where: { id } });
     if (!row) return null;
     return this.rowToRecord(row);
@@ -107,7 +104,7 @@ export class QrCodesService {
     name?: string | null;
     url: string;
     config?: QrCodeConfig | null;
-  }): Promise<QrCodeRecord> {
+  }): Promise<QrCodeCreateOutput> {
     const id = uuid();
     const config = mergeConfig(input.config);
     const imageData = await generateQrImage(input.url, config);
@@ -129,20 +126,19 @@ export class QrCodesService {
   async update(
     id: string,
     input: { name?: string | null; url?: string; config?: QrCodeConfig | null }
-  ): Promise<QrCodeRecord | null> {
+  ): Promise<QrCodeUpdateOutput | null> {
     const row = await this.ds.getRepository(QrCodeEntity).findOne({ where: { id } });
     if (!row) return null;
 
     const url = input.url !== undefined ? input.url.trim() : row.url;
     const config = input.config !== undefined ? mergeConfig(input.config) : (row.config ? (JSON.parse(row.config) as QrCodeConfig) : mergeConfig(null));
     const imageData = await generateQrImage(url, config);
-    const now = new Date().toISOString();
 
     row.name = input.name !== undefined ? (input.name?.trim() || null) : row.name;
     row.url = url;
     row.config = JSON.stringify(config);
     row.imageData = imageData;
-    row.updatedAt = now;
+    row.updatedAt = new Date();
     await this.ds.getRepository(QrCodeEntity).save(row);
     return this.rowToRecord(row);
   }
@@ -152,7 +148,7 @@ export class QrCodesService {
     return (result.affected ?? 0) > 0;
   }
 
-  private rowToRecord(r: QrCodeEntity): QrCodeRecord {
+  private rowToRecord(r: QrCodeEntity): QrCode {
     return {
       id: r.id,
       name: r.name,

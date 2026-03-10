@@ -29,6 +29,26 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    if (request.method === "GET" && path === "/panel") {
+      if (process.env.NODE_ENV === "production") {
+        const durationMs = Math.round(performance.now() - start);
+        const ip = server?.requestIP?.(request)?.address ?? "unknown";
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
+        return new Response("Not Found", { status: 404 });
+      }
+      const mod = await import("trpc-ui") as {
+        renderTrpcPanel: (router: typeof appRouter, opts: { url: string; meta?: { title?: string; description?: string } }) => string;
+      };
+      const html = mod.renderTrpcPanel(appRouter, {
+        url: `${url.origin}${TRPC_PREFIX}`,
+        meta: { title: "Satyrs MC API", description: "tRPC API panel for Satyrs Motorcycle Club." },
+      });
+      const durationMs = Math.round(performance.now() - start);
+      const ip = server?.requestIP?.(request)?.address ?? "unknown";
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
+      return new Response(html, { headers: { "Content-Type": "text/html" } });
+    }
+
     if (path.startsWith(TRPC_PREFIX)) {
       const response = await fetchRequestHandler({
         endpoint: TRPC_PREFIX,

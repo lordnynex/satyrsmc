@@ -1,12 +1,33 @@
-import { z } from "zod";
 import { t } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import {
+  BudgetAddLineItemInputSchema,
+  BudgetAddLineItemOutputSchema,
+  BudgetCreateInputSchema,
+  BudgetCreateOutputSchema,
+  BudgetDeleteInputSchema,
+  BudgetDeleteLineItemInputSchema,
+  BudgetDeleteLineItemOutputSchema,
+  BudgetDeleteOutputSchema,
+  BudgetGetInputSchema,
+  BudgetGetOutputSchema,
+  BudgetListOutputSchema,
+  BudgetUpdateInputSchema,
+  BudgetUpdateLineItemInputSchema,
+  BudgetUpdateLineItemOutputSchema,
+  BudgetUpdateOutputSchema,
+} from "@satyrsmc/shared/dto/admin/budget";
 
 export const budgetsRouter = t.router({
-  list: t.procedure.query(async ({ ctx }) => ctx.api.budgets.list()),
+  list: t.procedure
+    .output(BudgetListOutputSchema)
+    .meta({ description: "List all budgets." })
+    .query(async ({ ctx }) => ctx.api.budgets.list()),
 
   get: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(BudgetGetInputSchema)
+    .output(BudgetGetOutputSchema)
+    .meta({ description: "Get a budget by id." })
     .query(async ({ ctx, input }) => {
       const b = await ctx.api.budgets.get(input.id);
       if (!b) throw new TRPCError({ code: "NOT_FOUND" });
@@ -14,18 +35,19 @@ export const budgetsRouter = t.router({
     }),
 
   create: t.procedure
-    .input(z.object({ name: z.string(), year: z.number(), description: z.string().optional() }))
-    .mutation(async ({ ctx, input }) => ctx.api.budgets.create(input)),
+    .input(BudgetCreateInputSchema)
+    .output(BudgetCreateOutputSchema)
+    .meta({ description: "Create a new budget." })
+    .mutation(async ({ ctx, input }) => {
+      const b = await ctx.api.budgets.create(input);
+      if (!b) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Budget create returned null" });
+      return b;
+    }),
 
   update: t.procedure
-    .input(
-      z.object({
-        id: z.string(),
-        name: z.string().optional(),
-        year: z.number().optional(),
-        description: z.string().optional(),
-      })
-    )
+    .input(BudgetUpdateInputSchema)
+    .output(BudgetUpdateOutputSchema)
+    .meta({ description: "Update a budget." })
     .mutation(async ({ ctx, input }) => {
       const { id, ...body } = input;
       const b = await ctx.api.budgets.update(id, body);
@@ -34,42 +56,27 @@ export const budgetsRouter = t.router({
     }),
 
   delete: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(BudgetDeleteInputSchema)
+    .output(BudgetDeleteOutputSchema)
+    .meta({ description: "Delete a budget." })
     .mutation(async ({ ctx, input }) => {
       await ctx.api.budgets.delete(input.id);
-      return { ok: true };
+      return { ok: true as const };
     }),
 
   addLineItem: t.procedure
-    .input(
-      z.object({
-        budgetId: z.string(),
-        name: z.string(),
-        category: z.string(),
-        comments: z.string().optional(),
-        unitCost: z.number(),
-        quantity: z.number(),
-        historicalCosts: z.record(z.number()).optional(),
-      })
-    )
+    .input(BudgetAddLineItemInputSchema)
+    .output(BudgetAddLineItemOutputSchema)
+    .meta({ description: "Add a line item to a budget." })
     .mutation(async ({ ctx, input }) => {
       const { budgetId, ...body } = input;
       return ctx.api.budgets.addLineItem(budgetId, body);
     }),
 
   updateLineItem: t.procedure
-    .input(
-      z.object({
-        budgetId: z.string(),
-        itemId: z.string(),
-        name: z.string().optional(),
-        category: z.string().optional(),
-        comments: z.string().optional(),
-        unitCost: z.number().optional(),
-        quantity: z.number().optional(),
-        historicalCosts: z.record(z.number()).optional(),
-      })
-    )
+    .input(BudgetUpdateLineItemInputSchema)
+    .output(BudgetUpdateLineItemOutputSchema)
+    .meta({ description: "Update a budget line item." })
     .mutation(async ({ ctx, input }) => {
       const { budgetId, itemId, ...body } = input;
       const b = await ctx.api.budgets.updateLineItem(budgetId, itemId, body);
@@ -78,9 +85,11 @@ export const budgetsRouter = t.router({
     }),
 
   deleteLineItem: t.procedure
-    .input(z.object({ budgetId: z.string(), itemId: z.string() }))
+    .input(BudgetDeleteLineItemInputSchema)
+    .output(BudgetDeleteLineItemOutputSchema)
+    .meta({ description: "Delete a budget line item." })
     .mutation(async ({ ctx, input }) => {
       await ctx.api.budgets.deleteLineItem(input.budgetId, input.itemId);
-      return { ok: true };
+      return { ok: true as const };
     }),
 });

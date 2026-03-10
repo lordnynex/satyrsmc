@@ -3,13 +3,19 @@ import { Document, DocumentVersion } from "../entities";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
 import { tiptapJsonToPdf } from "../lib/tiptapToPdf";
+import type {
+  DocumentGetOutput,
+  DocumentGetVersionsOutput,
+  DocumentRestoreOutput,
+  DocumentUpdateOutput,
+} from "@satyrsmc/shared/dto/admin/document";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
 export class DocumentsService {
   constructor(private ds: DataSource) {}
 
-  async get(id: string) {
+  async get(id: string): Promise<DocumentGetOutput | null> {
     const doc = await this.ds.getRepository(Document).findOne({ where: { id } });
     if (!doc) return null;
     return {
@@ -32,7 +38,7 @@ export class DocumentsService {
     return doc;
   }
 
-  async update(id: string, body: { content: string }) {
+  async update(id: string, body: { content: string }): Promise<DocumentUpdateOutput | null> {
     const doc = await this.ds.getRepository(Document).findOne({ where: { id } });
     if (!doc) return null;
 
@@ -71,7 +77,7 @@ export class DocumentsService {
       : null;
   }
 
-  async listVersions(documentId: string) {
+  async listVersions(documentId: string): Promise<DocumentGetVersionsOutput> {
     const versions = await this.ds.getRepository(DocumentVersion).find({
       where: { documentId },
       order: { versionNumber: "DESC" },
@@ -106,7 +112,7 @@ export class DocumentsService {
     };
   }
 
-  async restore(documentId: string, versionId?: string, versionNumber?: number) {
+  async restore(documentId: string, versionId?: string, versionNumber?: number): Promise<DocumentRestoreOutput | null> {
     const doc = await this.ds.getRepository(Document).findOne({ where: { id: documentId } });
     if (!doc) return null;
 
