@@ -21,7 +21,8 @@ describe("admin.website (CMS)", () => {
 
   describe("listPages", () => {
     test("returns created pages", async () => {
-      const p = await createSitePage(harness.api, { slug: "list-page", title: "List Page" });
+      // Use no overrides so createSitePage generates a unique slug/title (no cross-test conflict).
+      const p = await createSitePage(harness.api);
       const result = await harness.caller.admin.website.listPages();
       expect(Array.isArray(result)).toBe(true);
       expect(result.some((x) => x.id === p.id)).toBe(true);
@@ -59,7 +60,8 @@ describe("admin.website (CMS)", () => {
 
   describe("updatePage", () => {
     test("updates page and returns it", async () => {
-      const p = await createSitePage(harness.api, { slug: "update-page", title: "To Update" });
+      // Use no overrides so createSitePage generates a unique slug/title (no cross-test conflict).
+      const p = await createSitePage(harness.api);
       const result = await harness.caller.admin.website.updatePage({
         id: p.id,
         title: "Updated Page",
