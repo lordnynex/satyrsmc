@@ -1,5 +1,5 @@
-import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { setupTestDb, teardownTestDb } from "../../test/setup";
+import { describe, test, expect, beforeAll } from "bun:test";
+import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
 import { createMember } from "./helpers";
@@ -12,10 +12,6 @@ describe("ContactSubmissionsService", () => {
     const result = await setupTestDb();
     api = result.api;
     ds = result.ds;
-  });
-
-  afterAll(async () => {
-    await teardownTestDb(ds);
   });
 
   describe("createContact", () => {
