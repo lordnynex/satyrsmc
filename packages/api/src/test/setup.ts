@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import type { DataSourceOptions } from "typeorm";
 import { PGliteDriver } from "typeorm-pglite";
 import { dataSourceOptions } from "../db/dataSource";
 import { makeDbLike } from "../db/dbAdapter";
@@ -23,7 +24,7 @@ export async function setupTestDb(): Promise<{ ds: DataSource; db: DbLike; api: 
     driver: new PGliteDriver().driver,
     migrationsRun: true,
     synchronize: false,
-  } as Parameters<typeof DataSource.prototype.setOptions>[0]);
+  } as DataSourceOptions);
 
   await ds.initialize();
 
