@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Baby, ChevronRight, User, Gavel } from "lucide-react";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 import { formatMemberSinceDisplay } from "./memberUtils";
 
 interface MemberCardProps {

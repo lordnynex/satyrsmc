@@ -1,6 +1,6 @@
 import { trpc } from "@/trpc";
-import type { Contact } from "@satyrsmc/shared/types/contact";
-import type { MeetingTemplate } from "@satyrsmc/shared/types/meeting";
+import type { Contact } from "@satyrsmc/shared/client";
+import type { MeetingTemplate } from "@satyrsmc/shared/client";
 
 /**
  * tRPC v11 useSuspenseQuery returns [data, queryResult]; older setups may return { data }.

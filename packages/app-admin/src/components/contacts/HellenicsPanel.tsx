@@ -22,7 +22,7 @@ import { BookOpen, Plus, Search, Download, List } from "lucide-react";
 import { AddContactDialog } from "./AddContactDialog";
 import { AddToMailingListDialog } from "./AddToMailingListDialog";
 import { ContactDirectoryTable } from "./ContactDirectoryTable";
-import type { ContactSearchParams } from "@satyrsmc/shared/types/contact";
+import type { ContactSearchParams } from "@satyrsmc/shared/client";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);

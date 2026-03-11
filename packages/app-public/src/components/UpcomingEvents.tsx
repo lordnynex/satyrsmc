@@ -1,6 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
-import { trpc } from "../trpc";
+import { trpc } from "@satyrsmc/shared/client";
 
 export const UpcomingEvents: React.FC = () => {
   const { data: events, isLoading, error } = trpc.website.getEventsFeed.useQuery();

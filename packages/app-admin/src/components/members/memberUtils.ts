@@ -1,4 +1,4 @@
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 import { jsPDF } from "jspdf";
 import { MONTHS } from "@/lib/date-utils";
 import { escapeVCardValue } from "@/lib/vcard";

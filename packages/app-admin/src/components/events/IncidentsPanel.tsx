@@ -4,7 +4,7 @@ import {
   useEventIncidentUpdate,
   useEventIncidentDelete,
 } from "@/queries/hooks";
-import type { Incident } from "@satyrsmc/shared/types/event";
+import type { Incident } from "@satyrsmc/shared/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";

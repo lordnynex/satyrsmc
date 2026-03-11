@@ -1,6 +1,6 @@
 import React from "react";
 import { Hero } from "../components/Hero";
-import { trpc } from "../trpc";
+import { trpc } from "@satyrsmc/shared/client";
 
 const ContactPage: React.FC = () => {
   const [name, setName] = React.useState("");

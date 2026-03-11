@@ -57,9 +57,9 @@ TypeORM Entity → Service (returns @satyrsmc/shared type) → tRPC Router → A
 ```
 
 - **Services MUST annotate return types** with the shared interface (e.g., `entityToContact(e: ContactEntity): Contact`)
-- **Shared types** in `@satyrsmc/shared/types/*` are the cross-package contract
+- **Shared types** in `@satyrsmc/shared/client` and `@satyrsmc/shared/dto/*` are the cross-package contract
 - **Zod for tRPC inputs only** — all mutation inputs need Zod schemas, no `.passthrough()`
-- **Import from canonical paths** — `@satyrsmc/shared/types/contact`, not via barrel re-exports from unrelated modules
+- **Import from canonical paths** — `@satyrsmc/shared/client` for frontend types/constants, or `@satyrsmc/shared/dto/admin/*` for DTOs
 - **Frontend hooks get types automatically** from `createTRPCReact<AppRouter>()` — don't re-annotate
 
 See the "End-to-End Type Safety" section in [CONTRIBUTING.md](CONTRIBUTING.md) for the full pattern and examples.
@@ -70,16 +70,9 @@ The `@satyrsmc/shared` package contains hand-written TypeScript interfaces. Ther
 
 **Exports** (from `packages/shared/package.json`):
 ```
-@satyrsmc/shared/types/contact    — Contact, ContactEmail, ContactPhone, ...
-@satyrsmc/shared/types/member     — Member, MemberPosition, ...
-@satyrsmc/shared/types/event      — Event, EventType, EventAttendee, Incident, ...
-@satyrsmc/shared/types/meeting    — MeetingSummary, MeetingMotion, ...
-@satyrsmc/shared/types/committee  — CommitteeSummary, CommitteeMember, ...
-@satyrsmc/shared/types/document   — Document, DocumentVersion
-@satyrsmc/shared/types/website    — SitePageResponse, SiteSettingsResponse, BlogPostResponse
-@satyrsmc/shared/types/budget     — Budget-related types (re-exports)
-@satyrsmc/shared/types/scenario   — Scenario types
-@satyrsmc/shared/types/qrCode     — QrCode types
+@satyrsmc/shared/client           — trpc, createTrpcClient, TrpcClientProvider, useTrpcClient; RouterOutputs/RouterInputs; Contact, Member, Event, MeetingSummary, CommitteeSummary, Document, Budget, Scenario, QrCode, etc.; MEMBER_POSITIONS, Inputs, LineItem, ScenarioMetrics; unwrap, getErrorMessage
+@satyrsmc/shared/client/admin-api — buildApi, useApi, ApiProvider, *ApiClient (admin-only)
+@satyrsmc/shared/dto/*            — DTO schemas and inferred types (admin/event, admin/contact, website, …)
 @satyrsmc/shared/lib/constants    — ALL_MEMBERS_ID constant
 ```
 

@@ -16,7 +16,7 @@ import {
   useActionItemUpdate,
   useActionItemDelete,
 } from "@/queries/hooks";
-import type { MeetingActionItem } from "@satyrsmc/shared/types/meeting";
+import type { MeetingActionItem } from "@satyrsmc/shared/client";
 
 interface ActionItemsCardProps {
   meetingId: string;

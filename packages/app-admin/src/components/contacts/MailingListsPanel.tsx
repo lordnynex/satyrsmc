@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MailingList, ListPreview } from "@satyrsmc/shared/types/contact";
+import type { MailingList, ListPreview } from "@satyrsmc/shared/client";
 import {
   useCreateMailingList,
   useDeleteMailingList,

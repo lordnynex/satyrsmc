@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, ExternalLink, MapPin } from "lucide-react";
-import type { Event } from "@satyrsmc/shared/types/budget";
+import type { Event } from "@satyrsmc/shared/client";
 import { formatDateOnly } from "@/lib/date-utils";
 
 interface EventDetailsCardProps {

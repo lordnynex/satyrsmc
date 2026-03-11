@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateEvent } from "@/queries/hooks";
 import { EVENT_TYPE_LABELS } from "@/lib/event-constants";
-import type { EventType } from "@satyrsmc/shared/types/event";
+import type { EventType } from "@satyrsmc/shared/client";
 
 interface AddEventDialogProps {
   open: boolean;

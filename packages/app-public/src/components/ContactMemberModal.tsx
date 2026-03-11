@@ -1,5 +1,5 @@
 import React from "react";
-import { trpc } from "../trpc";
+import { trpc } from "@satyrsmc/shared/client";
 
 interface ContactMemberModalProps {
   memberId: string;

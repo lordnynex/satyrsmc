@@ -1,4 +1,4 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 import { fileToBase64 } from "./utils";
 
 export class EventsApiClient {

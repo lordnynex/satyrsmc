@@ -1,10 +1,10 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 import type {
   Contact,
   ContactSearchParams,
   ContactSearchResult,
   ContactPhoto,
-} from "@satyrsmc/shared/types/contact";
+} from "@satyrsmc/shared/dto/admin/contact";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {

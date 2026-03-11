@@ -1,7 +1,7 @@
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { ChartCard } from "./ChartCard";
-import type { LineItem } from "@satyrsmc/shared/types/budget";
+import type { LineItem } from "@satyrsmc/shared/client";
 
 interface CostPerCategoryChartProps {
   lineItems: LineItem[];

@@ -1,7 +1,7 @@
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { ChartCard } from "./ChartCard";
-import type { ScenarioMetrics } from "@satyrsmc/shared/types/budget";
+import type { ScenarioMetrics } from "@satyrsmc/shared/client";
 
 interface CostCoverageChartProps {
   metrics: ScenarioMetrics[];

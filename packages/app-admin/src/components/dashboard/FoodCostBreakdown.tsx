@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Inputs, LineItem } from "@satyrsmc/shared/types/budget";
+import type { Inputs, LineItem } from "@satyrsmc/shared/client";
 import { isFoodCategory, EVENT_DAYS } from "@/lib/event-constants";
 
 interface FoodCostBreakdownProps {

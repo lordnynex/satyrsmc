@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { MeetingTemplate } from "@satyrsmc/shared/types/meeting";
+import type { MeetingTemplate } from "@satyrsmc/shared/client";
 
 /** Data: MeetingTemplate[] */
 export function useMeetingTemplatesSuspense(type?: "agenda" | "minutes") {

@@ -33,7 +33,7 @@ import { MemberCard } from "@/components/members/MemberCard";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { ArrowLeft, Pencil, X, Plus, Calendar, Trash2 } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 
 export function CommitteeDetailPage() {
   const { id } = useParams<{ id: string }>();

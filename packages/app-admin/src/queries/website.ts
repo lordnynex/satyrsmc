@@ -5,7 +5,7 @@ import { queryKeys } from "@/queries/keys";
 import type {
   SitePageResponse,
   SiteSettingsResponse,
-} from "@satyrsmc/shared/types/website";
+} from "@satyrsmc/shared/client";
 
 /** Data: SitePageResponse[] */
 export function useWebsitePagesOptional() {

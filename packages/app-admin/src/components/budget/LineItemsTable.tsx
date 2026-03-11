@@ -5,7 +5,7 @@ import { Plus, FileInput } from "lucide-react";
 import { useAppState } from "@/state/AppState";
 import { LineItemRow } from "./LineItemRow";
 import { ImportLineItemsModal } from "./ImportLineItemsModal";
-import type { LineItem } from "@satyrsmc/shared/types/budget";
+import type { LineItem } from "@satyrsmc/shared/client";
 
 export function LineItemsTable() {
   const {

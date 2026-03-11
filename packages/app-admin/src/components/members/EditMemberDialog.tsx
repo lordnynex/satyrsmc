@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MEMBER_POSITIONS } from "@satyrsmc/shared/types/budget";
+import { MEMBER_POSITIONS } from "@satyrsmc/shared/client";
 import { MONTHS } from "./memberUtils";
 import { fileToBase64 } from "./memberUtils";
 

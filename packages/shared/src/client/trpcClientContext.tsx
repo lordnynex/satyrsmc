@@ -1,7 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { createTrpcClient } from "@/trpc";
-
-export type TrpcClient = ReturnType<typeof createTrpcClient>;
+import type { TrpcClient } from "./trpc";
 
 const TrpcClientContext = createContext<TrpcClient | null>(null);
 

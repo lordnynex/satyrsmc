@@ -12,7 +12,7 @@ import {
   useUpdateLineItem,
   useDeleteLineItem,
 } from "@/queries/hooks";
-import type { Budget, Inputs, LineItem, Scenario } from "@satyrsmc/shared/types/budget";
+import type { Budget, Inputs, LineItem, Scenario } from "@satyrsmc/shared/client";
 
 const DEFAULT_CATEGORIES = [
   "Venue",

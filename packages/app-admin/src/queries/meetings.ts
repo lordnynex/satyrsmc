@@ -6,7 +6,7 @@ import type {
   MeetingSummary,
   MotionsListResponse,
   OldBusinessItemWithMeeting,
-} from "@satyrsmc/shared/types/meeting";
+} from "@satyrsmc/shared/client";
 
 function useTrpcUtils() {
   return trpc.useUtils();

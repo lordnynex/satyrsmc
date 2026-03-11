@@ -8,7 +8,7 @@ import {
   useOldBusinessUpdate,
   useOldBusinessDelete,
 } from "@/queries/hooks";
-import type { OldBusinessItem } from "@satyrsmc/shared/types/meeting";
+import type { OldBusinessItem } from "@satyrsmc/shared/client";
 
 interface OldBusinessCardProps {
   meetingId: string;

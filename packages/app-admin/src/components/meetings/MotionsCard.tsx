@@ -17,7 +17,7 @@ import {
   useMotionDelete,
 } from "@/queries/hooks";
 import { MemberChip } from "@/components/members/MemberChip";
-import type { MeetingMotion } from "@satyrsmc/shared/types/meeting";
+import type { MeetingMotion } from "@satyrsmc/shared/client";
 
 interface MotionsCardProps {
   meetingId: string;

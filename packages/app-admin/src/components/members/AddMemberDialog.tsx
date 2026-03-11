@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateMember } from "@/queries/hooks";
-import { MEMBER_POSITIONS } from "@satyrsmc/shared/types/budget";
+import { MEMBER_POSITIONS } from "@satyrsmc/shared/client";
 import { MONTHS } from "./memberUtils";
 import { fileToBase64 } from "./memberUtils";
 

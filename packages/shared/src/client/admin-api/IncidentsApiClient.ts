@@ -1,4 +1,4 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 
 export class IncidentsApiClient {
   constructor(private client: TrpcClient) {}
@@ -7,4 +7,3 @@ export class IncidentsApiClient {
     return this.client.admin.incidents.list.query(params as never);
   }
 }
-

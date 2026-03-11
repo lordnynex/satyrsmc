@@ -1,10 +1,10 @@
-import type { TrpcClient } from "./trpcClientContext";
-import type { Document, DocumentVersion } from "@satyrsmc/shared/types/document";
+import type { TrpcClient } from "../trpc";
+import type { DocumentGetOutput, DocumentGetVersionsOutput } from "@satyrsmc/shared/dto/admin/document";
 
 export class DocumentsApiClient {
   constructor(private client: TrpcClient) {}
 
-  get(id: string): Promise<Document | null> {
+  get(id: string): Promise<DocumentGetOutput | null> {
     return this.client.admin.documents.get.query({ id });
   }
 
@@ -15,7 +15,7 @@ export class DocumentsApiClient {
     });
   }
 
-  getVersions(id: string): Promise<DocumentVersion[]> {
+  getVersions(id: string): Promise<DocumentGetVersionsOutput> {
     return this.client.admin.documents.getVersions.query({ id });
   }
 

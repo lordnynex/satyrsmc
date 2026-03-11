@@ -9,7 +9,7 @@ import type {
   ContactAddress,
   ContactEmergencyContact,
   ConsentStatus,
-} from "@satyrsmc/shared/types/contact";
+} from "@satyrsmc/shared/client";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import { formatPhoneNumber, isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
 import { ArrowLeft, Pencil, Download, Trash2, RotateCcw, Plus, Trash2Icon, User, X, AlertCircle, Check } from "lucide-react";

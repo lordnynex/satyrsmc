@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Contact, ContactSearchParams, MailingList, Tag } from "@satyrsmc/shared/types/contact";
+import type { Contact, ContactSearchParams, MailingList, Tag } from "@satyrsmc/shared/client";
 
 /** Data: { contacts: Contact[]; total: number; page: number; limit: number } */
 export function useContactsSuspense(params?: ContactSearchParams) {

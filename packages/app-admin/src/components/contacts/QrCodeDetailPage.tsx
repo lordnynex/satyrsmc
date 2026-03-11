@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/types/qrCode";
+import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/client";
 
 const SIZE_PRESETS = [
   { label: "Small (128px)", value: 128 },

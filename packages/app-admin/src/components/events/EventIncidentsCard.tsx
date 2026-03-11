@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, Plus, Pencil, Trash2 } from "lucide-react";
-import type { Incident } from "@satyrsmc/shared/types/event";
+import type { Incident } from "@satyrsmc/shared/client";
 
 interface EventIncidentsCardProps {
   incidents: Incident[];

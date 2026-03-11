@@ -1,6 +1,6 @@
-import type { ScenarioMetrics } from "@satyrsmc/shared/types/budget";
-import type { LineItem } from "@satyrsmc/shared/types/budget";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { ScenarioMetrics } from "@satyrsmc/shared/client";
+import type { LineItem } from "@satyrsmc/shared/client";
+import type { Member } from "@satyrsmc/shared/client";
 
 /** Mock scenario metrics for chart stories */
 export const mockScenarioMetrics: ScenarioMetrics[] = [

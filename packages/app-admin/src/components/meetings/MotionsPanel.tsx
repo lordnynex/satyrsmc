@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Calendar, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
-import type { MotionWithMeeting } from "@satyrsmc/shared/types/meeting";
+import type { MotionWithMeeting } from "@satyrsmc/shared/client";
 
 const PER_PAGE = 25;
 

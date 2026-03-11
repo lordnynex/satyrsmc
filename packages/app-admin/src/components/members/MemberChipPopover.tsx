@@ -5,7 +5,7 @@ import { Users, User, Phone, Mail, MapPin, Trash2 } from "lucide-react";
 import { useMemberOptional } from "@/queries/hooks";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
 import { formatBirthday, formatMemberSince } from "./memberUtils";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 
 interface MemberChipPopoverProps {
   memberId: string;

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Check, Pencil, Trash2 } from "lucide-react";
-import type { EventPackingItem } from "@satyrsmc/shared/types/budget";
+import type { EventPackingItem } from "@satyrsmc/shared/client";
 
 interface PackingItemRowProps {
   item: EventPackingItem;

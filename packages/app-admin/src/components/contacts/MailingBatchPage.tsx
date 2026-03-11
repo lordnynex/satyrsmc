@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MailingBatchRecipient } from "@satyrsmc/shared/types/contact";
+import type { MailingBatchRecipient } from "@satyrsmc/shared/client";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import { generatePdfLabels } from "@/lib/pdf-labels";
 import { ArrowLeft, ChevronDown } from "lucide-react";

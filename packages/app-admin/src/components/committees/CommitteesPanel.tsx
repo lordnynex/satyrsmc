@@ -4,7 +4,7 @@ import { useCommitteesSuspense, unwrapSuspenseData } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
-import type { CommitteeSummary } from "@satyrsmc/shared/types/committee";
+import type { CommitteeSummary } from "@satyrsmc/shared/client";
 
 function CommitteeRow({ c }: { c: CommitteeSummary }) {
   return (

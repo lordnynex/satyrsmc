@@ -6,7 +6,7 @@ import { useEventsSuspense, useInvalidateQueries, unwrapSuspenseData } from "@/q
 import { EVENT_TYPE_LABELS } from "@/lib/event-constants";
 import { Calendar, ChevronRight, BarChart3, Plus } from "lucide-react";
 import { AddEventDialog } from "./AddEventDialog";
-import type { EventType } from "@satyrsmc/shared/types/event";
+import type { EventType } from "@satyrsmc/shared/client";
 import { formatDateOnly } from "@/lib/date-utils";
 
 interface EventsPanelProps {

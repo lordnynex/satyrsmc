@@ -23,8 +23,8 @@ import { formatDueDate, getLastDayOfMonth, MONTHS } from "./eventUtils";
 import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { useMembersOptional } from "@/queries/hooks";
-import type { Event, EventPlanningMilestone } from "@satyrsmc/shared/types/budget";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Event, EventPlanningMilestone } from "@satyrsmc/shared/client";
+import type { Member } from "@satyrsmc/shared/client";
 
 interface EventMilestonesCardProps {
   event: Event;

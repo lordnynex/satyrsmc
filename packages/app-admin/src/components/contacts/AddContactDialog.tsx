@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateContact } from "@/queries/hooks";
 import { isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
-import type { Contact } from "@satyrsmc/shared/types/contact";
+import type { Contact } from "@satyrsmc/shared/client";
 
 interface AddContactDialogProps {
   open: boolean;

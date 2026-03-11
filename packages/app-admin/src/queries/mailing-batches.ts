@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { MailingBatch } from "@satyrsmc/shared/types/contact";
+import type { MailingBatch } from "@satyrsmc/shared/client";
 
 /** Data: MailingBatch */
 export function useMailingBatchSuspense(id: string) {

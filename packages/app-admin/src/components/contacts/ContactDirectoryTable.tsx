@@ -1,4 +1,4 @@
-import type { Contact } from "@satyrsmc/shared/types/contact";
+import type { Contact } from "@satyrsmc/shared/client";
 import { formatAddress, getPrimaryAddress } from "./contactUtils";
 import { formatPhoneNumber } from "@/lib/phone";
 
