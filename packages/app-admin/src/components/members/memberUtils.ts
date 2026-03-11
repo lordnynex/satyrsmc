@@ -26,11 +26,12 @@ export function getYearsAsMember(memberSince: string | null): number | null {
 }
 
 export function formatMemberSinceDisplay(memberSince: string | null): string {
-  if (!memberSince || !/^\d{4}-\d{2}$/.test(memberSince)) return "";
-  const [y, mo] = memberSince.split("-");
+  const key = toMemberSinceKey(memberSince);
+  if (!key) return "";
+  const [y, mo] = key.split("-");
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const month = months[parseInt(mo ?? "1", 10) - 1] ?? mo;
-  const years = getYearsAsMember(memberSince);
+  const years = getYearsAsMember(key);
   if (years !== null) {
     return `${month} ${y} (${years} year${years === 1 ? "" : "s"})`;
   }
@@ -42,31 +43,48 @@ export function formatBirthdayDate(d: Date): string {
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
-/** Format birthday string (YYYY-MM-DD) for display, e.g. "January 15, 2025" */
+/** Format birthday string (YYYY-MM-DD or ISO) for display, e.g. "January 15, 2025" */
 export function formatBirthday(d: string | null): string {
-  if (!d) return "";
+  const dateOnly = d ? d.slice(0, 10) : "";
+  if (!dateOnly || !/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return d ?? "";
   try {
-    const [y, mo, day] = d.split("-");
+    const [y, mo, day] = dateOnly.split("-");
     const month = MONTHS[parseInt(mo ?? "1", 10) - 1] ?? mo;
     return `${month} ${day}, ${y}`;
   } catch {
-    return d;
+    return d ?? "";
   }
 }
 
-/** Format member_since (YYYY-MM) for display, e.g. "January 2025" */
+/** Format member_since (YYYY-MM or ISO) for display, e.g. "January 2025" */
 export function formatMemberSince(d: string | null): string {
-  if (!d || !/^\d{4}-\d{2}$/.test(d)) return "";
-  const [y, mo] = d.split("-");
+  const monthOnly = d ? d.slice(0, 7) : "";
+  if (!monthOnly || !/^\d{4}-\d{2}$/.test(monthOnly)) return "";
+  const [y, mo] = monthOnly.split("-");
   const month = MONTHS[parseInt(mo ?? "1", 10) - 1] ?? mo;
   return `${month} ${y}`;
+}
+
+/** Normalize API date string to YYYY-MM-DD (handles full ISO or date-only). */
+function toBirthdayKey(s: string | null | undefined): string | null {
+  if (!s || typeof s !== "string") return null;
+  const dateOnly = s.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateOnly) ? dateOnly : null;
+}
+
+/** Normalize API date string to YYYY-MM (handles full ISO or YYYY-MM). */
+function toMemberSinceKey(s: string | null | undefined): string | null {
+  if (!s || typeof s !== "string") return null;
+  const monthOnly = s.slice(0, 7);
+  return /^\d{4}-\d{2}$/.test(monthOnly) ? monthOnly : null;
 }
 
 export function formatAnniversaryDate(date: Date, member: Member): string {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const base = `${months[date.getMonth()]} ${date.getDate()}`;
-  if (!member.member_since || !/^\d{4}-\d{2}$/.test(member.member_since)) return base;
-  const joinYear = parseInt(member.member_since.slice(0, 4), 10);
+  const memberSince = toMemberSinceKey(member.member_since);
+  if (!memberSince) return base;
+  const joinYear = parseInt(memberSince.slice(0, 4), 10);
   const years = date.getFullYear() - joinYear;
   return `${base} (${years} year${years === 1 ? "" : "s"})`;
 }
@@ -79,8 +97,9 @@ export function getUpcomingBirthdays(members: Member[], daysAhead = 90): { membe
 
   const result: { member: Member; date: Date }[] = [];
   for (const m of members) {
-    if (!m.birthday || !/^\d{4}-\d{2}-\d{2}$/.test(m.birthday)) continue;
-    const parts = m.birthday.split("-").map(Number);
+    const birthday = toBirthdayKey(m.birthday);
+    if (!birthday) continue;
+    const parts = birthday.split("-").map(Number);
     const month = parts[1] ?? 1;
     const day = parts[2] ?? 1;
     const thisYear = new Date(today.getFullYear(), month - 1, day);
@@ -102,8 +121,9 @@ export function getUpcomingAnniversaries(members: Member[], daysAhead = 90): { m
 
   const result: { member: Member; date: Date }[] = [];
   for (const m of members) {
-    if (!m.member_since || !/^\d{4}-\d{2}$/.test(m.member_since)) continue;
-    const month = Number(m.member_since.split("-")[1] ?? 1);
+    const memberSince = toMemberSinceKey(m.member_since);
+    if (!memberSince) continue;
+    const month = Number(memberSince.split("-")[1] ?? 1);
     const thisYear = new Date(today.getFullYear(), month - 1, 1);
     const nextYear = new Date(today.getFullYear() + 1, month - 1, 1);
     const annivDate = thisYear >= today ? thisYear : nextYear;
