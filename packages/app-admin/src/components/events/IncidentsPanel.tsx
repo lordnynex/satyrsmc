@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Pencil, Trash2 } from "lucide-react";
+import { toDateTimeLocal, formatDateTime } from "@/lib/date-utils";
 
 interface IncidentsResponse {
   items: Incident[];
@@ -58,7 +59,7 @@ export function IncidentsPanel() {
     setSeverity(incident.severity);
     setSummary(incident.summary);
     setDetails(incident.details ?? "");
-    setOccurredAt(incident.occurred_at ?? "");
+    setOccurredAt(toDateTimeLocal(incident.occurred_at) || "");
   };
 
   const resetEditState = () => {
@@ -162,8 +163,8 @@ export function IncidentsPanel() {
                     </div>
                     <div className="flex items-center justify-between gap-3 md:justify-end md:w-[260px]">
                       <div className="text-xs text-muted-foreground md:text-right">
-                        <div>Occurred: {incident.occurred_at ?? "—"}</div>
-                        <div>Logged: {incident.created_at ?? "—"}</div>
+                        <div>Occurred: {incident.occurred_at ? formatDateTime(incident.occurred_at) : "—"}</div>
+                        <div>Logged: {incident.created_at ? formatDateTime(incident.created_at) : "—"}</div>
                       </div>
                       <div className="flex gap-1 shrink-0">
                         <Button

@@ -16,6 +16,7 @@ import {
   useActionItemUpdate,
   useActionItemDelete,
 } from "@/queries/hooks";
+import { toDateOnly, formatDateOnly } from "@/lib/date-utils";
 import type { MeetingActionItem } from "@satyrsmc/shared/client";
 
 interface ActionItemsCardProps {
@@ -85,7 +86,7 @@ export function ActionItemsCard({ meetingId, actionItems }: ActionItemsCardProps
     setEditingId(a.id);
     setDescription(a.description);
     setAssigneeMemberId(a.assignee_member_id ?? "");
-    setDueDate(a.due_date ?? "");
+    setDueDate(toDateOnly(a.due_date) || "");
   };
 
   const formFields = (
@@ -188,7 +189,7 @@ export function ActionItemsCard({ meetingId, actionItems }: ActionItemsCardProps
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       {a.assignee_name && <span>→ {a.assignee_name}</span>}
                       {a.due_date && (
-                        <span>Due {new Date(a.due_date).toLocaleDateString()}</span>
+                        <span>Due {formatDateOnly(a.due_date)}</span>
                       )}
                     </div>
                   </div>
