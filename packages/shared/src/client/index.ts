@@ -56,5 +56,5 @@ export type {
   ScenarioSummary,
 } from "./type-aliases";
 
-// Re-export DTO types so frontends can import from one place
-export * from "../dto";
+// Re-export DTO types only (no runtime Zod); use @satyrsmc/shared/dto for schemas
+export type * from "../dto";
