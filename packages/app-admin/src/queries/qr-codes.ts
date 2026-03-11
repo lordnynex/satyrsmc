@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { QrCode } from "@satyrsmc/shared/types/qrCode";
+import type { QrCode } from "@satyrsmc/shared/client";
 
 /** Data: QrCode[] */
 export function useQrCodesSuspense() {

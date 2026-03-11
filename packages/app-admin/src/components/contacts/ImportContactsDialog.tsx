@@ -14,7 +14,7 @@ import {
   useContactsImportPstExecute,
   useCreateContact,
 } from "@/queries/hooks";
-import type { Contact } from "@satyrsmc/shared/types/contact";
+import type { Contact } from "@satyrsmc/shared/client";
 import { Upload, FileText, Mail } from "lucide-react";
 
 interface ImportContactsDialogProps {

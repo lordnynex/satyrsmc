@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/types/qrCode";
+import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/client";
 import {
   useQrCodesSuspense,
   useInvalidateQueries,

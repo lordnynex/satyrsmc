@@ -15,7 +15,7 @@ import {
 import { useMembersSuspense, useCreateCommittee, unwrapSuspenseData } from "@/queries/hooks";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { ArrowLeft, X } from "lucide-react";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 
 export function CreateCommitteePage() {
   const createCommitteeMutation = useCreateCommittee();

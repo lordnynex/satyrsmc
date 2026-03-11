@@ -1,19 +1,19 @@
-import type { TrpcClient } from "./trpcClientContext";
-import type { MeetingTemplate } from "@satyrsmc/shared/types/meeting";
+import type { TrpcClient } from "../trpc";
+import type { MeetingTemplateListOutput, MeetingTemplateGetOutput } from "@satyrsmc/shared/dto/admin/meeting";
 
 export class MeetingTemplatesApiClient {
   constructor(private client: TrpcClient) {}
 
-  list(options?: { type?: "agenda" | "minutes" }) {
+  list(options?: { type?: "agenda" | "minutes" }): Promise<MeetingTemplateListOutput> {
     return this.client.admin.meetingTemplates.list.query(
       options?.type ? { type: options.type } : undefined
-    ) as Promise<MeetingTemplate[]>;
+    ) as Promise<MeetingTemplateListOutput>;
   }
 
-  get(id: string): Promise<MeetingTemplate | null> {
+  get(id: string): Promise<MeetingTemplateGetOutput | null> {
     return this.client.admin.meetingTemplates.get
       .query({ id })
-      .catch(() => null) as Promise<MeetingTemplate | null>;
+      .catch(() => null) as Promise<MeetingTemplateGetOutput | null>;
   }
 
   create(body: {

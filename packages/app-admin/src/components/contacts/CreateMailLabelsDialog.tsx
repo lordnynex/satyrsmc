@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { generatePdfLabels, AVERY_LAYOUTS, type LabelRecipient } from "@/lib/pdf-labels";
-import type { Contact } from "@satyrsmc/shared/types/contact";
+import type { Contact } from "@satyrsmc/shared/client";
 
 interface CreateMailLabelsDialogProps {
   open: boolean;

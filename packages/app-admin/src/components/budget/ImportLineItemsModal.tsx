@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBudgetOptional } from "@/queries/hooks";
-import type { BudgetSummary, LineItem } from "@satyrsmc/shared/types/budget";
+import type { BudgetSummary, LineItem } from "@satyrsmc/shared/client";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 

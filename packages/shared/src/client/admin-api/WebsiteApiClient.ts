@@ -1,9 +1,4 @@
-import type { TrpcClient } from "./trpcClientContext";
-import type {
-  SitePageResponse,
-  SiteSettingsResponse,
-  BlogPostResponse,
-} from "@satyrsmc/shared/types/website";
+import type { TrpcClient } from "../trpc";
 
 export class WebsiteApiClient {
   constructor(private client: TrpcClient) {}
@@ -17,7 +12,7 @@ export class WebsiteApiClient {
   }
 
   getPageBySlug(slug: string) {
-    return this.client.website.getPageBySlug.query({ slug });
+    return this.client.admin.website.getPageBySlug.query({ slug });
   }
 
   createPage(body: Record<string, unknown>) {

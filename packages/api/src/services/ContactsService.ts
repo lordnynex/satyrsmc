@@ -209,6 +209,148 @@ export class ContactsService {
   }
 
   /**
+   * Batch-load only list-needed relations (emails, phones, addresses, tags) for many contacts.
+   * Used by list() to avoid N+1. Notes, photos, emergency_contacts are returned as empty arrays.
+   */
+  private async loadContactRelationsForList(
+    contactIds: string[],
+  ): Promise<
+    Map<
+      string,
+      {
+        emails: ContactEmail[];
+        phones: ContactPhone[];
+        addresses: ContactAddress[];
+        emergency_contacts: ContactEmergencyContact[];
+        contact_notes: ContactNote[];
+        contact_photos: ContactPhotoType[];
+        tags: Tag[];
+      }
+    >
+  > {
+    const empty = (): {
+      emails: ContactEmail[];
+      phones: ContactPhone[];
+      addresses: ContactAddress[];
+      emergency_contacts: ContactEmergencyContact[];
+      contact_notes: ContactNote[];
+      contact_photos: ContactPhotoType[];
+      tags: Tag[];
+    } => ({
+      emails: [],
+      phones: [],
+      addresses: [],
+      emergency_contacts: [],
+      contact_notes: [],
+      contact_photos: [],
+      tags: [],
+    });
+
+    if (contactIds.length === 0) {
+      return new Map();
+    }
+
+    const [emails, phones, addresses, contactTags] = await Promise.all([
+      this.ds.getRepository(ContactEmailEntity).find({
+        where: { contactId: In(contactIds) },
+        order: { isPrimary: "DESC", id: "ASC" },
+      }),
+      this.ds.getRepository(ContactPhoneEntity).find({
+        where: { contactId: In(contactIds) },
+        order: { isPrimary: "DESC", id: "ASC" },
+      }),
+      this.ds.getRepository(ContactAddressEntity).find({
+        where: { contactId: In(contactIds) },
+        order: { isPrimaryMailing: "DESC", id: "ASC" },
+      }),
+      this.ds.getRepository(ContactTag).find({
+        where: { contactId: In(contactIds) },
+      }),
+    ]);
+
+    const tagIds = [...new Set(contactTags.map((ct) => ct.tagId))];
+    const tagRows =
+      tagIds.length > 0
+        ? await this.ds.getRepository(TagEntity).find({
+            where: { id: In(tagIds) },
+            order: { name: "ASC" },
+          })
+        : [];
+
+    const tagById = new Map(tagRows.map((t) => [t.id, { id: t.id, name: t.name }]));
+    const tagsByContactId = new Map<string, Tag[]>();
+    for (const ct of contactTags) {
+      const tag = tagById.get(ct.tagId);
+      if (tag) {
+        const arr = tagsByContactId.get(ct.contactId) ?? [];
+        arr.push(tag);
+        tagsByContactId.set(ct.contactId, arr);
+      }
+    }
+
+    const map = new Map<
+      string,
+      {
+        emails: ContactEmail[];
+        phones: ContactPhone[];
+        addresses: ContactAddress[];
+        emergency_contacts: ContactEmergencyContact[];
+        contact_notes: ContactNote[];
+        contact_photos: ContactPhotoType[];
+        tags: Tag[];
+      }
+    >();
+
+    for (const id of contactIds) {
+      const tags = tagsByContactId.get(id) ?? [];
+      const tagsSorted = [...tags].sort((a, b) => a.name.localeCompare(b.name));
+      map.set(id, { ...empty(), tags: tagsSorted });
+    }
+
+    const toEmail = (e: ContactEmailEntity) => ({
+      id: e.id,
+      contact_id: e.contactId,
+      email: e.email,
+      type: (e.type as ContactEmail["type"]) ?? "other",
+      is_primary: e.isPrimary,
+    });
+    const toPhone = (p: ContactPhoneEntity) => ({
+      id: p.id,
+      contact_id: p.contactId,
+      phone: p.phone,
+      type: (p.type as ContactPhone["type"]) ?? "other",
+      is_primary: p.isPrimary,
+    });
+    const toAddress = (a: ContactAddressEntity) => ({
+      id: a.id,
+      contact_id: a.contactId,
+      address_line1: a.addressLine1,
+      address_line2: a.addressLine2,
+      city: a.city,
+      state: a.state,
+      postal_code: a.postalCode,
+      country: a.country,
+      type: (a.type as ContactAddress["type"]) ?? "home",
+      is_primary_mailing: a.isPrimaryMailing,
+    });
+
+    for (const e of emails) {
+      const entry = map.get(e.contactId);
+      if (entry) entry.emails.push(toEmail(e));
+    }
+    for (const p of phones) {
+      const entry = map.get(p.contactId);
+      if (entry) entry.phones.push(toPhone(p));
+    }
+    for (const a of addresses) {
+      const entry = map.get(a.contactId);
+      if (entry) entry.addresses.push(toAddress(a));
+    }
+
+    return map;
+  }
+
+  /**
    * Get contact photo as buffer for the given size. Returns null if not found.
    */
   async getPhoto(
@@ -323,7 +465,7 @@ export class ContactsService {
 
   async list(params: ContactSearchParams = {}): Promise<ContactSearchResult> {
     const page = params.page ?? 1;
-    const limit = Math.min(params.limit ?? 50, 100);
+    const limit = Math.min(Math.max(1, params.limit ?? 25), 100);
     const offset = (page - 1) * limit;
     const sort = params.sort ?? "updated_at";
     const sortDir = params.sortDir ?? "desc";
@@ -387,13 +529,22 @@ export class ContactsService {
       .take(limit)
       .getMany();
 
-    const contacts = await Promise.all(
-      entities.map(async (e) => {
-        const c = entityToContact(e);
-        const rel = await this.loadContactRelations(c.id);
-        return { ...c, ...rel };
-      }),
-    );
+    const contactIds = entities.map((e) => e.id);
+    const relationsMap = await this.loadContactRelationsForList(contactIds);
+
+    const contacts = entities.map((e) => {
+      const c = entityToContact(e);
+      const rel = relationsMap.get(c.id) ?? {
+        emails: [],
+        phones: [],
+        addresses: [],
+        emergency_contacts: [],
+        contact_notes: [],
+        contact_photos: [],
+        tags: [],
+      };
+      return { ...c, ...rel };
+    });
 
     return { contacts, total, page, limit };
   }

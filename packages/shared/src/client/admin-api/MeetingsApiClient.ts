@@ -1,15 +1,15 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 import type {
-  MeetingDetail,
-  MeetingSummary,
-  MotionsListResponse,
-  OldBusinessItemWithMeeting,
-} from "@satyrsmc/shared/types/meeting";
+  MeetingListOutput,
+  MeetingGetOutput,
+  MeetingListOldBusinessOutput,
+  MeetingListMotionsOutput,
+} from "@satyrsmc/shared/dto/admin/meeting";
 
 export class MeetingsApiClient {
   constructor(private client: TrpcClient) {}
 
-  listOldBusiness(): Promise<OldBusinessItemWithMeeting[]> {
+  listOldBusiness(): Promise<MeetingListOldBusinessOutput> {
     return this.client.admin.meetings.listOldBusiness.query();
   }
 
@@ -17,20 +17,20 @@ export class MeetingsApiClient {
     page: number;
     per_page: number;
     q?: string;
-  }): Promise<MotionsListResponse> {
+  }): Promise<MeetingListMotionsOutput> {
     return this.client.admin.meetings.listMotions.query(params);
   }
 
-  list(options?: { sort?: "date" | "meeting_number" }) {
+  list(options?: { sort?: "date" | "meeting_number" }): Promise<MeetingListOutput> {
     return this.client.admin.meetings.list.query(
       options?.sort ? { sort: options.sort } : undefined
-    ) as Promise<MeetingSummary[]>;
+    ) as Promise<MeetingListOutput>;
   }
 
-  get(id: string): Promise<MeetingDetail | null> {
+  get(id: string): Promise<MeetingGetOutput | null> {
     return this.client.admin.meetings.get
       .query({ id })
-      .catch(() => null) as Promise<MeetingDetail | null>;
+      .catch(() => null) as Promise<MeetingGetOutput | null>;
   }
 
   create(body: {

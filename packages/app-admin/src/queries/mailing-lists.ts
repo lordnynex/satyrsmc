@@ -7,7 +7,7 @@ import type {
   MailingList,
   MailingListIncludedPage,
   MailingListStats,
-} from "@satyrsmc/shared/types/contact";
+} from "@satyrsmc/shared/client";
 
 /** Data: MailingList[] */
 export function useMailingListsSuspense() {

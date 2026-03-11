@@ -15,8 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MailingBatchRecipient } from "@satyrsmc/shared/types/contact";
+import type { MailingBatchRecipient } from "@satyrsmc/shared/client";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
+import { formatDateTime } from "@/lib/date-utils";
 import { generatePdfLabels } from "@/lib/pdf-labels";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import {
@@ -169,7 +170,7 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
         <CardHeader>
           <CardTitle>{batch.name}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {batch.recipient_count} recipients • Created {new Date(batch.created_at).toLocaleDateString()}
+            {batch.recipient_count} recipients • Created {formatDateTime(batch.created_at)}
             {batch.list && ` • From ${batch.list.name}`}
           </p>
         </CardHeader>

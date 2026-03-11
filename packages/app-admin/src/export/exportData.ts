@@ -1,4 +1,4 @@
-import type { Inputs, LineItem, ScenarioMetrics } from "@satyrsmc/shared/types/budget";
+import type { Inputs, LineItem, ScenarioMetrics } from "@satyrsmc/shared/client";
 import { isFoodCategory, EVENT_DAYS } from "@/lib/event-constants";
 
 export interface ExportSummary {

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Budget, BudgetSummary, Scenario, ScenarioSummary } from "@satyrsmc/shared/types/budget";
+import type { Budget, BudgetSummary, Scenario, ScenarioSummary } from "@satyrsmc/shared/client";
 
 /** Data: BudgetSummary[] */
 export function useBudgetsSuspense() {

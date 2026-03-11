@@ -19,12 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Check, ChevronDown, Flag, Pencil, Plus, Trash2, UserPlus } from "lucide-react";
+import { toDateOnly } from "@/lib/date-utils";
 import { formatDueDate, getLastDayOfMonth, MONTHS } from "./eventUtils";
 import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { useMembersOptional } from "@/queries/hooks";
-import type { Event, EventPlanningMilestone } from "@satyrsmc/shared/types/budget";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Event, EventPlanningMilestone } from "@satyrsmc/shared/client";
+import type { Member } from "@satyrsmc/shared/client";
 
 interface EventMilestonesCardProps {
   event: Event;
@@ -80,7 +81,7 @@ export function EventMilestonesCard({
     setMilestoneMonth(m.month);
     setMilestoneYear(m.year);
     setMilestoneDesc(m.description);
-    setMilestoneDueDate(m.due_date ?? getLastDayOfMonth(m.year, m.month));
+    setMilestoneDueDate(toDateOnly(m.due_date) || getLastDayOfMonth(m.year, m.month));
     setOpen(true);
   };
 
@@ -109,7 +110,9 @@ export function EventMilestonesCard({
   const total = milestones.length;
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   const today = new Date().toISOString().slice(0, 10);
-  const overdue = milestones.filter((m) => !m.completed && m.due_date && m.due_date < today);
+  const overdue = milestones.filter(
+    (m) => !m.completed && m.due_date && (toDateOnly(m.due_date) || m.due_date.slice(0, 10)) < today
+  );
 
   const byMonth = milestones.reduce(
     (acc, m) => {
@@ -181,8 +184,9 @@ export function EventMilestonesCard({
                           </h4>
                           <ul className="space-y-0.5 pl-3 border-l-2 border-muted">
                             {items.map((m) => {
+                              const dueDateOnly = toDateOnly(m.due_date) || (m.due_date?.slice(0, 10) ?? "");
                               const isOverdue =
-                                !m.completed && m.due_date && m.due_date < today;
+                                !m.completed && dueDateOnly && dueDateOnly < today;
                               return (
                                 <li
                                   key={m.id}

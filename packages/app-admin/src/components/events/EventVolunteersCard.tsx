@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ChevronDown, Plus, Trash2, Users } from "lucide-react";
-import type { Event, EventVolunteer } from "@satyrsmc/shared/types/budget";
+import type { Event, EventVolunteer } from "@satyrsmc/shared/client";
 
 interface EventVolunteersCardProps {
   event: Event;

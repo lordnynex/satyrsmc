@@ -9,9 +9,10 @@ import type {
   ContactAddress,
   ContactEmergencyContact,
   ConsentStatus,
-} from "@satyrsmc/shared/types/contact";
+} from "@satyrsmc/shared/client";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import { formatPhoneNumber, isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
+import { formatDateTime } from "@/lib/date-utils";
 import { ArrowLeft, Pencil, Download, Trash2, RotateCcw, Plus, Trash2Icon, User, X, AlertCircle, Check } from "lucide-react";
 import { EditContactDialog } from "./EditContactDialog";
 import { ContactPhotoCarousel } from "./ContactPhotoCarousel";
@@ -1353,7 +1354,7 @@ function ContactDetailContent({ id }: { id: string }) {
                           <p className="whitespace-pre-wrap text-sm">{note.content}</p>
                           {note.created_at && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(note.created_at).toLocaleDateString()}
+                              {formatDateTime(note.created_at)}
                             </p>
                           )}
                         </div>

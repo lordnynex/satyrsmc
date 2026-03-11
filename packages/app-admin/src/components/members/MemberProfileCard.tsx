@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Baby, Calendar, Mail, MapPin, Phone, User } from "lucide-react";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 import { formatBirthday, formatMemberSince } from "./memberUtils";
 
 interface MemberProfileCardProps {

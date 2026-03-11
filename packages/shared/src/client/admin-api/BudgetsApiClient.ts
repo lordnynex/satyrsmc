@@ -1,4 +1,4 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 
 export class BudgetsApiClient {
   constructor(private client: TrpcClient) {}
@@ -42,6 +42,9 @@ export class BudgetsApiClient {
   }
 
   deleteLineItem(budgetId: string, itemId: string) {
-    return this.client.admin.budgets.deleteLineItem.mutate({ budgetId, itemId });
+    return this.client.admin.budgets.deleteLineItem.mutate({
+      budgetId,
+      itemId,
+    });
   }
 }

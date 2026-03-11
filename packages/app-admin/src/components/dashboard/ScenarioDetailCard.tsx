@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { ScenarioMetrics } from "@satyrsmc/shared/types/budget";
+import type { ScenarioMetrics } from "@satyrsmc/shared/client";
 
 interface ScenarioDetailCardProps {
   metric: ScenarioMetrics;

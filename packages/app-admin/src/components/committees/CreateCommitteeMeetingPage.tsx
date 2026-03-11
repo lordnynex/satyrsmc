@@ -88,6 +88,7 @@ export function CreateCommitteeMeetingPage() {
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
             <DatePicker
+              id="date"
               value={date}
               onChange={setDate}
               placeholder="Pick meeting date"

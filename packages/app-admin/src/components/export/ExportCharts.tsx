@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import ApexCharts from "apexcharts";
-import type { Inputs, LineItem, ScenarioMetrics } from "@satyrsmc/shared/types/budget";
+import type { Inputs, LineItem, ScenarioMetrics } from "@satyrsmc/shared/client";
 import { getCategoryTotals } from "@/export/exportData";
 
 const CHART_IDS = {

@@ -8,7 +8,7 @@ import {
   useDeleteMember,
   unwrapSuspenseData,
 } from "@/queries/hooks";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 import { MemberProfileCard } from "./MemberProfileCard";
 import { MemberEmergencyContactCard } from "./MemberEmergencyContactCard";
 import { MemberPhotoLightbox } from "./MemberPhotoLightbox";

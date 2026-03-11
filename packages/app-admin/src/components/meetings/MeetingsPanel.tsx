@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Calendar, Search, ArrowDownNarrowWide, ArrowUpNarrowWide } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
-import type { MeetingSummary } from "@satyrsmc/shared/types/meeting";
+import type { MeetingSummary } from "@satyrsmc/shared/client";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);

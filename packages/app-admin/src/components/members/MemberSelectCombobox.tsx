@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { ChevronDown, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 
 export interface MemberSelectComboboxProps {
   /** All members to choose from */

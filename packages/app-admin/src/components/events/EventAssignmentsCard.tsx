@@ -23,7 +23,7 @@ import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
 import { useMembersOptional } from "@/queries/hooks";
-import type { Event, EventAssignment, EventAssignmentCategory, Member } from "@satyrsmc/shared/types/budget";
+import type { Event, EventAssignment, EventAssignmentCategory, Member } from "@satyrsmc/shared/client";
 
 const CATEGORY_LABELS: Record<EventAssignmentCategory, string> = {
   planning: "Event Planning",

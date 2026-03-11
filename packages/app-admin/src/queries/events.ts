@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Event } from "@satyrsmc/shared/types/event";
+import type { Event } from "@satyrsmc/shared/client";
 
 /** Data: Event[] */
 export function useEventsSuspense(type?: string) {

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { Member } from "@satyrsmc/shared/client";
 import { formatBirthdayDate, getUpcomingBirthdays } from "./memberUtils";
 
 interface UpcomingBirthdaysSectionProps {

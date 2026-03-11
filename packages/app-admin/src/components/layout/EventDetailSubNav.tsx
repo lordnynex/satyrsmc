@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { EventType } from "@satyrsmc/shared/types/event";
+import type { EventType } from "@satyrsmc/shared/client";
 
 const ALL_SECTIONS = [
   { id: "event-details", label: "Details", rides: true },

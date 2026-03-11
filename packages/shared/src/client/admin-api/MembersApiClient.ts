@@ -1,5 +1,5 @@
-import type { TrpcClient } from "./trpcClientContext";
-import type { Member } from "@satyrsmc/shared/types/budget";
+import type { TrpcClient } from "../trpc";
+import type { Member } from "@satyrsmc/shared/dto/admin/member";
 
 export type CreateMemberBody = {
   name: string;

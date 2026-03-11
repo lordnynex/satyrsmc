@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Pencil, Check } from "lucide-react";
-import type { OldBusinessItemWithMeeting } from "@satyrsmc/shared/types/meeting";
+import type { OldBusinessItemWithMeeting } from "@satyrsmc/shared/client";
 import {
   Dialog,
   DialogContent,

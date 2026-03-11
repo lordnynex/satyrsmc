@@ -7,7 +7,7 @@ import type {
   CommitteeMeetingDetail,
   CommitteeMeetingSummary,
   CommitteeSummary,
-} from "@satyrsmc/shared/types/committee";
+} from "@satyrsmc/shared/client";
 
 /** Data: CommitteeSummary[] */
 export function useCommitteesSuspense(sort?: "formed_date" | "name") {

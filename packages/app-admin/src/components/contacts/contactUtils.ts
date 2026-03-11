@@ -1,4 +1,4 @@
-import type { Contact, ContactAddress } from "@satyrsmc/shared/types/contact";
+import type { Contact, ContactAddress } from "@satyrsmc/shared/client";
 import { jsPDF } from "jspdf";
 import { formatPhoneNumber } from "@/lib/phone";
 

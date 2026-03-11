@@ -51,7 +51,7 @@ export function EditableNumberInput({
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
-        <Label htmlFor={props.id} className="text-sm font-medium">
+        <Label htmlFor={props.id != null ? props.id : undefined} className="text-sm font-medium">
           {label}
         </Label>
       )}

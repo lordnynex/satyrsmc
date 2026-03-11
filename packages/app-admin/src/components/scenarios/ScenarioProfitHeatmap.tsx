@@ -1,7 +1,7 @@
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ScenarioMetrics } from "@satyrsmc/shared/types/budget";
+import type { ScenarioMetrics } from "@satyrsmc/shared/client";
 
 interface ScenarioProfitHeatmapProps {
   metrics: ScenarioMetrics[];

@@ -1,4 +1,4 @@
-import type { EventType } from "@satyrsmc/shared/types/event";
+import type { EventType } from "@satyrsmc/shared/client";
 
 export const FOOD_CATEGORIES = ["Food & Beverage", "Food", "Beverage"];
 export const EVENT_DAYS = 4;

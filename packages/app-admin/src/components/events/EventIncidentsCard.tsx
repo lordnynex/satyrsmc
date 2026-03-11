@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, Plus, Pencil, Trash2 } from "lucide-react";
-import type { Incident } from "@satyrsmc/shared/types/event";
+import { toDateTimeLocal, formatDateTime } from "@/lib/date-utils";
+import type { Incident } from "@satyrsmc/shared/client";
 
 interface EventIncidentsCardProps {
   incidents: Incident[];
@@ -92,7 +93,7 @@ export function EventIncidentsCard({
     setSeverity(incident.severity);
     setSummary(incident.summary);
     setDetails(incident.details ?? "");
-    setOccurredAt(incident.occurred_at ?? "");
+    setOccurredAt(toDateTimeLocal(incident.occurred_at) || "");
   };
 
   return (
@@ -132,7 +133,7 @@ export function EventIncidentsCard({
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {incident.type} · {incident.severity}
                         {incident.occurred_at && (
-                          <> · {incident.occurred_at}</>
+                          <> · {formatDateTime(incident.occurred_at)}</>
                         )}
                       </p>
                     </div>

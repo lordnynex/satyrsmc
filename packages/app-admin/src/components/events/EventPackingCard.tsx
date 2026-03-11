@@ -6,7 +6,7 @@ import { ChevronDown, Package, Plus, FolderPlus } from "lucide-react";
 import { PackingCategorySection } from "./PackingCategorySection";
 import { AddPackingCategoryDialog } from "./AddPackingCategoryDialog";
 import { AddEditPackingItemDialog } from "./AddEditPackingItemDialog";
-import type { Event, EventPackingCategory, EventPackingItem } from "@satyrsmc/shared/types/budget";
+import type { Event, EventPackingCategory, EventPackingItem } from "@satyrsmc/shared/client";
 
 interface EventPackingCardProps {
   event: Event;

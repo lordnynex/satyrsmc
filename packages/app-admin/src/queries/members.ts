@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi, type CreateMemberBody } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Member } from "@satyrsmc/shared/types/member";
+import type { Member } from "@satyrsmc/shared/client";
 
 /** Data: Member[] */
 export function useMembersSuspense() {

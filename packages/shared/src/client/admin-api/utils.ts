@@ -1,4 +1,4 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 
 export type { TrpcClient };
 

@@ -1,4 +1,4 @@
-import type { Contact, ContactEmail, ContactAddress } from "@satyrsmc/shared/types/contact";
+import type { Contact, ContactEmail, ContactAddress } from "@satyrsmc/shared/client";
 
 export function escapeVCardValue(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");

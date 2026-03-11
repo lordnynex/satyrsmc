@@ -1,24 +1,24 @@
-import type { TrpcClient } from "./trpcClientContext";
+import type { TrpcClient } from "../trpc";
 import type {
-  CommitteeDetail,
-  CommitteeSummary,
-  CommitteeMeetingSummary,
-  CommitteeMeetingDetail,
-} from "@satyrsmc/shared/types/committee";
+  CommitteeListOutput,
+  CommitteeGetOutput,
+  CommitteeListMeetingsOutput,
+  CommitteeGetMeetingOutput,
+} from "@satyrsmc/shared/dto/admin/committee";
 
 export class CommitteesApiClient {
   constructor(private client: TrpcClient) {}
 
-  list(options?: { sort?: "formed_date" | "name" }) {
+  list(options?: { sort?: "formed_date" | "name" }): Promise<CommitteeListOutput> {
     return this.client.admin.committees.list.query(
       options?.sort ? { sort: options.sort } : undefined
-    ) as Promise<CommitteeSummary[]>;
+    ) as Promise<CommitteeListOutput>;
   }
 
-  get(id: string): Promise<CommitteeDetail | null> {
+  get(id: string): Promise<CommitteeGetOutput | null> {
     return this.client.admin.committees.get
       .query({ id })
-      .catch(() => null) as Promise<CommitteeDetail | null>;
+      .catch(() => null) as Promise<CommitteeGetOutput | null>;
   }
 
   create(body: {
@@ -61,10 +61,10 @@ export class CommitteesApiClient {
     });
   }
 
-  listMeetings(committeeId: string): Promise<CommitteeMeetingSummary[]> {
+  listMeetings(committeeId: string): Promise<CommitteeListMeetingsOutput> {
     return this.client.admin.committees.listMeetings.query({
       committeeId,
-    }) as Promise<CommitteeMeetingSummary[]>;
+    }) as Promise<CommitteeListMeetingsOutput>;
   }
 
   createMeeting(
@@ -88,10 +88,10 @@ export class CommitteesApiClient {
   getMeeting(
     committeeId: string,
     meetingId: string
-  ): Promise<CommitteeMeetingDetail | null> {
+  ): Promise<CommitteeGetMeetingOutput | null> {
     return this.client.admin.committees.getMeeting
       .query({ committeeId, meetingId })
-      .catch(() => null) as Promise<CommitteeMeetingDetail | null>;
+      .catch(() => null) as Promise<CommitteeGetMeetingOutput | null>;
   }
 
   updateMeeting(

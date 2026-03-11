@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ImagePlus, Trash2, MoreVertical } from "lucide-react";
-import type { EventAsset } from "@satyrsmc/shared/types/event";
+import type { EventAsset } from "@satyrsmc/shared/client";
 
 interface RideAssetsCardProps {
   eventId: string;

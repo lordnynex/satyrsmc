@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, MapPin, DollarSign } from "lucide-react";
-import type { Event } from "@satyrsmc/shared/types/event";
+import type { Event } from "@satyrsmc/shared/client";
 
 interface RideInfoCardProps {
   event: Event;

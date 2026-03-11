@@ -1,5 +1,6 @@
 import { useWebsiteBlogAll } from "@/queries/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDateOnly } from "@/lib/date-utils";
 import { BookOpen } from "lucide-react";
 
 export function WebsiteBlogPanel() {
@@ -33,7 +34,7 @@ export function WebsiteBlogPanel() {
                   <span className="ml-2 text-muted-foreground text-sm">/{post.slug}</span>
                   {post.published_at ? (
                     <span className="ml-2 text-muted-foreground text-sm">
-                      (published {new Date(post.published_at).toLocaleDateString()})
+                      (published {formatDateOnly(post.published_at)})
                     </span>
                   ) : (
                     <span className="ml-2 text-muted-foreground text-sm">(draft)</span>
