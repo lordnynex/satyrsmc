@@ -73,19 +73,6 @@ export function MotionsPanel() {
 
   const { data, isPending, isError, error } = useMotionsList(page, PER_PAGE, qFromUrl || undefined);
 
-  if (isError) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold">Motions</h1>
-        <Card>
-          <CardContent className="py-8 text-center text-destructive">
-            {error?.message ?? "Failed to load motions."}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const total = data?.total ?? 0;
   const items = data?.items ?? [];
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
@@ -100,6 +87,19 @@ export function MotionsPanel() {
     next.set("page", String(safePage));
     setSearchParams(next, { replace: true });
   }, [isPending, page, safePage, searchParams, setSearchParams]);
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-semibold">Motions</h1>
+        <Card>
+          <CardContent className="py-8 text-center text-destructive">
+            {error?.message ?? "Failed to load motions."}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

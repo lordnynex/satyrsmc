@@ -483,7 +483,7 @@ export class MeetingsService {
         m_mover_member_id: string | null;
         m_seconder_member_id: string | null;
         m_created_at: Date | string | null;
-        meeting_date: string;
+        meeting_date: Date | string;
         meeting_number: number;
       }>();
 
@@ -500,20 +500,29 @@ export class MeetingsService {
       for (const m of members) membersMap.set(m.id, m.name);
     }
 
-    const items = rawRows.map((r) => ({
-      id: r.m_id,
-      meeting_id: r.m_meeting_id,
-      description: r.m_description ?? null,
-      result: r.m_result as "pass" | "fail",
-      order_index: r.m_order_index,
-      mover_member_id: r.m_mover_member_id ?? null,
-      seconder_member_id: r.m_seconder_member_id ?? null,
-      mover_name: r.m_mover_member_id ? membersMap.get(r.m_mover_member_id) ?? null : null,
-      seconder_name: r.m_seconder_member_id ? membersMap.get(r.m_seconder_member_id) ?? null : null,
-      created_at: toISOString(r.m_created_at),
-      meeting_date: r.meeting_date,
-      meeting_number: r.meeting_number,
-    }));
+    const items = rawRows.map((r) => {
+      const meetingDate = r.meeting_date;
+      const meetingDateStr =
+        meetingDate instanceof Date
+          ? meetingDate.toISOString().slice(0, 10)
+          : typeof meetingDate === "string"
+            ? meetingDate.slice(0, 10)
+            : "";
+      return {
+        id: r.m_id,
+        meeting_id: r.m_meeting_id,
+        description: r.m_description ?? null,
+        result: r.m_result as "pass" | "fail",
+        order_index: r.m_order_index,
+        mover_member_id: r.m_mover_member_id ?? null,
+        seconder_member_id: r.m_seconder_member_id ?? null,
+        mover_name: r.m_mover_member_id ? membersMap.get(r.m_mover_member_id) ?? null : null,
+        seconder_name: r.m_seconder_member_id ? membersMap.get(r.m_seconder_member_id) ?? null : null,
+        created_at: toISOString(r.m_created_at),
+        meeting_date: meetingDateStr,
+        meeting_number: r.meeting_number,
+      };
+    });
 
     return { items, total };
   }
