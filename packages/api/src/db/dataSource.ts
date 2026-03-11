@@ -123,16 +123,31 @@ const globalForDataSource = globalThis as unknown as {
   __badgerInitPromise?: Promise<DataSource>;
 };
 
+async function getEffectiveOptions(): Promise<DataSourceOptions> {
+  if (process.env.USE_PGLITE !== "1") {
+    return dataSourceOptions;
+  }
+  // In-memory PGlite for local dev (no DATABASE_URL required)
+  const { PGliteDriver } = await import("typeorm-pglite");
+  return {
+    ...dataSourceOptions,
+    url: undefined,
+    driver: new PGliteDriver().driver,
+  } as DataSourceOptions;
+}
+
 /**
  * Returns the single DataSource instance. Initializes it once; all callers share the same instance.
  * Do not use createConnection or getConnectionManager - this is the only connection.
+ * When USE_PGLITE=1, uses in-memory PGlite instead of DATABASE_URL.
  */
 export async function getDataSource(): Promise<DataSource> {
   if (globalForDataSource.__badgerDataSource?.isInitialized) {
     return globalForDataSource.__badgerDataSource;
   }
   if (!globalForDataSource.__badgerInitPromise) {
-    const ds = new DataSource(dataSourceOptions);
+    const options = await getEffectiveOptions();
+    const ds = new DataSource(options);
     globalForDataSource.__badgerDataSource = ds;
     globalForDataSource.__badgerInitPromise = ds.initialize().then(() => ds);
   }

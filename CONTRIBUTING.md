@@ -41,15 +41,21 @@ graph TB
 ## Prerequisites
 
 - [Bun](https://bun.sh) v1.x
-- [PostgreSQL](https://www.postgresql.org/) (or use docker-compose for local dev)
+- [PostgreSQL](https://www.postgresql.org/) (or use docker-compose for local dev, or `bun run dev:pglite` for in-memory PGlite with no Postgres)
 - [Docker](https://docker.com) (optional — for running the API as a container)
 
 ## Local Development
 
-**Dev server** (builds frontends, starts API with HMR):
+**Dev server** (builds frontends, starts API with HMR). Requires `DATABASE_URL` unless you use PGlite (see below):
 
 ```bash
 bun run dev
+```
+
+**Dev with in-memory PGlite** (no Postgres server or `DATABASE_URL`). Optionally seeds from `data/badger.db` (or `SQLITE_SEED_PATH`) at startup:
+
+```bash
+bun run dev:pglite
 ```
 
 **API only** (no frontend serving):
@@ -75,7 +81,8 @@ bun run storybook     # Dev server on :6006
 
 ```bash
 # Root (from repo root)
-bun run dev              # Build frontends + start API dev server
+bun run dev              # Build frontends + start API dev server (requires DATABASE_URL)
+bun run dev:pglite       # Same as dev but in-memory PGlite, no Postgres; seeds from SQLite if present
 bun run build            # Build both SPAs (app-public + app-admin)
 bun run start            # Start API server (production mode)
 bun run start:api-only   # Start API without serving static files
@@ -209,7 +216,9 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 | Variable | Description |
 |---|---|
-| `DATABASE_URL` | Postgres connection string (required) |
+| `DATABASE_URL` | Postgres connection string (required unless `USE_PGLITE=1`) |
+| `USE_PGLITE` | Set to `1` to use in-memory PGlite instead of Postgres (local dev only) |
+| `SQLITE_SEED_PATH` | Optional path to SQLite file when `USE_PGLITE=1` (default: `data/badger.db` relative to project root) |
 | `PORT` | API server port (default: 3000) |
 | `NODE_ENV` | `production` for production mode |
 

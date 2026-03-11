@@ -120,7 +120,7 @@ satyrsmc/
 
 ## Database
 
-**Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var. Migrations auto-run on startup.
+**Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var (or in-memory PGlite when `USE_PGLITE=1` for local dev). Migrations auto-run on startup.
 
 **Adding a schema change:**
 1. Create a `MigrationInterface` class in `packages/api/src/db/migrations/`
@@ -142,7 +142,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 ## Local Development
 
 ```bash
-bun run dev    # Primary — builds frontends + starts API with HMR
+bun run dev        # Primary — builds frontends + starts API with HMR (requires DATABASE_URL)
+bun run dev:pglite # In-memory PGlite, no Postgres; optionally seeds from data/badger.db at startup
 ```
 
 The API serves app-public at `/` and app-admin at `/admin`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.
