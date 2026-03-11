@@ -302,7 +302,9 @@ export class ContactsService {
     >();
 
     for (const id of contactIds) {
-      map.set(id, { ...empty(), tags: tagsByContactId.get(id) ?? [] });
+      const tags = tagsByContactId.get(id) ?? [];
+      const tagsSorted = [...tags].sort((a, b) => a.name.localeCompare(b.name));
+      map.set(id, { ...empty(), tags: tagsSorted });
     }
 
     const toEmail = (e: ContactEmailEntity) => ({
