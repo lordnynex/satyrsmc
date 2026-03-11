@@ -11,10 +11,9 @@ import type {
 } from "@satyrsmc/shared/dto/admin/member";
 import type { GetMembersFeedOutput } from "@satyrsmc/shared/dto/website";
 import { uuid, VALID_POSITIONS, parsePhotoToBlob, memberRowToApi } from "./utils";
+import type { MemberPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { ImageService } from "./ImageService";
 import { toISOString } from "../lib/date";
-
-export type PhotoSize = "thumbnail" | "medium" | "full";
 
 function rowToMember(m: Record<string, unknown>): MemberGetOutput {
   const { photo_url, photo_thumbnail_url } = memberRowToApi(m);
@@ -120,7 +119,7 @@ export class MembersService {
   /**
    * Get member photo as buffer for the given size. Returns null if member has no photo.
    */
-  async getPhoto(id: string, size: PhotoSize): Promise<Buffer | null> {
+  async getPhoto(id: string, size: MemberPhotoSize): Promise<Buffer | null> {
     /* Original: SELECT photo, photo_thumbnail FROM members WHERE id = ? */
     const member = await this.ds.getRepository(Member).findOne({
       where: { id },

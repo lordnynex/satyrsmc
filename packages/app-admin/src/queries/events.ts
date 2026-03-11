@@ -2,12 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Event } from "@satyrsmc/shared/client";
+import type { Event, EventAssignmentCategory, EventType } from "@satyrsmc/shared/client";
 
 /** Data: Event[] */
 export function useEventsSuspense(type?: string) {
   return trpc.admin.events.list.useSuspenseQuery(
-    type ? { type: type as "badger" | "anniversary" | "pioneer_run" | "rides" } : undefined
+    type ? { type: type as EventType } : undefined
   );
 }
 
@@ -19,7 +19,7 @@ export function useEventSuspense(id: string) {
 /** Data: Event[] */
 export function useEventsOptional(type?: string) {
   return trpc.admin.events.list.useQuery(
-    type ? ({ type: type as "badger" | "anniversary" | "pioneer_run" | "rides" }) : undefined
+    type ? ({ type: type as EventType }) : undefined
   );
 }
 
@@ -461,7 +461,7 @@ export function useEventAssignmentCreate() {
       body,
     }: {
       eventId: string;
-      body: { name: string; category: "planning" | "during" };
+      body: { name: string; category: EventAssignmentCategory };
     }) => api.events.assignments.create(eventId, body),
     onSuccess: (_, { eventId }) =>
       qc.invalidateQueries({ queryKey: queryKeys.event(eventId) }),

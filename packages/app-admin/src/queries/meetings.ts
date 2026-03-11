@@ -4,6 +4,7 @@ import { trpc } from "@/trpc";
 import type {
   MeetingDetail,
   MeetingSummary,
+  MotionResult,
   MotionsListResponse,
   OldBusinessItemWithMeeting,
 } from "@satyrsmc/shared/client";
@@ -146,7 +147,7 @@ export function useMotionCreate() {
       meetingId: string;
       body: {
         description?: string | null;
-        result: "pass" | "fail";
+        result: MotionResult;
         order_index?: number;
         mover_member_id: string;
         seconder_member_id: string;

@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { CONTACT_TYPES, CONTACT_STATUSES, CONTACT_STATUS_FILTERS, CONSENT_STATUSES, SORT_DIRECTIONS } from "../../lib/enums";
 
 // ----- Input schemas -----
 
 export const ContactListInputSchema = z
   .object({
     q: z.string().optional(),
-    status: z.enum(["active", "deleted", "all"]).optional(),
+    status: z.enum(CONTACT_STATUS_FILTERS).optional(),
     hasPostalAddress: z.boolean().optional(),
     hasEmail: z.boolean().optional(),
     tagIds: z.array(z.string()).optional(),
@@ -17,7 +18,7 @@ export const ContactListInputSchema = z
     offset: z.number().optional(),
     page: z.number().optional(),
     sort: z.string().optional(),
-    sortDir: z.enum(["asc", "desc"]).optional(),
+    sortDir: z.enum(SORT_DIRECTIONS).optional(),
   })
   .optional();
 
@@ -25,16 +26,16 @@ export const ContactGetInputSchema = z.object({ id: z.string() });
 
 const ContactCreateUpdateFieldsSchema = z.object({
   display_name: z.string().optional(),
-  type: z.enum(["person", "organization"]).optional(),
-  status: z.enum(["active", "inactive", "deleted"]).optional(),
+  type: z.enum(CONTACT_TYPES).optional(),
+  status: z.enum(CONTACT_STATUSES).optional(),
   first_name: z.string().nullable().optional(),
   last_name: z.string().nullable().optional(),
   organization_name: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   how_we_know_them: z.string().nullable().optional(),
-  ok_to_email: z.enum(["yes", "no", "unknown"]).optional(),
-  ok_to_mail: z.enum(["yes", "no", "unknown"]).optional(),
-  ok_to_sms: z.enum(["yes", "no", "unknown"]).optional(),
+  ok_to_email: z.enum(CONSENT_STATUSES).optional(),
+  ok_to_mail: z.enum(CONSENT_STATUSES).optional(),
+  ok_to_sms: z.enum(CONSENT_STATUSES).optional(),
   do_not_contact: z.boolean().optional(),
   club_name: z.string().nullable().optional(),
   role: z.string().nullable().optional(),
@@ -74,17 +75,17 @@ export const ContactRestoreInputSchema = z.object({ id: z.string() });
 
 const ContactSchema = z.object({
   id: z.string(),
-  type: z.enum(["person", "organization"]),
-  status: z.enum(["active", "inactive", "deleted"]),
+  type: z.enum(CONTACT_TYPES),
+  status: z.enum(CONTACT_STATUSES),
   display_name: z.string(),
   first_name: z.string().nullable(),
   last_name: z.string().nullable(),
   organization_name: z.string().nullable(),
   notes: z.string().nullable(),
   how_we_know_them: z.string().nullable(),
-  ok_to_email: z.enum(["yes", "no", "unknown"]),
-  ok_to_mail: z.enum(["yes", "no", "unknown"]),
-  ok_to_sms: z.enum(["yes", "no", "unknown"]),
+  ok_to_email: z.enum(CONSENT_STATUSES),
+  ok_to_mail: z.enum(CONSENT_STATUSES),
+  ok_to_sms: z.enum(CONSENT_STATUSES),
   do_not_contact: z.boolean(),
   club_name: z.string().nullable(),
   role: z.string().nullable(),

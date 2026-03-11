@@ -42,8 +42,8 @@ export type BudgetSummary = BudgetListOutput[number];
 export type Scenario = ScenarioGetOutput;
 export type ScenarioSummary = ScenarioListOutput[number];
 
-// Event types (from event DTO; EventType is client-only to avoid DTO enum changes)
-export type EventType = "badger" | "anniversary" | "pioneer_run" | "rides";
+// Event types (derived from shared enums)
+export type { EventType, EventAssignmentCategory } from "../lib/enums";
 export type Event = EventGetOutput;
 export type EventPhoto = NonNullable<EventGetOutput["event_photos"]>[number];
 export type EventAsset = NonNullable<EventGetOutput["event_assets"]>[number];
@@ -56,4 +56,3 @@ export type EventAssignment = NonNullable<EventGetOutput["assignments"]>[number]
 export type EventPlanningMilestone = NonNullable<EventGetOutput["milestones"]>[number];
 export type EventAttendee = NonNullable<EventGetOutput["event_attendees"]>[number];
 export type RideMemberAttendee = NonNullable<EventGetOutput["ride_member_attendees"]>[number];
-export type EventAssignmentCategory = "planning" | "during";

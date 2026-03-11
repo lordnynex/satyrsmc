@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { EventType } from "@satyrsmc/shared/lib/enums";
 
 @Entity("events")
 export class Event {
@@ -51,7 +52,7 @@ export class Event {
   planningNotes!: string | null;
 
   @Column({ name: "event_type", type: "text", default: "badger" })
-  eventType!: string;
+  eventType!: EventType;
 
   @Column({ name: "start_location", type: "text", nullable: true })
   startLocation!: string | null;

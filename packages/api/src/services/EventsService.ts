@@ -1,5 +1,6 @@
 import { In } from "typeorm";
 import type { DataSource } from "typeorm";
+import type { EventType, EventAssignmentCategory } from "@satyrsmc/shared/lib/enums";
 import type { DbLike } from "../db/dbAdapter";
 import {
   Event,
@@ -200,7 +201,7 @@ export class EventsService {
       budget_id: e.budgetId ?? null,
       scenario_id: e.scenarioId ?? null,
       planning_notes: e.planningNotes ?? null,
-      event_type: (e.eventType ?? "badger") as "badger" | "anniversary" | "pioneer_run" | "rides",
+      event_type: (e.eventType ?? "badger") as EventType,
       show_on_website: e.showOnWebsite,
       created_at: toISOString(e.createdAt),
       milestones: milestones.map((m) => {
@@ -526,7 +527,7 @@ export class EventsService {
         occurred_at: toISOStringOrNull(i.occurredAt),
         created_at: toISOString(i.createdAt),
         event_name: event?.name,
-        event_type: (event?.eventType ?? "badger") as "badger" | "anniversary" | "pioneer_run" | "rides",
+        event_type: (event?.eventType ?? "badger") as EventType,
         contact: i.contactId ? contactsMap.get(i.contactId) : undefined,
         member: i.memberId
           ? membersMap.get(i.memberId) && {
@@ -542,7 +543,7 @@ export class EventsService {
 
   async create(body: {
     name: string;
-    event_type?: "badger" | "anniversary" | "pioneer_run" | "rides";
+    event_type?: EventType;
     description?: string;
     year?: number;
     event_date?: string;
@@ -996,7 +997,7 @@ export class EventsService {
   };
 
   assignments = {
-    create: async (eventId: string, body: { name: string; category: "planning" | "during" }) => {
+    create: async (eventId: string, body: { name: string; category: EventAssignmentCategory }) => {
       const id = uuid();
       /* Original: SELECT COALESCE(MAX(sort_order), 0) as m FROM event_assignments WHERE event_id = ? AND category = ? */
       const maxResult = await this.ds.getRepository(EventAssignment).createQueryBuilder("a").select("COALESCE(MAX(a.sortOrder), 0)", "m").where("a.eventId = :eventId", { eventId }).andWhere("a.category = :category", { category: body.category }).getRawOne<{ m: number }>();
@@ -1007,12 +1008,12 @@ export class EventsService {
       );
       return { id, event_id: eventId, name: body.name, category: body.category, sort_order: sortOrder, members: [] };
     },
-    update: async (eventId: string, aid: string, body: { name?: string; category?: "planning" | "during" }) => {
+    update: async (eventId: string, aid: string, body: { name?: string; category?: EventAssignmentCategory }) => {
       /* Original: SELECT * FROM event_assignments WHERE id = ? AND event_id = ? */
       const existing = await this.ds.getRepository(EventAssignment).findOne({ where: { id: aid, eventId } });
       if (!existing) return null;
       const name = body.name ?? existing.name;
-      const category = (body.category ?? existing.category) as "planning" | "during";
+      const category = (body.category ?? existing.category) as EventAssignmentCategory;
       await this.db.run("UPDATE event_assignments SET name = ?, category = ? WHERE id = ? AND event_id = ?", [name, category, aid, eventId]);
       /* Original: SELECT * FROM event_assignment_members WHERE assignment_id = ? ORDER BY sort_order */
       const amList = await this.ds.getRepository(EventAssignmentMember).find({

@@ -12,7 +12,7 @@ Satyrs Motorcycle Club management system and public website — a Bun monorepo w
 - **API**: Bun.serve() + tRPC 11 — serves both SPAs and the API on port 3000
 - **App-Admin**: React 19 + TanStack Query + tRPC — admin panel for club management and website CMS (served at `/admin`)
 - **App-Public**: React 19 + tRPC — public website (served at `/`)
-- **Shared**: Hand-written TypeScript interfaces shared across all packages
+- **Shared**: Zod DTO schemas and derived TypeScript types shared across all packages
 - **Database**: Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
 - **Build**: `Bun.build()` for both SPAs (no Vite, no webpack)
 
@@ -80,6 +80,21 @@ The `@satyrsmc/shared` package contains hand-written TypeScript interfaces. Ther
 1. Check `@satyrsmc/shared` first for existing types before defining new ones
 2. When adding a new domain, create the shared type FIRST, then the entity, service, router, and frontend
 3. Never duplicate types that already exist in shared — import and extend them
+4. **String literal types use `const` array + derived type pattern** in `packages/shared/src/lib/enums.ts`:
+   ```typescript
+   export const COMMITTEE_STATUSES = ["active", "closed"] as const;
+   export type CommitteeStatus = (typeof COMMITTEE_STATUSES)[number];
+   ```
+   - In DTO Zod schemas, derive from the const: `z.enum(COMMITTEE_STATUSES)`
+   - Never hardcode the same strings in a `z.enum()` call
+   - Never define a local type alias in a service, router, or component that duplicates a shared type
+
+5. **TypeORM entities must import shared types** for constrained string columns (status, type, category fields). Use `import type` syntax.
+
+6. **DTOs and enums must stay in sync.** When adding a new string union:
+   - Define the const array + type in `packages/shared/src/lib/enums.ts`
+   - Import and use `z.enum(CONST_ARRAY)` in the corresponding DTO file
+   - Never define the same set of strings in both places independently
 
 ## File Structure
 
@@ -112,9 +127,11 @@ satyrsmc/
         App.tsx             # Routes
         trpc.ts             # createTRPCReact<AppRouter>()
       build.ts              # Bun.build() script
-    shared/                 # TypeScript interfaces
-      types/                # Per-domain type files
-      lib/                  # Constants + utilities
+    shared/                 # Zod DTO schemas, derived types, and utilities
+      src/
+        dto/                # DTO schemas and inferred types (admin/, website/)
+        client/             # tRPC client, React providers, re-exports
+        lib/                # Constants, enums, and utilities
   Makefile                  # Build + deploy targets
 ```
 
@@ -126,7 +143,7 @@ satyrsmc/
 1. Create a `MigrationInterface` class in `packages/api/src/db/migrations/`
 2. Register it in `dataSource.ts` migrations array
 3. If new table: create entity, register in `dataSource.ts` entities array
-4. Create matching shared type in `packages/shared/types/`
+4. Create matching shared DTO in `packages/shared/src/dto/admin/`
 5. Run `bun run migrate`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.

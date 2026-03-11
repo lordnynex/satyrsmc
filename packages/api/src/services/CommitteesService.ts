@@ -8,6 +8,7 @@ import {
   Member,
   MeetingTemplate,
 } from "../entities";
+import type { CommitteeStatus } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
@@ -49,7 +50,7 @@ export class CommitteesService {
       formed_date: toISOString(c.formedDate),
       closed_date: toISOStringOrNull(c.closedDate),
       chairperson_member_id: c.chairpersonMemberId ?? null,
-      status: c.status as "active" | "closed",
+      status: c.status as CommitteeStatus,
       created_at: toISOString(c.createdAt),
       updated_at: toISOString(c.updatedAt),
       member_count: memberCounts.get(c.id) ?? 0,
@@ -90,7 +91,7 @@ export class CommitteesService {
       closed_date: toISOStringOrNull(committee.closedDate),
       chairperson_member_id: committee.chairpersonMemberId ?? null,
       chairperson_name: chairpersonName,
-      status: committee.status as "active" | "closed",
+      status: committee.status as CommitteeStatus,
       created_at: toISOString(committee.createdAt),
       updated_at: toISOString(committee.updatedAt),
       members: members.map((m) => ({
@@ -149,7 +150,7 @@ export class CommitteesService {
     if (body.formed_date !== undefined) updates.formedDate = new Date(body.formed_date as string);
     if (body.closed_date !== undefined) updates.closedDate = body.closed_date != null ? new Date(body.closed_date as string) : null;
     if (body.chairperson_member_id !== undefined) updates.chairpersonMemberId = body.chairperson_member_id as string | null;
-    if (body.status !== undefined) updates.status = body.status as string;
+    if (body.status !== undefined) updates.status = body.status as CommitteeStatus;
     updates.updatedAt = new Date();
     await this.ds.getRepository(Committee).update(id, updates);
     return this.get(id);

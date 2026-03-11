@@ -1,4 +1,5 @@
 import type { TrpcClient } from "../trpc";
+import type { EventAssignmentCategory, EventType } from "../../lib/enums";
 import { fileToBase64 } from "./utils";
 
 export class EventsApiClient {
@@ -6,7 +7,7 @@ export class EventsApiClient {
 
   list(opts?: { type?: string }) {
     return this.client.admin.events.list.query(
-      opts?.type ? { type: opts.type as "badger" | "anniversary" | "pioneer_run" | "rides" } : undefined
+      opts?.type ? { type: opts.type as EventType } : undefined
     );
   }
 
@@ -156,13 +157,13 @@ export class EventsApiClient {
   readonly assignments = {
     create: async (
       eventId: string,
-      body: { name: string; category: "planning" | "during" }
+      body: { name: string; category: EventAssignmentCategory }
     ) =>
       this.client.admin.events.createAssignment.mutate({ eventId, ...body }),
     update: async (
       eventId: string,
       aid: string,
-      body: { name?: string; category?: "planning" | "during" }
+      body: { name?: string; category?: EventAssignmentCategory }
     ) =>
       this.client.admin.events.updateAssignment.mutate({
         eventId,

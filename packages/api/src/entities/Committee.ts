@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { CommitteeStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("committees")
 export class Committee {
@@ -24,7 +25,7 @@ export class Committee {
   chairpersonMemberId!: string | null;
 
   @Column({ type: "text" })
-  status!: string;
+  status!: CommitteeStatus;
 
   @Column({ name: "created_at", type: "timestamptz", nullable: true })
   createdAt!: Date | null;

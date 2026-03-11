@@ -4,7 +4,7 @@ import { useCommitteesSuspense, unwrapSuspenseData } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
-import type { CommitteeSummary } from "@satyrsmc/shared/client";
+import type { CommitteeSummary, CommitteeStatus } from "@satyrsmc/shared/client";
 
 function CommitteeRow({ c }: { c: CommitteeSummary }) {
   return (
@@ -44,7 +44,7 @@ function CommitteeRow({ c }: { c: CommitteeSummary }) {
 
 export function CommitteesPanel() {
   const committees = unwrapSuspenseData(useCommitteesSuspense()) ?? [];
-  const [filter, setFilter] = useState<"all" | "active" | "closed">("all");
+  const [filter, setFilter] = useState<"all" | CommitteeStatus>("all");
 
   const filtered =
     filter === "all"

@@ -29,10 +29,9 @@ import {
   Tag as TagEntity,
   ContactTag,
 } from "../entities";
+import type { ContactPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { ImageService } from "./ImageService";
 import { uuid } from "./utils";
-
-export type ContactPhotoSize = "thumbnail" | "display" | "full";
 
 function entityToContact(e: ContactEntity): Contact {
   return {

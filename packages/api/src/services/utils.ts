@@ -1,16 +1,10 @@
+import { MEMBER_POSITIONS } from "@satyrsmc/shared/client";
+
 export function uuid(): string {
   return crypto.randomUUID();
 }
 
-export const VALID_POSITIONS = new Set([
-  "President",
-  "Vice President",
-  "Road Captain",
-  "Treasurer",
-  "Recording Secretary",
-  "Correspondence Secretary",
-  "Member",
-]);
+export const VALID_POSITIONS = new Set<string>(MEMBER_POSITIONS);
 
 export const DEFAULT_SCENARIO_INPUTS = {
   profitTarget: 2500,

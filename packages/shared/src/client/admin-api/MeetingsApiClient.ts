@@ -1,4 +1,5 @@
 import type { TrpcClient } from "../trpc";
+import type { MotionResult } from "../../lib/enums";
 import type {
   MeetingListOutput,
   MeetingGetOutput,
@@ -65,7 +66,7 @@ export class MeetingsApiClient {
       meetingId: string,
       body: {
         description?: string | null;
-        result: "pass" | "fail";
+        result: MotionResult;
         order_index?: number;
         mover_member_id: string;
         seconder_member_id: string;

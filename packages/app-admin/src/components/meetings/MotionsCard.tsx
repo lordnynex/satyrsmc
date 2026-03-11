@@ -17,7 +17,7 @@ import {
   useMotionDelete,
 } from "@/queries/hooks";
 import { MemberChip } from "@/components/members/MemberChip";
-import type { MeetingMotion } from "@satyrsmc/shared/client";
+import type { MeetingMotion, MotionResult } from "@satyrsmc/shared/client";
 
 interface MotionsCardProps {
   meetingId: string;
@@ -34,7 +34,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
   const [description, setDescription] = useState("");
   const [moverMemberId, setMoverMemberId] = useState("");
   const [seconderMemberId, setSeconderMemberId] = useState("");
-  const [result, setResult] = useState<"pass" | "fail">("pass");
+  const [result, setResult] = useState<MotionResult>("pass");
 
   const handleAdd = async () => {
     if (!moverMemberId || !seconderMemberId) return;
@@ -141,7 +141,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
               onChange={(e) => setDescription(e.target.value)}
               className="min-w-[160px] flex-1"
             />
-            <Select value={result} onValueChange={(v) => setResult(v as "pass" | "fail")}>
+            <Select value={result} onValueChange={(v) => setResult(v as MotionResult)}>
               <SelectTrigger className="w-[100px]">
                 <SelectValue />
               </SelectTrigger>
@@ -198,7 +198,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
                     onChange={(e) => setDescription(e.target.value)}
                     className="min-w-[160px] flex-1"
                   />
-                  <Select value={result} onValueChange={(v) => setResult(v as "pass" | "fail")}>
+                  <Select value={result} onValueChange={(v) => setResult(v as MotionResult)}>
                     <SelectTrigger className="w-[100px]">
                       <SelectValue />
                     </SelectTrigger>

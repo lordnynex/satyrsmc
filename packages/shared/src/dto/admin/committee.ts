@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { COMMITTEE_STATUSES, COMMITTEE_SORT_FIELDS } from "../../lib/enums";
 
 const dateLike = z.union([z.string(), z.date().transform((d) => d.toISOString())]);
 
 // ----- Input schemas -----
 
 export const CommitteeListInputSchema = z
-  .object({ sort: z.enum(["formed_date", "name"]).optional() })
+  .object({ sort: z.enum(COMMITTEE_SORT_FIELDS).optional() })
   .optional();
 
 export const CommitteeGetInputSchema = z.object({ id: z.string() });
@@ -98,7 +99,7 @@ const CommitteeSummarySchema = z.object({
   formed_date: dateLike.optional(),
   closed_date: dateLike.nullable().optional(),
   chairperson_member_id: z.string().nullable().optional(),
-  status: z.enum(["active", "closed"]).optional(),
+  status: z.enum(COMMITTEE_STATUSES).optional(),
   created_at: dateLike.optional(),
   updated_at: dateLike.optional(),
   member_count: z.number().optional(),

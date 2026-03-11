@@ -10,6 +10,7 @@
     "./client/admin-api": "./src/client/admin-api/index.ts",
     "./dto": "./src/dto/index.ts",
     "./lib/constants": "./src/lib/constants.ts",
+    "./lib/enums": "./src/lib/enums.ts",
     "./lib/pst": "./src/lib/pst.ts",
     "./dto/website": "./src/dto/website.ts",
     "./dto/admin/budget": "./src/dto/admin/budget.ts",

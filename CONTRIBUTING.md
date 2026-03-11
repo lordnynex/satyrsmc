@@ -36,7 +36,7 @@ graph TB
 | `@satyrsmc/api` | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database |
 | `@satyrsmc/app-admin` | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
 | `@satyrsmc/app-public` | React 19 public website (home, about, events, gallery, members) |
-| `@satyrsmc/shared` | Hand-written TypeScript interfaces shared across all packages |
+| `@satyrsmc/shared` | Zod DTO schemas and derived TypeScript types shared across all packages |
 
 ## Prerequisites
 
@@ -142,9 +142,11 @@ satyrsmc/
         content/            # Static content (events)
         data/               # Static data (members.json)
       build.ts              # Bun.build() script
-    shared/                 # Shared TypeScript interfaces
-      types/                # Per-domain type definitions
-      lib/                  # Constants and utilities
+    shared/                 # Zod DTO schemas, derived types, and utilities
+      src/
+        dto/                # DTO schemas and inferred types (admin/, website/)
+        client/             # tRPC client, React providers, re-exports
+        lib/                # Constants, enums, and utilities
   .storybook/               # Storybook config
   Makefile                  # Build and deploy targets
 ```
@@ -197,7 +199,7 @@ bun run migrate
 
 # 5. If you added a new table, create a matching:
 #    - Entity class in packages/api/src/entities/
-#    - Shared type in packages/shared/types/
+#    - Shared DTO in packages/shared/src/dto/admin/
 #    - Service in packages/api/src/services/
 #    - Register entity in dataSource.ts entities array
 ```
@@ -266,7 +268,7 @@ TypeORM Entity → Service (returns shared type) → tRPC Router → AppRouter t
 
 ### Rules
 
-1. **Shared types are the cross-package contract.** Define interfaces in `@satyrsmc/shared/types/*`. Services annotate return types with these interfaces. tRPC infers them automatically. Frontends consume them via `createTRPCReact<AppRouter>()`.
+1. **Shared types are the cross-package contract.** Define DTO schemas in `@satyrsmc/shared/dto/*` and enums in `@satyrsmc/shared/lib/enums`. Services annotate return types with these interfaces. tRPC infers them automatically. Frontends consume them via `createTRPCReact<AppRouter>()`.
 
 2. **Service return types MUST be annotated** with the shared interface:
    ```typescript
@@ -288,17 +290,25 @@ TypeORM Entity → Service (returns shared type) → tRPC Router → AppRouter t
 5. **Import from canonical paths:**
    ```typescript
    // GOOD
-   import type { Contact } from "@satyrsmc/shared/types/contact";
+   import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
 
    // BAD — fragile barrel re-export from unrelated module
-   import type { Contact } from "@satyrsmc/shared/types/budget";
+   import type { Contact } from "@satyrsmc/shared/dto/admin/budget";
    ```
 
 6. **Frontend hooks use tRPC-inferred types.** Do not manually re-annotate or cast return types from `useSuspenseQuery()`.
 
+### String Literal Conventions
+
+- All domain string unions are defined in `@satyrsmc/shared/lib/enums` using the `as const` array + derived type pattern
+- DTO Zod schemas derive from shared arrays: `z.enum(SHARED_CONST)` — never duplicate strings
+- TypeORM entities import shared types for constrained columns
+- Services import types from shared, never define local aliases for domain types
+- The const arrays are the **single source of truth** — both the TypeScript type and Zod schema derive from them
+
 ### Adding a New Domain Type
 
-1. **Define the shared interface** in `packages/shared/types/<domain>.ts`
+1. **Define shared DTO schemas** in `packages/shared/src/dto/admin/<domain>.ts` and enums in `packages/shared/src/lib/enums.ts`
 2. **Add the export** to `packages/shared/package.json` exports map
 3. **Create the TypeORM entity** in `packages/api/src/entities/` — register in `dataSource.ts`
 4. **Create the service** in `packages/api/src/services/` — import and return the shared type explicitly

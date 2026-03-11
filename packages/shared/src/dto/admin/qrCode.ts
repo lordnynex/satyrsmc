@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { QR_ERROR_CORRECTION_LEVELS, QR_FORMATS } from "../../lib/enums";
 
 // ----- Input schemas -----
 
@@ -28,11 +29,11 @@ export const QrCodeGetImageInputSchema = z.object({
 
 const QrCodeConfigSchema = z
   .object({
-    errorCorrectionLevel: z.enum(["L", "M", "Q", "H"]).optional(),
+    errorCorrectionLevel: z.enum(QR_ERROR_CORRECTION_LEVELS).optional(),
     width: z.number().optional(),
     margin: z.number().optional(),
     color: z.object({ dark: z.string().optional(), light: z.string().optional() }).optional(),
-    format: z.enum(["png", "svg"]).optional(),
+    format: z.enum(QR_FORMATS).optional(),
   })
   .nullable();
 

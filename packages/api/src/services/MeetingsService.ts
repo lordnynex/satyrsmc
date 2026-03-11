@@ -9,6 +9,7 @@ import {
   MeetingTemplate,
   Member,
 } from "../entities";
+import type { ActionItemStatus, MotionResult, OldBusinessStatus } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
@@ -177,7 +178,7 @@ export class MeetingsService {
           id: ob.id,
           meeting_id: ob.meetingId,
           description: ob.description,
-          status: ob.status as "open" | "closed",
+          status: ob.status as OldBusinessStatus,
           closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
@@ -188,7 +189,7 @@ export class MeetingsService {
           id: ob.id,
           meeting_id: ob.meetingId,
           description: ob.description,
-          status: ob.status as "open" | "closed",
+          status: ob.status as OldBusinessStatus,
           closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
@@ -253,7 +254,7 @@ export class MeetingsService {
       id: uuid(),
       meetingId,
       description: body.description ?? null,
-      result: body.result as "pass" | "fail",
+      result: body.result as MotionResult,
       orderIndex,
       moverMemberId: body.mover_member_id,
       seconderMemberId: body.seconder_member_id,
@@ -277,7 +278,7 @@ export class MeetingsService {
     if (!motion) return null;
     const updates: Partial<MeetingMotion> = {};
     if (body.description !== undefined) updates.description = body.description as string | null;
-    if (body.result !== undefined) updates.result = body.result as "pass" | "fail";
+    if (body.result !== undefined) updates.result = body.result as MotionResult;
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     if (body.mover_member_id !== undefined) updates.moverMemberId = body.mover_member_id as string | null;
     if (body.seconder_member_id !== undefined) updates.seconderMemberId = body.seconder_member_id as string | null;
@@ -339,7 +340,7 @@ export class MeetingsService {
     if (body.assignee_member_id !== undefined) updates.assigneeMemberId = body.assignee_member_id as string | null;
     if (body.due_date !== undefined) updates.dueDate = (body.due_date as string | null) != null ? new Date(body.due_date as string) : null;
     if (body.status !== undefined) {
-      updates.status = body.status as "open" | "completed";
+      updates.status = body.status as ActionItemStatus;
       if (body.status === "completed") updates.completedAt = new Date();
     }
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
@@ -388,7 +389,7 @@ export class MeetingsService {
       id: item.id,
       meeting_id: item.meetingId,
       description: item.description,
-      status: item.status as "open" | "closed",
+      status: item.status as OldBusinessStatus,
       order_index: item.orderIndex,
       created_at: toISOString(item.createdAt),
     };
@@ -404,7 +405,7 @@ export class MeetingsService {
     const updates: Partial<OldBusinessItem> = {};
     if (body.description !== undefined) updates.description = body.description as string;
     if (body.status !== undefined) {
-      updates.status = body.status as string;
+      updates.status = body.status as OldBusinessStatus;
       if (body.status === "closed") {
         updates.closedAt = new Date();
         updates.closedInMeetingId = (body.closed_in_meeting_id as string) ?? meetingId;
@@ -419,7 +420,7 @@ export class MeetingsService {
           id: updated.id,
           meeting_id: updated.meetingId,
           description: updated.description,
-          status: updated.status as "open" | "closed",
+          status: updated.status as OldBusinessStatus,
           closed_at: toISOStringOrNull(updated.closedAt),
           closed_in_meeting_id: updated.closedInMeetingId ?? null,
           order_index: updated.orderIndex,
@@ -512,7 +513,7 @@ export class MeetingsService {
         id: r.m_id,
         meeting_id: r.m_meeting_id,
         description: r.m_description ?? null,
-        result: r.m_result as "pass" | "fail",
+        result: r.m_result as MotionResult,
         order_index: r.m_order_index,
         mover_member_id: r.m_mover_member_id ?? null,
         seconder_member_id: r.m_seconder_member_id ?? null,
@@ -544,7 +545,7 @@ export class MeetingsService {
         id: ob.id,
         meeting_id: ob.meetingId,
         description: ob.description,
-        status: ob.status as "open" | "closed",
+        status: ob.status as OldBusinessStatus,
         closed_at: toISOStringOrNull(ob.closedAt),
         closed_in_meeting_id: ob.closedInMeetingId ?? null,
         order_index: ob.orderIndex,

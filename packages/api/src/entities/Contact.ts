@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { ContactType, ContactStatus, ConsentStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("contacts")
 export class Contact {
@@ -6,10 +7,10 @@ export class Contact {
   id!: string;
 
   @Column({ type: "text", default: "person" })
-  type!: string;
+  type!: ContactType;
 
   @Column({ type: "text", default: "active" })
-  status!: string;
+  status!: ContactStatus;
 
   @Column({ name: "display_name", type: "text" })
   displayName!: string;
@@ -30,13 +31,13 @@ export class Contact {
   howWeKnowThem!: string | null;
 
   @Column({ name: "ok_to_email", type: "text", default: "unknown" })
-  okToEmail!: string;
+  okToEmail!: ConsentStatus;
 
   @Column({ name: "ok_to_mail", type: "text", default: "unknown" })
-  okToMail!: string;
+  okToMail!: ConsentStatus;
 
   @Column({ name: "ok_to_sms", type: "text", default: "unknown" })
-  okToSms!: string;
+  okToSms!: ConsentStatus;
 
   @Column({ name: "do_not_contact", type: "boolean", default: false })
   doNotContact!: boolean;

@@ -58,6 +58,7 @@ import { EventIncidentsCard } from "./EventIncidentsCard";
 import { EditEventDialog } from "./EditEventDialog";
 import { EventDetailSubNav } from "@/components/layout/EventDetailSubNav";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import type { EventAssignmentCategory, EventType } from "@satyrsmc/shared/client";
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -174,7 +175,7 @@ function EventDetailContent({ id }: { id: string }) {
         budget_id: editBudgetId || undefined,
         scenario_id: editScenarioId || undefined,
         planning_notes: editPlanningNotes || undefined,
-        event_type: editEventType as "badger" | "anniversary" | "pioneer_run" | "rides",
+        event_type: editEventType as EventType,
         start_location: editStartLocation || undefined,
         end_location: editEndLocation || undefined,
         facebook_event_url: editFacebookEventUrl || undefined,
@@ -402,7 +403,7 @@ function EventDetailContent({ id }: { id: string }) {
     refresh();
   };
 
-  const handleCreateRole = async (payload: { name: string; category: "planning" | "during" }) => {
+  const handleCreateRole = async (payload: { name: string; category: EventAssignmentCategory }) => {
     await createAssignmentMutation.mutateAsync({ eventId: id, body: payload });
     refresh();
   };

@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { OldBusinessStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("old_business_items")
 export class OldBusinessItem {
@@ -12,7 +13,7 @@ export class OldBusinessItem {
   description!: string;
 
   @Column({ type: "text", default: "open" })
-  status!: string;
+  status!: OldBusinessStatus;
 
   @Column({ name: "closed_at", type: "timestamptz", nullable: true })
   closedAt!: Date | null;

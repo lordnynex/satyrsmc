@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { EVENT_TYPES, EVENT_ASSIGNMENT_CATEGORIES } from "../../lib/enums";
 
 const dateLike = z.union([z.string(), z.date().transform((d) => d.toISOString())]);
 
-const eventTypeSchema = z.enum(["badger", "anniversary", "pioneer_run", "rides"]);
+const eventTypeSchema = z.enum(EVENT_TYPES);
 
 // ----- Input schemas -----
 
@@ -185,13 +186,13 @@ export const EventDeleteVolunteerInputSchema = z.object({ eventId: z.string(), v
 export const EventCreateAssignmentInputSchema = z.object({
   eventId: z.string(),
   name: z.string(),
-  category: z.enum(["planning", "during"]),
+  category: z.enum(EVENT_ASSIGNMENT_CATEGORIES),
 });
 export const EventUpdateAssignmentInputSchema = z.object({
   eventId: z.string(),
   aid: z.string(),
   name: z.string().optional(),
-  category: z.enum(["planning", "during"]).optional(),
+  category: z.enum(EVENT_ASSIGNMENT_CATEGORIES).optional(),
 });
 export const EventDeleteAssignmentInputSchema = z.object({ eventId: z.string(), aid: z.string() });
 export const EventAddAssignmentMemberInputSchema = z.object({ eventId: z.string(), aid: z.string(), memberId: z.string() });
@@ -215,7 +216,7 @@ const EventSchema = z.object({
   budget_id: z.string().nullable(),
   scenario_id: z.string().nullable(),
   planning_notes: z.string().nullable(),
-  event_type: z.string(),
+  event_type: z.enum(EVENT_TYPES),
   show_on_website: z.boolean().optional(),
   start_location: z.string().nullable().optional(),
   end_location: z.string().nullable().optional(),
@@ -342,7 +343,7 @@ const EventAssignmentSchema = z.object({
   id: z.string(),
   event_id: z.string(),
   name: z.string(),
-  category: z.enum(["planning", "during"]),
+  category: z.enum(EVENT_ASSIGNMENT_CATEGORIES),
   sort_order: z.number(),
   members: z.array(z.unknown()).optional(),
 });

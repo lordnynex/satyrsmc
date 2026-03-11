@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 
 @Entity("meeting_templates")
 export class MeetingTemplate {
@@ -9,7 +10,7 @@ export class MeetingTemplate {
   name!: string;
 
   @Column({ type: "text" })
-  type!: string;
+  type!: MeetingTemplateType;
 
   @Column({ name: "document_id", type: "text" })
   documentId!: string;
