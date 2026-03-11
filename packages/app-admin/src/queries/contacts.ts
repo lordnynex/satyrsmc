@@ -4,17 +4,21 @@ import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
 import type { Contact, ContactSearchParams, MailingList, Tag } from "@satyrsmc/shared/client";
 
-/** Data: { contacts: Contact[]; total: number; page: number; limit: number } */
+const DEFAULT_LIST_PARAMS: ContactSearchParams = { page: 1, limit: 25 };
+
+/** Data: { contacts: Contact[]; total: number; page: number; limit: number }. Always paginated (default page 1, limit 25). */
 export function useContactsSuspense(params?: ContactSearchParams) {
-  return trpc.admin.contacts.list.useSuspenseQuery((params ?? {}) as Record<string, unknown>);
+  const input = { ...DEFAULT_LIST_PARAMS, ...params } as Record<string, unknown>;
+  return trpc.admin.contacts.list.useSuspenseQuery(input);
 }
 
-/** Data: { contacts: Contact[]; total: number; page: number; limit: number } */
+/** Data: { contacts: Contact[]; total: number; page: number; limit: number }. Always paginated (default page 1, limit 25). */
 export function useContactsOptional(
   params?: ContactSearchParams,
   options?: { enabled?: boolean }
 ) {
-  return trpc.admin.contacts.list.useQuery((params ?? {}) as Record<string, unknown>, options);
+  const input = { ...DEFAULT_LIST_PARAMS, ...params } as Record<string, unknown>;
+  return trpc.admin.contacts.list.useQuery(input, options);
 }
 
 /** Data: Contact */
