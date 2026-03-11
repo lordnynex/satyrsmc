@@ -58,7 +58,7 @@ TypeORM Entity → Service (returns @satyrsmc/shared type) → tRPC Router → A
 
 - **Services MUST annotate return types** with the shared interface (e.g., `entityToContact(e: ContactEntity): Contact`)
 - **Shared types** in `@satyrsmc/shared/client` and `@satyrsmc/shared/dto/*` are the cross-package contract
-- **Zod for tRPC inputs only** — all mutation inputs need Zod schemas, no `.passthrough()`
+- **Zod in routers** — all mutation inputs need Zod schemas, no `.passthrough()`; shared DTO Zod schemas live in `@satyrsmc/shared/dto/*`
 - **Import from canonical paths** — `@satyrsmc/shared/client` for frontend types/constants, or `@satyrsmc/shared/dto/admin/*` for DTOs
 - **Frontend hooks get types automatically** from `createTRPCReact<AppRouter>()` — don't re-annotate
 
@@ -66,7 +66,7 @@ See the "End-to-End Type Safety" section in [CONTRIBUTING.md](CONTRIBUTING.md) f
 
 ## Shared Types
 
-The `@satyrsmc/shared` package contains hand-written TypeScript interfaces. There are no auto-generated Zod schemas. Zod is used only for tRPC input validation in routers.
+The `@satyrsmc/shared` package contains hand-written TypeScript interfaces, Zod DTO schemas, and derived types. Zod schemas live in `packages/shared/src/dto/` and are used both for tRPC input validation and for defining DTO shapes with inferred TypeScript types. Enum string literals are defined as `const` arrays in `packages/shared/src/lib/enums.ts` and re-used in Zod schemas via `z.enum()`.
 
 **Exports** (from `packages/shared/package.json`):
 ```
