@@ -32,24 +32,16 @@ function MeetingRow({ m }: { m: MeetingSummary }) {
       <td className="px-4 py-3">{m.meeting_number}</td>
       <td className="px-4 py-3 text-muted-foreground">{m.location ?? "—"}</td>
       <td className="px-4 py-3">
-        <Link
-          to={`/meetings/${m.id}/agenda/edit`}
-          className="text-primary hover:underline"
-        >
+        <Link to={`/meetings/${m.id}/agenda/edit`} className="text-primary hover:underline">
           Agenda
         </Link>
       </td>
       <td className="px-4 py-3">
-        <Link
-          to={`/meetings/${m.id}/minutes/edit`}
-          className="text-primary hover:underline"
-        >
+        <Link to={`/meetings/${m.id}/minutes/edit`} className="text-primary hover:underline">
           Minutes
         </Link>
       </td>
-      <td className="px-4 py-3 text-muted-foreground">
-        {m.motion_count ?? 0}
-      </td>
+      <td className="px-4 py-3 text-muted-foreground">{m.motion_count ?? 0}</td>
     </tr>
   );
 }
@@ -113,10 +105,10 @@ export function MeetingsPanel() {
   const paginatedPast = past.slice((safePage - 1) * perPage, safePage * perPage);
 
   // Reset to page 1 when search or sort changes (not on initial mount)
-  const isFirstMount = useRef(true);
+  const isFirstMountRef = useRef(true);
   useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
       return;
     }
     setSearchParams((prev) => {

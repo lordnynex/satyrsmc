@@ -6,12 +6,12 @@ import { BAD_ID, createQrCode } from "./helpers";
 
 describe("QrCodesService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -70,7 +70,10 @@ describe("QrCodesService", () => {
   describe("update", () => {
     test("updates qr code", async () => {
       const qr = await createQrCode(api, { url: "https://upd.example.com", name: "Upd" });
-      const updated = await api.qrCodes.update(qr.id, { name: "Updated", url: "https://updated.example.com" });
+      const updated = await api.qrCodes.update(qr.id, {
+        name: "Updated",
+        url: "https://updated.example.com",
+      });
       expect(updated).not.toBeNull();
       expect(updated!.name).toBe("Updated");
       expect(updated!.url).toBe("https://updated.example.com");

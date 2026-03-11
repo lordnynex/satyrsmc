@@ -23,15 +23,15 @@ export class AddContactNotesTable1740000001000 implements MigrationInterface {
     `);
 
     // Migrate existing notes from contacts to contact_notes
-    const rows = await queryRunner.query(
-      `SELECT id, notes, created_at FROM contacts WHERE notes IS NOT NULL AND notes != ''`
-    ) as Array<{ id: string; notes: string; created_at: string | null }>;
+    const rows = (await queryRunner.query(
+      `SELECT id, notes, created_at FROM contacts WHERE notes IS NOT NULL AND notes != ''`,
+    )) as Array<{ id: string; notes: string; created_at: string | null }>;
 
     for (const row of rows) {
       const noteId = crypto.randomUUID();
       await queryRunner.query(
         `INSERT INTO contact_notes (id, contact_id, content, created_at) VALUES (?, ?, ?, ?)`,
-        [noteId, row.id, row.notes, row.created_at ?? new Date().toISOString()]
+        [noteId, row.id, row.notes, row.created_at ?? new Date().toISOString()],
       );
     }
   }

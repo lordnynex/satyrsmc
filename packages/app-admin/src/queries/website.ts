@@ -2,10 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type {
-  SitePageResponse,
-  SiteSettingsResponse,
-} from "@satyrsmc/shared/client";
 
 /** Data: SitePageResponse[] */
 export function useWebsitePagesOptional() {
@@ -96,7 +92,7 @@ export function useWebsiteUpdateSettings() {
 
 export function useWebsiteUpdateMenu() {
   const api = useApi();
-  const qc = useQueryClient();
+  const _qc = useQueryClient();
   return useMutation({
     mutationFn: ({ key, items }: { key: string; items: unknown[] }) =>
       api.website.updateMenu(key, items),

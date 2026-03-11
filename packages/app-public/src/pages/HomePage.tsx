@@ -1,6 +1,5 @@
 import React from "react";
 import { HeroCarousel } from "../components/HeroCarousel";
-import { HomeGallery } from "../components/HomeGallery";
 import { MissionStatement } from "../components/MissionStatement";
 import { UpcomingEvents } from "../components/UpcomingEvents";
 

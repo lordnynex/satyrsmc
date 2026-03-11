@@ -18,11 +18,7 @@ export class QrCodesApiClient {
     return `data:${r.contentType};base64,${r.base64}`;
   }
 
-  create(body: {
-    name?: string | null;
-    url: string;
-    config?: QrCodeConfig | null;
-  }) {
+  create(body: { name?: string | null; url: string; config?: QrCodeConfig | null }) {
     return this.client.admin.qrCodes.create.mutate(body as never);
   }
 
@@ -32,7 +28,7 @@ export class QrCodesApiClient {
       name?: string | null;
       url?: string;
       config?: QrCodeConfig | null;
-    }
+    },
   ) {
     return this.client.admin.qrCodes.update.mutate({ id, ...body } as never);
   }

@@ -20,12 +20,15 @@ export function WebsiteBlogPanel() {
             Publish and manage blog posts on the public site. Create posts with rich content,
             featured images, and per-post SEO. Control publish date and visibility. Public list:{" "}
             <code className="text-xs bg-muted px-1 rounded">/api/website/blog</code>. Single post by
-            slug: <code className="text-xs bg-muted px-1 rounded">/api/website/blog/slug/:slug</code>.
+            slug:{" "}
+            <code className="text-xs bg-muted px-1 rounded">/api/website/blog/slug/:slug</code>.
           </p>
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No blog posts yet. Use the API to create: POST /api/website/blog</p>
+            <p className="text-sm text-muted-foreground">
+              No blog posts yet. Use the API to create: POST /api/website/blog
+            </p>
           ) : (
             <ul className="space-y-2">
               {posts.map((post) => (

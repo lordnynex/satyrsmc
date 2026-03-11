@@ -112,7 +112,11 @@ export class DocumentsService {
     };
   }
 
-  async restore(documentId: string, versionId?: string, versionNumber?: number): Promise<DocumentRestoreOutput | null> {
+  async restore(
+    documentId: string,
+    versionId?: string,
+    versionNumber?: number,
+  ): Promise<DocumentRestoreOutput | null> {
     const doc = await this.ds.getRepository(Document).findOne({ where: { id: documentId } });
     if (!doc) return null;
 

@@ -48,8 +48,8 @@ export function WebsiteSettingsPanel() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            Global settings for the public site: title, logo, footer text, default meta
-            description, and contact email for form submissions.
+            Global settings for the public site: title, logo, footer text, default meta description,
+            and contact email for form submissions.
           </p>
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>

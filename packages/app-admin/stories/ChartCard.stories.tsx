@@ -33,12 +33,8 @@ export const WithBarPlaceholder: Story = {
     calculationNote: "Costs are grouped by the category field on each line item.",
     children: (
       <div className="flex h-32 items-end gap-2">
-        {[40, 65, 45, 80, 55].map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-t bg-primary/80"
-            style={{ height: `${h}%` }}
-          />
+        {[40, 65, 45, 80, 55].map((h) => (
+          <div key={h} className="flex-1 rounded-t bg-primary/80" style={{ height: `${h}%` }} />
         ))}
       </div>
     ),

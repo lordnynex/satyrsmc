@@ -21,9 +21,7 @@ export class BlogService {
       order: { publishedAt: "DESC", createdAt: "DESC" },
       take: limit,
     });
-    return posts
-      .filter((p) => p.publishedAt != null)
-      .map((p) => this.toResponse(p));
+    return posts.filter((p) => p.publishedAt != null).map((p) => this.toResponse(p));
   }
 
   async listAll(): Promise<WebsiteAdminListBlogAllOutput> {
@@ -68,7 +66,8 @@ export class BlogService {
     if (body.title !== undefined) post.title = body.title;
     if (body.excerpt !== undefined) post.excerpt = body.excerpt;
     if (body.body !== undefined) post.body = body.body;
-    if (body.published_at !== undefined) post.publishedAt = body.published_at != null ? new Date(body.published_at) : null;
+    if (body.published_at !== undefined)
+      post.publishedAt = body.published_at != null ? new Date(body.published_at) : null;
     if (body.meta_title !== undefined) post.metaTitle = body.meta_title;
     if (body.meta_description !== undefined) post.metaDescription = body.meta_description;
     post.updatedAt = new Date();

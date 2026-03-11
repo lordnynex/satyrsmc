@@ -21,9 +21,7 @@ export function ChartCard({
       <CardHeader>
         <h3 className="font-semibold">{title}</h3>
         <p className="text-muted-foreground text-sm">{description}</p>
-        <p className="text-muted-foreground text-xs italic">
-          How we calculate: {calculationNote}
-        </p>
+        <p className="text-muted-foreground text-xs italic">How we calculate: {calculationNote}</p>
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>

@@ -77,7 +77,10 @@ export class QrCodesService {
     return this.rowToRecord(row);
   }
 
-  async getImage(id: string, sizeOverride?: number): Promise<{ buffer: Buffer; contentType: string } | null> {
+  async getImage(
+    id: string,
+    sizeOverride?: number,
+  ): Promise<{ buffer: Buffer; contentType: string } | null> {
     const row = await this.ds.getRepository(QrCodeEntity).findOne({ where: { id } });
     if (!row) return null;
     const config = row.config ? (JSON.parse(row.config) as QrCodeConfig) : mergeConfig(null);
@@ -125,16 +128,21 @@ export class QrCodesService {
 
   async update(
     id: string,
-    input: { name?: string | null; url?: string; config?: QrCodeConfig | null }
+    input: { name?: string | null; url?: string; config?: QrCodeConfig | null },
   ): Promise<QrCodeUpdateOutput | null> {
     const row = await this.ds.getRepository(QrCodeEntity).findOne({ where: { id } });
     if (!row) return null;
 
     const url = input.url !== undefined ? input.url.trim() : row.url;
-    const config = input.config !== undefined ? mergeConfig(input.config) : (row.config ? (JSON.parse(row.config) as QrCodeConfig) : mergeConfig(null));
+    const config =
+      input.config !== undefined
+        ? mergeConfig(input.config)
+        : row.config
+          ? (JSON.parse(row.config) as QrCodeConfig)
+          : mergeConfig(null);
     const imageData = await generateQrImage(url, config);
 
-    row.name = input.name !== undefined ? (input.name?.trim() || null) : row.name;
+    row.name = input.name !== undefined ? input.name?.trim() || null : row.name;
     row.url = url;
     row.config = JSON.stringify(config);
     row.imageData = imageData;

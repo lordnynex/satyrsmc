@@ -6,9 +6,7 @@ export class EventsApiClient {
   constructor(private client: TrpcClient) {}
 
   list(opts?: { type?: EventType }) {
-    return this.client.admin.events.list.query(
-      opts?.type ? { type: opts.type } : undefined
-    );
+    return this.client.admin.events.list.query(opts?.type ? { type: opts.type } : undefined);
   }
 
   get(id: string) {
@@ -46,15 +44,9 @@ export class EventsApiClient {
   };
 
   readonly attendees = {
-    add: async (
-      eventId: string,
-      body: { contact_id: string; waiver_signed?: boolean }
-    ) => this.client.admin.events.addAttendee.mutate({ eventId, ...body }),
-    update: async (
-      eventId: string,
-      attendeeId: string,
-      body: { waiver_signed?: boolean }
-    ) =>
+    add: async (eventId: string, body: { contact_id: string; waiver_signed?: boolean }) =>
+      this.client.admin.events.addAttendee.mutate({ eventId, ...body }),
+    update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) =>
       this.client.admin.events.updateAttendee.mutate({
         eventId,
         attendeeId,
@@ -72,9 +64,8 @@ export class EventsApiClient {
         year: number;
         description: string;
         due_date?: string;
-      }
-    ) =>
-      this.client.admin.events.createMilestone.mutate({ eventId, ...body }),
+      },
+    ) => this.client.admin.events.createMilestone.mutate({ eventId, ...body }),
     update: async (
       eventId: string,
       mid: string,
@@ -84,9 +75,8 @@ export class EventsApiClient {
         description?: string;
         completed?: boolean;
         due_date?: string;
-      }
-    ) =>
-      this.client.admin.events.updateMilestone.mutate({ eventId, mid, ...body }),
+      },
+    ) => this.client.admin.events.updateMilestone.mutate({ eventId, mid, ...body }),
     delete: async (eventId: string, mid: string) =>
       this.client.admin.events.deleteMilestone.mutate({ eventId, mid }),
     addMember: async (eventId: string, mid: string, memberId: string) =>
@@ -109,11 +99,7 @@ export class EventsApiClient {
         eventId,
         ...body,
       }),
-    update: async (
-      eventId: string,
-      cid: string,
-      body: { name?: string }
-    ) =>
+    update: async (eventId: string, cid: string, body: { name?: string }) =>
       this.client.admin.events.updatePackingCategory.mutate({
         eventId,
         cid,
@@ -131,9 +117,8 @@ export class EventsApiClient {
         name: string;
         quantity?: number;
         note?: string;
-      }
-    ) =>
-      this.client.admin.events.createPackingItem.mutate({ eventId, ...body }),
+      },
+    ) => this.client.admin.events.createPackingItem.mutate({ eventId, ...body }),
     update: async (
       eventId: string,
       pid: string,
@@ -143,7 +128,7 @@ export class EventsApiClient {
         quantity?: number;
         note?: string;
         loaded?: boolean;
-      }
+      },
     ) =>
       this.client.admin.events.updatePackingItem.mutate({
         eventId,
@@ -155,15 +140,12 @@ export class EventsApiClient {
   };
 
   readonly assignments = {
-    create: async (
-      eventId: string,
-      body: { name: string; category: EventAssignmentCategory }
-    ) =>
+    create: async (eventId: string, body: { name: string; category: EventAssignmentCategory }) =>
       this.client.admin.events.createAssignment.mutate({ eventId, ...body }),
     update: async (
       eventId: string,
       aid: string,
-      body: { name?: string; category?: EventAssignmentCategory }
+      body: { name?: string; category?: EventAssignmentCategory },
     ) =>
       this.client.admin.events.updateAssignment.mutate({
         eventId,
@@ -187,16 +169,9 @@ export class EventsApiClient {
   };
 
   readonly volunteers = {
-    create: async (
-      eventId: string,
-      body: { name: string; department: string }
-    ) =>
+    create: async (eventId: string, body: { name: string; department: string }) =>
       this.client.admin.events.createVolunteer.mutate({ eventId, ...body }),
-    update: async (
-      eventId: string,
-      vid: string,
-      body: { name?: string; department?: string }
-    ) =>
+    update: async (eventId: string, vid: string, body: { name?: string; department?: string }) =>
       this.client.admin.events.updateVolunteer.mutate({
         eventId,
         vid,
@@ -213,9 +188,8 @@ export class EventsApiClient {
         scheduled_time: string;
         label: string;
         location?: string;
-      }
-    ) =>
-      this.client.admin.events.createScheduleItem.mutate({ eventId, ...body }),
+      },
+    ) => this.client.admin.events.createScheduleItem.mutate({ eventId, ...body }),
     update: async (
       eventId: string,
       scheduleId: string,
@@ -223,7 +197,7 @@ export class EventsApiClient {
         scheduled_time?: string;
         label?: string;
         location?: string | null;
-      }
+      },
     ) =>
       this.client.admin.events.updateScheduleItem.mutate({
         eventId,
@@ -248,7 +222,7 @@ export class EventsApiClient {
         occurred_at?: string;
         contact_id?: string;
         member_id?: string;
-      }
+      },
     ) =>
       this.client.admin.events.createIncident.mutate({
         eventId,
@@ -265,7 +239,7 @@ export class EventsApiClient {
         occurred_at?: string | null;
         contact_id?: string | null;
         member_id?: string | null;
-      }
+      },
     ) =>
       this.client.admin.events.updateIncident.mutate({
         eventId,
@@ -280,16 +254,9 @@ export class EventsApiClient {
   };
 
   readonly memberAttendees = {
-    add: async (
-      eventId: string,
-      body: { member_id: string; waiver_signed?: boolean }
-    ) =>
+    add: async (eventId: string, body: { member_id: string; waiver_signed?: boolean }) =>
       this.client.admin.events.addMemberAttendee.mutate({ eventId, ...body }),
-    update: async (
-      eventId: string,
-      memberAttendeeId: string,
-      body: { waiver_signed?: boolean }
-    ) =>
+    update: async (eventId: string, memberAttendeeId: string, body: { waiver_signed?: boolean }) =>
       this.client.admin.events.updateMemberAttendee.mutate({
         eventId,
         memberAttendeeId,

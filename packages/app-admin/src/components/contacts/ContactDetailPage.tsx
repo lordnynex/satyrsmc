@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type {
-  MailingList,
   ContactEmail,
   ContactPhone,
   ContactAddress,
@@ -13,7 +12,19 @@ import type {
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import { formatPhoneNumber, isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
 import { formatDateTime } from "@/lib/date-utils";
-import { ArrowLeft, Pencil, Download, Trash2, RotateCcw, Plus, Trash2Icon, User, X, AlertCircle, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Download,
+  Trash2,
+  RotateCcw,
+  Plus,
+  Trash2Icon,
+  User,
+  X,
+  AlertCircle,
+  Check,
+} from "lucide-react";
 import { EditContactDialog } from "./EditContactDialog";
 import { ContactPhotoCarousel } from "./ContactPhotoCarousel";
 import { ContactPhotoLightbox } from "./ContactPhotoLightbox";
@@ -81,14 +92,30 @@ function ContactDetailContent({ id }: { id: string }) {
 
   // Inline edit state for emails, phones, addresses
   const [editingEmailId, setEditingEmailId] = useState<string | null>(null);
-  const [editingEmailDraft, setEditingEmailDraft] = useState<{ email: string; type: string; is_primary: boolean }>({ email: "", type: "other", is_primary: false });
+  const [editingEmailDraft, setEditingEmailDraft] = useState<{
+    email: string;
+    type: string;
+    is_primary: boolean;
+  }>({ email: "", type: "other", is_primary: false });
   const [addingEmail, setAddingEmail] = useState(false);
-  const [newEmailDraft, setNewEmailDraft] = useState<{ email: string; type: string; is_primary: boolean }>({ email: "", type: "other", is_primary: false });
+  const [newEmailDraft, setNewEmailDraft] = useState<{
+    email: string;
+    type: string;
+    is_primary: boolean;
+  }>({ email: "", type: "other", is_primary: false });
 
   const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null);
-  const [editingPhoneDraft, setEditingPhoneDraft] = useState<{ phone: string; type: string; is_primary: boolean }>({ phone: "", type: "other", is_primary: false });
+  const [editingPhoneDraft, setEditingPhoneDraft] = useState<{
+    phone: string;
+    type: string;
+    is_primary: boolean;
+  }>({ phone: "", type: "other", is_primary: false });
   const [addingPhone, setAddingPhone] = useState(false);
-  const [newPhoneDraft, setNewPhoneDraft] = useState<{ phone: string; type: string; is_primary: boolean }>({ phone: "", type: "other", is_primary: false });
+  const [newPhoneDraft, setNewPhoneDraft] = useState<{
+    phone: string;
+    type: string;
+    is_primary: boolean;
+  }>({ phone: "", type: "other", is_primary: false });
 
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [editingAddressDraft, setEditingAddressDraft] = useState<Partial<ContactAddress>>({});
@@ -206,12 +233,16 @@ function ContactDetailContent({ id }: { id: string }) {
     refresh();
   };
 
-  const toEmailPayload = (e: ContactEmail | { email?: string | null; type?: string; is_primary?: boolean }) => ({
+  const toEmailPayload = (
+    e: ContactEmail | { email?: string | null; type?: string; is_primary?: boolean },
+  ) => ({
     email: String((e as { email?: string }).email ?? "").trim(),
     type: ((e as { type?: string }).type ?? "other") as "work" | "home" | "cell" | "other",
     is_primary: !!(e as { is_primary?: boolean }).is_primary,
   });
-  const toPhonePayload = (p: ContactPhone | { phone?: string | null; type?: string; is_primary?: boolean }) => ({
+  const toPhonePayload = (
+    p: ContactPhone | { phone?: string | null; type?: string; is_primary?: boolean },
+  ) => ({
     phone: normalizePhoneForStorage((p as { phone?: string }).phone ?? ""),
     type: ((p as { type?: string }).type ?? "other") as "work" | "home" | "cell" | "other",
     is_primary: !!(p as { is_primary?: boolean }).is_primary,
@@ -223,11 +254,13 @@ function ContactDetailContent({ id }: { id: string }) {
     state: (a.state ?? "").trim() || null,
     postal_code: (a.postal_code ?? "").trim() || null,
     country: (a.country ?? "US").trim() || "US",
-    type: ((a.type ?? "home") as "home" | "work" | "postal" | "other"),
+    type: (a.type ?? "home") as "home" | "work" | "postal" | "other",
     is_primary_mailing: !!(a.is_primary_mailing ?? false),
   });
   const toEmergencyContactPayload = (
-    ec: ContactEmergencyContact | { name?: string; phone?: string; email?: string; relationship?: string }
+    ec:
+      | ContactEmergencyContact
+      | { name?: string; phone?: string; email?: string; relationship?: string },
   ) => ({
     name: String(ec.name ?? "").trim(),
     phone: normalizePhoneForStorage(ec.phone ?? ""),
@@ -235,7 +268,9 @@ function ContactDetailContent({ id }: { id: string }) {
     relationship: (ec.relationship ?? "").trim() || null,
   });
 
-  const saveEmails = async (emails: Array<{ email: string; type: string; is_primary: boolean }>) => {
+  const saveEmails = async (
+    emails: Array<{ email: string; type: string; is_primary: boolean }>,
+  ) => {
     setSavingContactField(true);
     setContactFieldError(null);
     try {
@@ -257,7 +292,9 @@ function ContactDetailContent({ id }: { id: string }) {
     }
   };
 
-  const savePhones = async (phones: Array<{ phone: string; type: string; is_primary: boolean }>) => {
+  const savePhones = async (
+    phones: Array<{ phone: string; type: string; is_primary: boolean }>,
+  ) => {
     setSavingContactField(true);
     setContactFieldError(null);
     try {
@@ -281,7 +318,7 @@ function ContactDetailContent({ id }: { id: string }) {
 
   const saveConsent = async (
     field: "ok_to_email" | "ok_to_mail" | "ok_to_sms",
-    value: ConsentStatus
+    value: ConsentStatus,
   ) => {
     setSavingContactField(true);
     setContactFieldError(null);
@@ -305,11 +342,16 @@ function ContactDetailContent({ id }: { id: string }) {
     }
   };
 
-  const saveAddresses = async (addresses: Array<Partial<ContactAddress> & { address_line1?: string | null }>) => {
+  const saveAddresses = async (
+    addresses: Array<Partial<ContactAddress> & { address_line1?: string | null }>,
+  ) => {
     setSavingContactField(true);
     setContactFieldError(null);
     try {
-      const valid = addresses.filter((a) => (a.address_line1 ?? "").trim() || (a.city ?? "").trim() || (a.postal_code ?? "").trim());
+      const valid = addresses.filter(
+        (a) =>
+          (a.address_line1 ?? "").trim() || (a.city ?? "").trim() || (a.postal_code ?? "").trim(),
+      );
       const updated = await updateContactMutation.mutateAsync({
         id,
         body: {
@@ -319,7 +361,16 @@ function ContactDetailContent({ id }: { id: string }) {
       if (updated) invalidate.setContactData(id, updated);
       setEditingAddressId(null);
       setAddingAddress(false);
-      setNewAddressDraft({ address_line1: "", address_line2: "", city: "", state: "", postal_code: "", country: "US", type: "home", is_primary_mailing: false });
+      setNewAddressDraft({
+        address_line1: "",
+        address_line2: "",
+        city: "",
+        state: "",
+        postal_code: "",
+        country: "US",
+        type: "home",
+        is_primary_mailing: false,
+      });
     } catch (err) {
       setContactFieldError(err instanceof Error ? err.message : "Failed to save address");
     } finally {
@@ -390,7 +441,8 @@ function ContactDetailContent({ id }: { id: string }) {
 
   const handleAddAddress = () => {
     const d = newAddressDraft;
-    if (!(d.address_line1 ?? "").trim() && !(d.city ?? "").trim() && !(d.postal_code ?? "").trim()) return;
+    if (!(d.address_line1 ?? "").trim() && !(d.city ?? "").trim() && !(d.postal_code ?? "").trim())
+      return;
     const current = (contact.addresses ?? []).map(toAddressPayload);
     saveAddresses([...current, toAddressPayload(d)]);
   };
@@ -402,13 +454,18 @@ function ContactDetailContent({ id }: { id: string }) {
   };
 
   const saveEmergencyContacts = async (
-    emergencyContacts: Array<{ name: string; phone: string; email: string | null; relationship: string | null }>
+    emergencyContacts: Array<{
+      name: string;
+      phone: string;
+      email: string | null;
+      relationship: string | null;
+    }>,
   ) => {
     setSavingContactField(true);
     setContactFieldError(null);
     try {
       const valid = emergencyContacts.filter(
-        (ec) => (ec.name ?? "").trim() && normalizePhoneForStorage(ec.phone).length > 0
+        (ec) => (ec.name ?? "").trim() && normalizePhoneForStorage(ec.phone).length > 0,
       );
       const updated = await updateContactMutation.mutateAsync({
         id,
@@ -491,7 +548,11 @@ function ContactDetailContent({ id }: { id: string }) {
                 <Pencil className="size-4" />
                 Edit
               </Button>
-              <Button variant="outline" onClick={handleDelete} className="text-destructive hover:text-destructive">
+              <Button
+                variant="outline"
+                onClick={handleDelete}
+                className="text-destructive hover:text-destructive"
+              >
                 <Trash2 className="size-4" />
                 Delete
               </Button>
@@ -528,885 +589,1183 @@ function ContactDetailContent({ id }: { id: string }) {
             </p>
           </CardHeader>
           <CardContent className="space-y-8">
-          {/* Profile + Photo on same line */}
-          <section className="flex flex-col gap-6 sm:flex-row sm:items-start">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Profile</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">First name</p>
-                <p>{contact.first_name ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Last name</p>
-                <p>{contact.last_name ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Organization</p>
-                <p>{contact.organization_name ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Club / affiliation</p>
-                <p>{contact.club_name ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Role / title</p>
-                <p>{contact.role ?? "—"}</p>
-              </div>
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">Consent</p>
-                <div className="space-y-2">
-                  {contact.status !== "deleted" ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm font-normal w-20 shrink-0">Email</Label>
-                        <Select
-                          value={contact.ok_to_email ?? "unknown"}
-                          onValueChange={(v) => saveConsent("ok_to_email", v as ConsentStatus)}
-                          disabled={savingContactField}
-                        >
-                          <SelectTrigger className="h-8 w-[120px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="unknown">Unknown</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {consentSavedField === "email" && (
-                          <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                            <Check className="size-3" />
-                            Saved
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm font-normal w-20 shrink-0">Mail</Label>
-                        <Select
-                          value={contact.ok_to_mail ?? "unknown"}
-                          onValueChange={(v) => saveConsent("ok_to_mail", v as ConsentStatus)}
-                          disabled={savingContactField}
-                        >
-                          <SelectTrigger className="h-8 w-[120px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="unknown">Unknown</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {consentSavedField === "mail" && (
-                          <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                            <Check className="size-3" />
-                            Saved
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm font-normal w-20 shrink-0">SMS</Label>
-                        <Select
-                          value={contact.ok_to_sms ?? "unknown"}
-                          onValueChange={(v) => saveConsent("ok_to_sms", v as ConsentStatus)}
-                          disabled={savingContactField}
-                        >
-                          <SelectTrigger className="h-8 w-[120px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="unknown">Unknown</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {consentSavedField === "sms" && (
-                          <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                            <Check className="size-3" />
-                            Saved
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="space-y-1 text-sm">
-                      <p>Email: {contact.ok_to_email ?? "unknown"}</p>
-                      <p>Mail: {contact.ok_to_mail ?? "unknown"}</p>
-                      <p>SMS: {contact.ok_to_sms ?? "unknown"}</p>
+            {/* Profile + Photo on same line */}
+            <section className="flex flex-col gap-6 sm:flex-row sm:items-start">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">Profile</h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">First name</p>
+                    <p>{contact.first_name ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Last name</p>
+                    <p>{contact.last_name ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Organization</p>
+                    <p>{contact.organization_name ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Club / affiliation</p>
+                    <p>{contact.club_name ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Role / title</p>
+                    <p>{contact.role ?? "—"}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-muted-foreground">Consent</p>
+                    <div className="space-y-2">
+                      {contact.status !== "deleted" ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm font-normal w-20 shrink-0">Email</Label>
+                            <Select
+                              value={contact.ok_to_email ?? "unknown"}
+                              onValueChange={(v) => saveConsent("ok_to_email", v as ConsentStatus)}
+                              disabled={savingContactField}
+                            >
+                              <SelectTrigger className="h-8 w-[120px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                                <SelectItem value="unknown">Unknown</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {consentSavedField === "email" && (
+                              <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                                <Check className="size-3" />
+                                Saved
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm font-normal w-20 shrink-0">Mail</Label>
+                            <Select
+                              value={contact.ok_to_mail ?? "unknown"}
+                              onValueChange={(v) => saveConsent("ok_to_mail", v as ConsentStatus)}
+                              disabled={savingContactField}
+                            >
+                              <SelectTrigger className="h-8 w-[120px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                                <SelectItem value="unknown">Unknown</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {consentSavedField === "mail" && (
+                              <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                                <Check className="size-3" />
+                                Saved
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm font-normal w-20 shrink-0">SMS</Label>
+                            <Select
+                              value={contact.ok_to_sms ?? "unknown"}
+                              onValueChange={(v) => saveConsent("ok_to_sms", v as ConsentStatus)}
+                              disabled={savingContactField}
+                            >
+                              <SelectTrigger className="h-8 w-[120px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                                <SelectItem value="unknown">Unknown</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {consentSavedField === "sms" && (
+                              <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                                <Check className="size-3" />
+                                Saved
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-1 text-sm">
+                          <p>Email: {contact.ok_to_email ?? "unknown"}</p>
+                          <p>Mail: {contact.ok_to_mail ?? "unknown"}</p>
+                          <p>SMS: {contact.ok_to_sms ?? "unknown"}</p>
+                        </div>
+                      )}
+                      {contact.do_not_contact && (
+                        <p className="text-sm text-muted-foreground">Do not contact</p>
+                      )}
                     </div>
-                  )}
-                  {contact.do_not_contact && (
-                    <p className="text-sm text-muted-foreground">Do not contact</p>
-                  )}
+                  </div>
                 </div>
+                {(contact.tags ?? []).length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-muted-foreground">Tags</p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {contact.tags!.map((t) => (
+                        <span key={t.id} className="rounded bg-muted px-2 py-0.5 text-sm">
+                          {t.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-            {(contact.tags ?? []).length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-muted-foreground">Tags</p>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {contact.tags!.map((t) => (
-                    <span key={t.id} className="rounded bg-muted px-2 py-0.5 text-sm">
-                      {t.name}
-                    </span>
-                  ))}
-                </div>
+              <div
+                className={`size-64 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center ${
+                  mainPhoto ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
+                }`}
+                onClick={mainPhoto ? () => setHeaderPhotoLightboxOpen(true) : undefined}
+                role={mainPhoto ? "button" : undefined}
+                aria-label={mainPhoto ? "View full size photo" : undefined}
+              >
+                {mainPhoto ? (
+                  <img
+                    src={mainPhoto.photo_display_url}
+                    alt={`${contact.display_name} photo`}
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  <User className="size-32 text-muted-foreground" />
+                )}
+              </div>
+            </section>
+
+            {contactFieldError && (
+              <div
+                className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 flex items-center justify-between gap-2"
+                role="alert"
+              >
+                <p className="text-sm text-destructive font-medium">{contactFieldError}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 shrink-0"
+                  onClick={() => setContactFieldError(null)}
+                  aria-label="Dismiss error"
+                >
+                  <X className="size-4" />
+                </Button>
               </div>
             )}
-            </div>
-            <div
-              className={`size-64 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center ${
-                mainPhoto ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
-              }`}
-              onClick={mainPhoto ? () => setHeaderPhotoLightboxOpen(true) : undefined}
-              role={mainPhoto ? "button" : undefined}
-              aria-label={mainPhoto ? "View full size photo" : undefined}
-            >
-              {mainPhoto ? (
-                <img
-                  src={mainPhoto.photo_display_url}
-                  alt={`${contact.display_name} photo`}
-                  className="size-full object-cover"
-                />
+
+            {/* Addresses */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">Addresses</h3>
+                {contact.status !== "deleted" && !addingAddress && (
+                  <Button variant="outline" size="sm" onClick={() => setAddingAddress(true)}>
+                    <Plus className="size-4" />
+                    Add address
+                  </Button>
+                )}
+              </div>
+              {(contact.addresses ?? []).length === 0 && !addingAddress ? (
+                <p className="text-muted-foreground">No addresses.</p>
               ) : (
-                <User className="size-32 text-muted-foreground" />
-              )}
-            </div>
-          </section>
-
-          {contactFieldError && (
-            <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 flex items-center justify-between gap-2" role="alert">
-              <p className="text-sm text-destructive font-medium">{contactFieldError}</p>
-              <Button variant="ghost" size="icon" className="size-7 shrink-0" onClick={() => setContactFieldError(null)} aria-label="Dismiss error">
-                <X className="size-4" />
-              </Button>
-            </div>
-          )}
-
-          {/* Addresses */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">Addresses</h3>
-              {contact.status !== "deleted" && !addingAddress && (
-                <Button variant="outline" size="sm" onClick={() => setAddingAddress(true)}>
-                  <Plus className="size-4" />
-                  Add address
-                </Button>
-              )}
-            </div>
-            {(contact.addresses ?? []).length === 0 && !addingAddress ? (
-              <p className="text-muted-foreground">No addresses.</p>
-            ) : (
-              <div className="space-y-4">
-                {(contact.addresses ?? []).map((a) => (
-                  <div key={a.id} className="rounded-lg border p-4">
-                    {editingAddressId === a.id ? (
-                      <div className="space-y-3">
-                        <div className="flex gap-2 items-center">
+                <div className="space-y-4">
+                  {(contact.addresses ?? []).map((a) => (
+                    <div key={a.id} className="rounded-lg border p-4">
+                      {editingAddressId === a.id ? (
+                        <div className="space-y-3">
+                          <div className="flex gap-2 items-center">
+                            <Input
+                              value={editingAddressDraft.address_line1 ?? ""}
+                              onChange={(e) =>
+                                setEditingAddressDraft((d) => ({
+                                  ...d,
+                                  address_line1: e.target.value,
+                                }))
+                              }
+                              placeholder="Street"
+                              className="flex-1"
+                            />
+                            <Select
+                              value={editingAddressDraft.type ?? "home"}
+                              onValueChange={(v) =>
+                                setEditingAddressDraft((d) => ({
+                                  ...d,
+                                  type: v as ContactAddress["type"],
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="home">Home</SelectItem>
+                                <SelectItem value="work">Work</SelectItem>
+                                <SelectItem value="postal">Postal</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                           <Input
-                            value={editingAddressDraft.address_line1 ?? ""}
-                            onChange={(e) => setEditingAddressDraft((d) => ({ ...d, address_line1: e.target.value }))}
-                            placeholder="Street"
-                            className="flex-1"
+                            value={editingAddressDraft.address_line2 ?? ""}
+                            onChange={(e) =>
+                              setEditingAddressDraft((d) => ({
+                                ...d,
+                                address_line2: e.target.value,
+                              }))
+                            }
+                            placeholder="Apt, suite"
                           />
-                          <Select
-                            value={editingAddressDraft.type ?? "home"}
-                            onValueChange={(v) => setEditingAddressDraft((d) => ({ ...d, type: v as ContactAddress["type"] }))}
-                          >
-                            <SelectTrigger className="w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="home">Home</SelectItem>
-                              <SelectItem value="work">Work</SelectItem>
-                              <SelectItem value="postal">Postal</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Input
-                          value={editingAddressDraft.address_line2 ?? ""}
-                          onChange={(e) => setEditingAddressDraft((d) => ({ ...d, address_line2: e.target.value }))}
-                          placeholder="Apt, suite"
-                        />
-                        <div className="grid grid-cols-3 gap-2">
-                          <Input
-                            value={editingAddressDraft.city ?? ""}
-                            onChange={(e) => setEditingAddressDraft((d) => ({ ...d, city: e.target.value }))}
-                            placeholder="City"
-                          />
-                          <Input
-                            value={editingAddressDraft.state ?? ""}
-                            onChange={(e) => setEditingAddressDraft((d) => ({ ...d, state: e.target.value }))}
-                            placeholder="State"
-                          />
-                          <Input
-                            value={editingAddressDraft.postal_code ?? ""}
-                            onChange={(e) => setEditingAddressDraft((d) => ({ ...d, postal_code: e.target.value }))}
-                            placeholder="ZIP"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id={`addr-primary-${a.id}`}
-                            checked={editingAddressDraft.is_primary_mailing ?? false}
-                            onChange={(e) => setEditingAddressDraft((d) => ({ ...d, is_primary_mailing: e.target.checked }))}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`addr-primary-${a.id}`}>Primary mailing</Label>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={handleSaveAddress} disabled={savingContactField}>
-                            {savingContactField ? "Saving..." : "Save"}
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setEditingAddressId(null); setEditingAddressDraft({}); setContactFieldError(null); }}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-medium">
-                            {a.type}
-                            {a.is_primary_mailing && " (primary mailing)"}
-                          </p>
-                          <p className="mt-1">
-                            {a.address_line1}
-                            {a.address_line2 && `, ${a.address_line2}`}
-                          </p>
-                          <p>
-                            {[a.city, a.state, a.postal_code].filter(Boolean).join(", ")}
-                            {a.country && a.country !== "US" ? ` ${a.country}` : ""}
-                          </p>
-                        </div>
-                        {contact.status !== "deleted" && (
-                          <div className="flex gap-1 shrink-0">
+                          <div className="grid grid-cols-3 gap-2">
+                            <Input
+                              value={editingAddressDraft.city ?? ""}
+                              onChange={(e) =>
+                                setEditingAddressDraft((d) => ({ ...d, city: e.target.value }))
+                              }
+                              placeholder="City"
+                            />
+                            <Input
+                              value={editingAddressDraft.state ?? ""}
+                              onChange={(e) =>
+                                setEditingAddressDraft((d) => ({ ...d, state: e.target.value }))
+                              }
+                              placeholder="State"
+                            />
+                            <Input
+                              value={editingAddressDraft.postal_code ?? ""}
+                              onChange={(e) =>
+                                setEditingAddressDraft((d) => ({
+                                  ...d,
+                                  postal_code: e.target.value,
+                                }))
+                              }
+                              placeholder="ZIP"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id={`addr-primary-${a.id}`}
+                              checked={editingAddressDraft.is_primary_mailing ?? false}
+                              onChange={(e) =>
+                                setEditingAddressDraft((d) => ({
+                                  ...d,
+                                  is_primary_mailing: e.target.checked,
+                                }))
+                              }
+                              className="rounded"
+                            />
+                            <Label htmlFor={`addr-primary-${a.id}`}>Primary mailing</Label>
+                          </div>
+                          <div className="flex gap-2">
                             <Button
+                              size="sm"
+                              onClick={handleSaveAddress}
+                              disabled={savingContactField}
+                            >
+                              {savingContactField ? "Saving..." : "Save"}
+                            </Button>
+                            <Button
+                              size="sm"
                               variant="ghost"
-                              size="icon"
-                              className="size-8"
                               onClick={() => {
-                                setEditingAddressId(a.id);
-                                setEditingAddressDraft({ ...a });
+                                setEditingAddressId(null);
+                                setEditingAddressDraft({});
+                                setContactFieldError(null);
                               }}
                             >
-                              <Pencil className="size-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-destructive hover:text-destructive"
-                              onClick={() => handleDeleteAddress(a.id)}
-                            >
-                              <Trash2Icon className="size-3.5" />
+                              Cancel
                             </Button>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {addingAddress && (
-                  <div className="rounded-lg border border-dashed p-4 space-y-3">
-                    <Input
-                      value={newAddressDraft.address_line1 ?? ""}
-                      onChange={(e) => setNewAddressDraft((d) => ({ ...d, address_line1: e.target.value }))}
-                      placeholder="Street"
-                    />
-                    <Input
-                      value={newAddressDraft.address_line2 ?? ""}
-                      onChange={(e) => setNewAddressDraft((d) => ({ ...d, address_line2: e.target.value }))}
-                      placeholder="Apt, suite"
-                    />
-                    <div className="grid grid-cols-3 gap-2">
-                      <Input
-                        value={newAddressDraft.city ?? ""}
-                        onChange={(e) => setNewAddressDraft((d) => ({ ...d, city: e.target.value }))}
-                        placeholder="City"
-                      />
-                      <Input
-                        value={newAddressDraft.state ?? ""}
-                        onChange={(e) => setNewAddressDraft((d) => ({ ...d, state: e.target.value }))}
-                        placeholder="State"
-                      />
-                      <Input
-                        value={newAddressDraft.postal_code ?? ""}
-                        onChange={(e) => setNewAddressDraft((d) => ({ ...d, postal_code: e.target.value }))}
-                        placeholder="ZIP"
-                      />
-                    </div>
-                    <Select value={newAddressDraft.type ?? "home"} onValueChange={(v) => setNewAddressDraft((d) => ({ ...d, type: v as ContactAddress["type"] }))}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="home">Home</SelectItem>
-                        <SelectItem value="work">Work</SelectItem>
-                        <SelectItem value="postal">Postal</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="new-addr-primary"
-                        checked={newAddressDraft.is_primary_mailing ?? false}
-                        onChange={(e) => setNewAddressDraft((d) => ({ ...d, is_primary_mailing: e.target.checked }))}
-                        className="rounded"
-                      />
-                      <Label htmlFor="new-addr-primary">Primary mailing</Label>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleAddAddress} disabled={savingContactField || (!(newAddressDraft.address_line1 ?? "").trim() && !(newAddressDraft.city ?? "").trim() && !(newAddressDraft.postal_code ?? "").trim())}>
-                        {savingContactField ? "Adding..." : "Add"}
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setAddingAddress(false); setNewAddressDraft({ address_line1: "", address_line2: "", city: "", state: "", postal_code: "", country: "US", type: "home", is_primary_mailing: false }); setContactFieldError(null); }}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* Emails & Phones */}
-          <section>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Emails & Phones</h3>
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-muted-foreground">Emails</p>
-                  {contact.status !== "deleted" && !addingEmail && (
-                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setAddingEmail(true)}>
-                      <Plus className="size-3.5" />
-                      Add
-                    </Button>
-                  )}
-                </div>
-                {(contact.emails ?? []).length === 0 && !addingEmail ? (
-                  <p className="text-muted-foreground text-sm">None</p>
-                ) : (
-                  <div className="space-y-2">
-                    {(contact.emails ?? []).map((e) => (
-                      <div key={e.id} className="rounded-lg border p-3 flex items-center justify-between gap-2">
-                        {editingEmailId === e.id ? (
-                          <div className="flex-1 min-w-0 flex flex-col gap-2">
-                            <Input
-                              type="email"
-                              value={editingEmailDraft.email}
-                              onChange={(ev) => setEditingEmailDraft((d) => ({ ...d, email: ev.target.value }))}
-                              placeholder="email@example.com"
-                              className="h-8"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Select value={editingEmailDraft.type} onValueChange={(v) => setEditingEmailDraft((d) => ({ ...d, type: v }))}>
-                                <SelectTrigger className="h-8 w-24">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="work">Work</SelectItem>
-                                  <SelectItem value="home">Home</SelectItem>
-                                  <SelectItem value="cell">Cell</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <label className="flex items-center gap-1.5 text-sm">
-                                <input
-                                  type="checkbox"
-                                  checked={editingEmailDraft.is_primary}
-                                  onChange={(ev) => setEditingEmailDraft((d) => ({ ...d, is_primary: ev.target.checked }))}
-                                  className="rounded"
-                                />
-                                Primary
-                              </label>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button size="sm" onClick={handleSaveEmail} disabled={savingContactField || !editingEmailDraft.email.trim()}>
-                                Save
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => { setEditingEmailId(null); setEditingEmailDraft({ email: "", type: "other", is_primary: false }); setContactFieldError(null); }}>
-                                Cancel
-                              </Button>
-                            </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {a.type}
+                              {a.is_primary_mailing && " (primary mailing)"}
+                            </p>
+                            <p className="mt-1">
+                              {a.address_line1}
+                              {a.address_line2 && `, ${a.address_line2}`}
+                            </p>
+                            <p>
+                              {[a.city, a.state, a.postal_code].filter(Boolean).join(", ")}
+                              {a.country && a.country !== "US" ? ` ${a.country}` : ""}
+                            </p>
                           </div>
-                        ) : (
-                          <>
-                            <div className="min-w-0 flex-1">
-                              <span className="text-sm">{e.email}</span>
-                              {e.is_primary && <span className="text-muted-foreground text-xs ml-1">(primary)</span>}
-                              {e.type !== "other" && <span className="text-muted-foreground text-xs ml-1">({e.type})</span>}
-                            </div>
-                            {contact.status !== "deleted" && (
-                              <div className="flex gap-1 shrink-0">
-                                <Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditingEmailId(e.id); setEditingEmailDraft({ email: e.email, type: e.type, is_primary: e.is_primary }); }}>
-                                  <Pencil className="size-3" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="size-7 text-destructive hover:text-destructive" onClick={() => handleDeleteEmail(e.id)}>
-                                  <Trash2Icon className="size-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    {addingEmail && (
-                      <div className="rounded-lg border border-dashed p-3 space-y-2">
-                        <Input
-                          type="email"
-                          value={newEmailDraft.email}
-                          onChange={(ev) => setNewEmailDraft((d) => ({ ...d, email: ev.target.value }))}
-                          placeholder="email@example.com"
-                          className="h-8"
-                        />
-                        <div className="flex items-center gap-2">
-                          <Select value={newEmailDraft.type} onValueChange={(v) => setNewEmailDraft((d) => ({ ...d, type: v }))}>
-                            <SelectTrigger className="h-8 w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="work">Work</SelectItem>
-                              <SelectItem value="home">Home</SelectItem>
-                              <SelectItem value="cell">Cell</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <label className="flex items-center gap-1.5 text-sm">
-                            <input type="checkbox" checked={newEmailDraft.is_primary} onChange={(ev) => setNewEmailDraft((d) => ({ ...d, is_primary: ev.target.checked }))} className="rounded" />
-                            Primary
-                          </label>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button size="sm" onClick={handleAddEmail} disabled={savingContactField || !newEmailDraft.email.trim()}>
-                            Add
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setAddingEmail(false); setNewEmailDraft({ email: "", type: "other", is_primary: false }); setContactFieldError(null); }}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-muted-foreground">Phones</p>
-                  {contact.status !== "deleted" && !addingPhone && (
-                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setAddingPhone(true)}>
-                      <Plus className="size-3.5" />
-                      Add
-                    </Button>
-                  )}
-                </div>
-                {(contact.phones ?? []).length === 0 && !addingPhone ? (
-                  <p className="text-muted-foreground text-sm">None</p>
-                ) : (
-                  <div className="space-y-2">
-                    {(contact.phones ?? []).map((p) => (
-                      <div key={p.id} className="rounded-lg border p-3 flex items-center justify-between gap-2">
-                        {editingPhoneId === p.id ? (
-                          <div className="flex-1 min-w-0 flex flex-col gap-2">
-                            <Input
-                              value={editingPhoneDraft.phone}
-                              onChange={(ev) => setEditingPhoneDraft((d) => ({ ...d, phone: ev.target.value }))}
-                              placeholder="(555) 123-4567"
-                              className="h-8"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Select value={editingPhoneDraft.type} onValueChange={(v) => setEditingPhoneDraft((d) => ({ ...d, type: v }))}>
-                                <SelectTrigger className="h-8 w-24">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="work">Work</SelectItem>
-                                  <SelectItem value="home">Home</SelectItem>
-                                  <SelectItem value="cell">Cell</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <label className="flex items-center gap-1.5 text-sm">
-                                <input
-                                  type="checkbox"
-                                  checked={editingPhoneDraft.is_primary}
-                                  onChange={(ev) => setEditingPhoneDraft((d) => ({ ...d, is_primary: ev.target.checked }))}
-                                  className="rounded"
-                                />
-                                Primary
-                              </label>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button size="sm" onClick={handleSavePhone} disabled={savingContactField || !editingPhoneDraft.phone.trim()}>
-                                Save
+                          {contact.status !== "deleted" && (
+                            <div className="flex gap-1 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => {
+                                  setEditingAddressId(a.id);
+                                  setEditingAddressDraft({ ...a });
+                                }}
+                              >
+                                <Pencil className="size-3.5" />
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => { setEditingPhoneId(null); setEditingPhoneDraft({ phone: "", type: "other", is_primary: false }); setContactFieldError(null); }}>
-                                Cancel
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteAddress(a.id)}
+                              >
+                                <Trash2Icon className="size-3.5" />
                               </Button>
                             </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="min-w-0 flex-1">
-                              <span className="text-sm">{formatPhoneNumber(p.phone)}</span>
-                              {p.is_primary && <span className="text-muted-foreground text-xs ml-1">(primary)</span>}
-                              {p.type !== "other" && <span className="text-muted-foreground text-xs ml-1">({p.type})</span>}
-                            </div>
-                            {contact.status !== "deleted" && (
-                              <div className="flex gap-1 shrink-0">
-                                <Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditingPhoneId(p.id); setEditingPhoneDraft({ phone: p.phone, type: p.type, is_primary: p.is_primary }); }}>
-                                  <Pencil className="size-3" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="size-7 text-destructive hover:text-destructive" onClick={() => handleDeletePhone(p.id)}>
-                                  <Trash2Icon className="size-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    {addingPhone && (
-                      <div className="rounded-lg border border-dashed p-3 space-y-2">
-                        <Input
-                          value={newPhoneDraft.phone}
-                          onChange={(ev) => setNewPhoneDraft((d) => ({ ...d, phone: ev.target.value }))}
-                          placeholder="(555) 123-4567"
-                          className="h-8"
-                        />
-                        <div className="flex items-center gap-2">
-                          <Select value={newPhoneDraft.type} onValueChange={(v) => setNewPhoneDraft((d) => ({ ...d, type: v }))}>
-                            <SelectTrigger className="h-8 w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="work">Work</SelectItem>
-                              <SelectItem value="home">Home</SelectItem>
-                              <SelectItem value="cell">Cell</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <label className="flex items-center gap-1.5 text-sm">
-                            <input type="checkbox" checked={newPhoneDraft.is_primary} onChange={(ev) => setNewPhoneDraft((d) => ({ ...d, is_primary: ev.target.checked }))} className="rounded" />
-                            Primary
-                          </label>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button size="sm" onClick={handleAddPhone} disabled={savingContactField || !newPhoneDraft.phone.trim()}>
-                            Add
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setAddingPhone(false); setNewPhoneDraft({ phone: "", type: "other", is_primary: false }); setContactFieldError(null); }}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Emergency Contacts */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                <AlertCircle className="size-4" />
-                Emergency Contacts
-              </h3>
-              {contact.status !== "deleted" && !addingEmergencyContact && (
-                <Button variant="outline" size="sm" onClick={() => setAddingEmergencyContact(true)}>
-                  <Plus className="size-4" />
-                  Add emergency contact
-                </Button>
-              )}
-            </div>
-            {(contact.emergency_contacts ?? []).length === 0 && !addingEmergencyContact ? (
-              <p className="text-muted-foreground text-sm">No emergency contacts.</p>
-            ) : (
-              <div className="space-y-4">
-                {(contact.emergency_contacts ?? []).map((ec) => (
-                  <div key={ec.id} className="rounded-lg border p-4">
-                    {editingEmergencyContactId === ec.id ? (
-                      <div className="space-y-3">
-                        <Input
-                          value={editingEmergencyContactDraft.name}
-                          onChange={(e) =>
-                            setEditingEmergencyContactDraft((d) => ({ ...d, name: e.target.value }))
-                          }
-                          placeholder="Name"
-                        />
-                        <Input
-                          value={editingEmergencyContactDraft.phone}
-                          onChange={(e) =>
-                            setEditingEmergencyContactDraft((d) => ({ ...d, phone: e.target.value }))
-                          }
-                          placeholder="Phone"
-                        />
-                        <Input
-                          type="email"
-                          value={editingEmergencyContactDraft.email}
-                          onChange={(e) =>
-                            setEditingEmergencyContactDraft((d) => ({ ...d, email: e.target.value }))
-                          }
-                          placeholder="Email (optional)"
-                        />
-                        <Input
-                          value={editingEmergencyContactDraft.relationship}
-                          onChange={(e) =>
-                            setEditingEmergencyContactDraft((d) => ({ ...d, relationship: e.target.value }))
-                          }
-                          placeholder="Relationship (optional)"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={handleSaveEmergencyContact}
-                            disabled={savingContactField || !editingEmergencyContactDraft.name.trim() || !editingEmergencyContactDraft.phone.trim()}
-                          >
-                            {savingContactField ? "Saving..." : "Save"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingEmergencyContactId(null);
-                              setEditingEmergencyContactDraft({ name: "", phone: "", email: "", relationship: "" });
-                              setContactFieldError(null);
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium">{ec.name}</p>
-                          {ec.relationship && (
-                            <p className="text-sm text-muted-foreground">{ec.relationship}</p>
-                          )}
-                          <a
-                            href={`tel:${(ec.phone ?? "").replace(/\D/g, "")}`}
-                            className="text-primary hover:underline text-sm flex items-center gap-1 mt-1"
-                          >
-                            {formatPhoneNumber(ec.phone)}
-                          </a>
-                          {ec.email && (
-                            <a
-                              href={`mailto:${ec.email}`}
-                              className="text-primary hover:underline text-sm block"
-                            >
-                              {ec.email}
-                            </a>
                           )}
                         </div>
-                        {contact.status !== "deleted" && (
-                          <div className="flex gap-1 shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              onClick={() => {
-                                setEditingEmergencyContactId(ec.id);
-                                setEditingEmergencyContactDraft({
-                                  name: ec.name,
-                                  phone: ec.phone,
-                                  email: ec.email ?? "",
-                                  relationship: ec.relationship ?? "",
-                                });
-                              }}
-                            >
-                              <Pencil className="size-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-destructive hover:text-destructive"
-                              onClick={() => handleDeleteEmergencyContact(ec.id)}
-                            >
-                              <Trash2Icon className="size-3.5" />
-                            </Button>
-                          </div>
-                        )}
+                      )}
+                    </div>
+                  ))}
+                  {addingAddress && (
+                    <div className="rounded-lg border border-dashed p-4 space-y-3">
+                      <Input
+                        value={newAddressDraft.address_line1 ?? ""}
+                        onChange={(e) =>
+                          setNewAddressDraft((d) => ({ ...d, address_line1: e.target.value }))
+                        }
+                        placeholder="Street"
+                      />
+                      <Input
+                        value={newAddressDraft.address_line2 ?? ""}
+                        onChange={(e) =>
+                          setNewAddressDraft((d) => ({ ...d, address_line2: e.target.value }))
+                        }
+                        placeholder="Apt, suite"
+                      />
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input
+                          value={newAddressDraft.city ?? ""}
+                          onChange={(e) =>
+                            setNewAddressDraft((d) => ({ ...d, city: e.target.value }))
+                          }
+                          placeholder="City"
+                        />
+                        <Input
+                          value={newAddressDraft.state ?? ""}
+                          onChange={(e) =>
+                            setNewAddressDraft((d) => ({ ...d, state: e.target.value }))
+                          }
+                          placeholder="State"
+                        />
+                        <Input
+                          value={newAddressDraft.postal_code ?? ""}
+                          onChange={(e) =>
+                            setNewAddressDraft((d) => ({ ...d, postal_code: e.target.value }))
+                          }
+                          placeholder="ZIP"
+                        />
                       </div>
-                    )}
-                  </div>
-                ))}
-                {addingEmergencyContact && (
-                  <div className="rounded-lg border border-dashed p-4 space-y-3">
-                    <Input
-                      value={newEmergencyContactDraft.name}
-                      onChange={(e) =>
-                        setNewEmergencyContactDraft((d) => ({ ...d, name: e.target.value }))
-                      }
-                      placeholder="Name"
-                    />
-                    <Input
-                      value={newEmergencyContactDraft.phone}
-                      onChange={(e) =>
-                        setNewEmergencyContactDraft((d) => ({ ...d, phone: e.target.value }))
-                      }
-                      placeholder="Phone"
-                    />
-                    <Input
-                      type="email"
-                      value={newEmergencyContactDraft.email}
-                      onChange={(e) =>
-                        setNewEmergencyContactDraft((d) => ({ ...d, email: e.target.value }))
-                      }
-                      placeholder="Email (optional)"
-                    />
-                    <Input
-                      value={newEmergencyContactDraft.relationship}
-                      onChange={(e) =>
-                        setNewEmergencyContactDraft((d) => ({ ...d, relationship: e.target.value }))
-                      }
-                      placeholder="Relationship (optional)"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleAddEmergencyContact}
-                        disabled={
-                          savingContactField ||
-                          !newEmergencyContactDraft.name.trim() ||
-                          !newEmergencyContactDraft.phone.trim()
+                      <Select
+                        value={newAddressDraft.type ?? "home"}
+                        onValueChange={(v) =>
+                          setNewAddressDraft((d) => ({ ...d, type: v as ContactAddress["type"] }))
                         }
                       >
-                        {savingContactField ? "Adding..." : "Add"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setAddingEmergencyContact(false);
-                          setNewEmergencyContactDraft({ name: "", phone: "", email: "", relationship: "" });
-                          setContactFieldError(null);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* How we know them */}
-          {contact.how_we_know_them && (
-            <section>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3">How we know them</h3>
-              <p className="whitespace-pre-wrap">{contact.how_we_know_them}</p>
-            </section>
-          )}
-
-          {/* Notes */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">Notes</h3>
-              {contact.status !== "deleted" && (
-                <Button variant="outline" size="sm" onClick={() => setAddNoteOpen(true)}>
-                  <Plus className="size-4" />
-                  Add note
-                </Button>
-              )}
-            </div>
-            {notes.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No notes yet. Click + to add one.</p>
-            ) : (
-              <div className="space-y-3">
-                {notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="rounded-lg border p-4 bg-muted/30"
-                  >
-                    {editingNoteId === note.id ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          value={editingNoteContent}
-                          onChange={(e) => setEditingNoteContent(e.target.value)}
-                          rows={3}
-                          className="resize-none"
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="home">Home</SelectItem>
+                          <SelectItem value="work">Work</SelectItem>
+                          <SelectItem value="postal">Postal</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="new-addr-primary"
+                          checked={newAddressDraft.is_primary_mailing ?? false}
+                          onChange={(e) =>
+                            setNewAddressDraft((d) => ({
+                              ...d,
+                              is_primary_mailing: e.target.checked,
+                            }))
+                          }
+                          className="rounded"
                         />
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={handleUpdateNote}>
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingNoteId(null);
-                              setEditingNoteContent("");
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
+                        <Label htmlFor="new-addr-primary">Primary mailing</Label>
                       </div>
-                    ) : (
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="whitespace-pre-wrap text-sm">{note.content}</p>
-                          {note.created_at && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {formatDateTime(note.created_at)}
-                            </p>
-                          )}
-                        </div>
-                        {contact.status !== "deleted" && (
-                          <div className="flex gap-1 shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              onClick={() => {
-                                setEditingNoteId(note.id);
-                                setEditingNoteContent(note.content);
-                              }}
-                            >
-                              <Pencil className="size-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-destructive hover:text-destructive"
-                              onClick={() => handleDeleteNote(note.id)}
-                            >
-                              <Trash2Icon className="size-3.5" />
-                            </Button>
-                          </div>
-                        )}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleAddAddress}
+                          disabled={
+                            savingContactField ||
+                            (!(newAddressDraft.address_line1 ?? "").trim() &&
+                              !(newAddressDraft.city ?? "").trim() &&
+                              !(newAddressDraft.postal_code ?? "").trim())
+                          }
+                        >
+                          {savingContactField ? "Adding..." : "Add"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setAddingAddress(false);
+                            setNewAddressDraft({
+                              address_line1: "",
+                              address_line2: "",
+                              city: "",
+                              state: "",
+                              postal_code: "",
+                              country: "US",
+                              type: "home",
+                              is_primary_mailing: false,
+                            });
+                            setContactFieldError(null);
+                          }}
+                        >
+                          Cancel
+                        </Button>
                       </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* Emails & Phones */}
+            <section>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Emails & Phones</h3>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-muted-foreground">Emails</p>
+                    {contact.status !== "deleted" && !addingEmail && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => setAddingEmail(true)}
+                      >
+                        <Plus className="size-3.5" />
+                        Add
+                      </Button>
                     )}
                   </div>
-                ))}
+                  {(contact.emails ?? []).length === 0 && !addingEmail ? (
+                    <p className="text-muted-foreground text-sm">None</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(contact.emails ?? []).map((e) => (
+                        <div
+                          key={e.id}
+                          className="rounded-lg border p-3 flex items-center justify-between gap-2"
+                        >
+                          {editingEmailId === e.id ? (
+                            <div className="flex-1 min-w-0 flex flex-col gap-2">
+                              <Input
+                                type="email"
+                                value={editingEmailDraft.email}
+                                onChange={(ev) =>
+                                  setEditingEmailDraft((d) => ({ ...d, email: ev.target.value }))
+                                }
+                                placeholder="email@example.com"
+                                className="h-8"
+                              />
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  value={editingEmailDraft.type}
+                                  onValueChange={(v) =>
+                                    setEditingEmailDraft((d) => ({ ...d, type: v }))
+                                  }
+                                >
+                                  <SelectTrigger className="h-8 w-24">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="work">Work</SelectItem>
+                                    <SelectItem value="home">Home</SelectItem>
+                                    <SelectItem value="cell">Cell</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <label className="flex items-center gap-1.5 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    checked={editingEmailDraft.is_primary}
+                                    onChange={(ev) =>
+                                      setEditingEmailDraft((d) => ({
+                                        ...d,
+                                        is_primary: ev.target.checked,
+                                      }))
+                                    }
+                                    className="rounded"
+                                  />
+                                  Primary
+                                </label>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  onClick={handleSaveEmail}
+                                  disabled={savingContactField || !editingEmailDraft.email.trim()}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setEditingEmailId(null);
+                                    setEditingEmailDraft({
+                                      email: "",
+                                      type: "other",
+                                      is_primary: false,
+                                    });
+                                    setContactFieldError(null);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="min-w-0 flex-1">
+                                <span className="text-sm">{e.email}</span>
+                                {e.is_primary && (
+                                  <span className="text-muted-foreground text-xs ml-1">
+                                    (primary)
+                                  </span>
+                                )}
+                                {e.type !== "other" && (
+                                  <span className="text-muted-foreground text-xs ml-1">
+                                    ({e.type})
+                                  </span>
+                                )}
+                              </div>
+                              {contact.status !== "deleted" && (
+                                <div className="flex gap-1 shrink-0">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7"
+                                    onClick={() => {
+                                      setEditingEmailId(e.id);
+                                      setEditingEmailDraft({
+                                        email: e.email,
+                                        type: e.type,
+                                        is_primary: e.is_primary,
+                                      });
+                                    }}
+                                  >
+                                    <Pencil className="size-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 text-destructive hover:text-destructive"
+                                    onClick={() => handleDeleteEmail(e.id)}
+                                  >
+                                    <Trash2Icon className="size-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ))}
+                      {addingEmail && (
+                        <div className="rounded-lg border border-dashed p-3 space-y-2">
+                          <Input
+                            type="email"
+                            value={newEmailDraft.email}
+                            onChange={(ev) =>
+                              setNewEmailDraft((d) => ({ ...d, email: ev.target.value }))
+                            }
+                            placeholder="email@example.com"
+                            className="h-8"
+                          />
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={newEmailDraft.type}
+                              onValueChange={(v) => setNewEmailDraft((d) => ({ ...d, type: v }))}
+                            >
+                              <SelectTrigger className="h-8 w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="work">Work</SelectItem>
+                                <SelectItem value="home">Home</SelectItem>
+                                <SelectItem value="cell">Cell</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <label className="flex items-center gap-1.5 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={newEmailDraft.is_primary}
+                                onChange={(ev) =>
+                                  setNewEmailDraft((d) => ({ ...d, is_primary: ev.target.checked }))
+                                }
+                                className="rounded"
+                              />
+                              Primary
+                            </label>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              onClick={handleAddEmail}
+                              disabled={savingContactField || !newEmailDraft.email.trim()}
+                            >
+                              Add
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setAddingEmail(false);
+                                setNewEmailDraft({ email: "", type: "other", is_primary: false });
+                                setContactFieldError(null);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-muted-foreground">Phones</p>
+                    {contact.status !== "deleted" && !addingPhone && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => setAddingPhone(true)}
+                      >
+                        <Plus className="size-3.5" />
+                        Add
+                      </Button>
+                    )}
+                  </div>
+                  {(contact.phones ?? []).length === 0 && !addingPhone ? (
+                    <p className="text-muted-foreground text-sm">None</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(contact.phones ?? []).map((p) => (
+                        <div
+                          key={p.id}
+                          className="rounded-lg border p-3 flex items-center justify-between gap-2"
+                        >
+                          {editingPhoneId === p.id ? (
+                            <div className="flex-1 min-w-0 flex flex-col gap-2">
+                              <Input
+                                value={editingPhoneDraft.phone}
+                                onChange={(ev) =>
+                                  setEditingPhoneDraft((d) => ({ ...d, phone: ev.target.value }))
+                                }
+                                placeholder="(555) 123-4567"
+                                className="h-8"
+                              />
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  value={editingPhoneDraft.type}
+                                  onValueChange={(v) =>
+                                    setEditingPhoneDraft((d) => ({ ...d, type: v }))
+                                  }
+                                >
+                                  <SelectTrigger className="h-8 w-24">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="work">Work</SelectItem>
+                                    <SelectItem value="home">Home</SelectItem>
+                                    <SelectItem value="cell">Cell</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <label className="flex items-center gap-1.5 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    checked={editingPhoneDraft.is_primary}
+                                    onChange={(ev) =>
+                                      setEditingPhoneDraft((d) => ({
+                                        ...d,
+                                        is_primary: ev.target.checked,
+                                      }))
+                                    }
+                                    className="rounded"
+                                  />
+                                  Primary
+                                </label>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  onClick={handleSavePhone}
+                                  disabled={savingContactField || !editingPhoneDraft.phone.trim()}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setEditingPhoneId(null);
+                                    setEditingPhoneDraft({
+                                      phone: "",
+                                      type: "other",
+                                      is_primary: false,
+                                    });
+                                    setContactFieldError(null);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="min-w-0 flex-1">
+                                <span className="text-sm">{formatPhoneNumber(p.phone)}</span>
+                                {p.is_primary && (
+                                  <span className="text-muted-foreground text-xs ml-1">
+                                    (primary)
+                                  </span>
+                                )}
+                                {p.type !== "other" && (
+                                  <span className="text-muted-foreground text-xs ml-1">
+                                    ({p.type})
+                                  </span>
+                                )}
+                              </div>
+                              {contact.status !== "deleted" && (
+                                <div className="flex gap-1 shrink-0">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7"
+                                    onClick={() => {
+                                      setEditingPhoneId(p.id);
+                                      setEditingPhoneDraft({
+                                        phone: p.phone,
+                                        type: p.type,
+                                        is_primary: p.is_primary,
+                                      });
+                                    }}
+                                  >
+                                    <Pencil className="size-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 text-destructive hover:text-destructive"
+                                    onClick={() => handleDeletePhone(p.id)}
+                                  >
+                                    <Trash2Icon className="size-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ))}
+                      {addingPhone && (
+                        <div className="rounded-lg border border-dashed p-3 space-y-2">
+                          <Input
+                            value={newPhoneDraft.phone}
+                            onChange={(ev) =>
+                              setNewPhoneDraft((d) => ({ ...d, phone: ev.target.value }))
+                            }
+                            placeholder="(555) 123-4567"
+                            className="h-8"
+                          />
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={newPhoneDraft.type}
+                              onValueChange={(v) => setNewPhoneDraft((d) => ({ ...d, type: v }))}
+                            >
+                              <SelectTrigger className="h-8 w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="work">Work</SelectItem>
+                                <SelectItem value="home">Home</SelectItem>
+                                <SelectItem value="cell">Cell</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <label className="flex items-center gap-1.5 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={newPhoneDraft.is_primary}
+                                onChange={(ev) =>
+                                  setNewPhoneDraft((d) => ({ ...d, is_primary: ev.target.checked }))
+                                }
+                                className="rounded"
+                              />
+                              Primary
+                            </label>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              onClick={handleAddPhone}
+                              disabled={savingContactField || !newPhoneDraft.phone.trim()}
+                            >
+                              Add
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setAddingPhone(false);
+                                setNewPhoneDraft({ phone: "", type: "other", is_primary: false });
+                                setContactFieldError(null);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </section>
+            </section>
 
-          {/* Mailing Lists */}
-          <section>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Mailing lists</h3>
-            {listsWithContact.length === 0 ? (
-              <p className="text-muted-foreground">Not on any lists.</p>
-            ) : (
-              <ul className="space-y-1">
-                {listsWithContact.map((l) => (
-                  <li key={l.id}>
-                    <Link to={`/contacts/lists/${l.id}`} className="text-primary hover:underline">
-                      {l.name}
-                      {l.event ? ` (${l.event.name})` : ""}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            {/* Emergency Contacts */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                  <AlertCircle className="size-4" />
+                  Emergency Contacts
+                </h3>
+                {contact.status !== "deleted" && !addingEmergencyContact && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAddingEmergencyContact(true)}
+                  >
+                    <Plus className="size-4" />
+                    Add emergency contact
+                  </Button>
+                )}
+              </div>
+              {(contact.emergency_contacts ?? []).length === 0 && !addingEmergencyContact ? (
+                <p className="text-muted-foreground text-sm">No emergency contacts.</p>
+              ) : (
+                <div className="space-y-4">
+                  {(contact.emergency_contacts ?? []).map((ec) => (
+                    <div key={ec.id} className="rounded-lg border p-4">
+                      {editingEmergencyContactId === ec.id ? (
+                        <div className="space-y-3">
+                          <Input
+                            value={editingEmergencyContactDraft.name}
+                            onChange={(e) =>
+                              setEditingEmergencyContactDraft((d) => ({
+                                ...d,
+                                name: e.target.value,
+                              }))
+                            }
+                            placeholder="Name"
+                          />
+                          <Input
+                            value={editingEmergencyContactDraft.phone}
+                            onChange={(e) =>
+                              setEditingEmergencyContactDraft((d) => ({
+                                ...d,
+                                phone: e.target.value,
+                              }))
+                            }
+                            placeholder="Phone"
+                          />
+                          <Input
+                            type="email"
+                            value={editingEmergencyContactDraft.email}
+                            onChange={(e) =>
+                              setEditingEmergencyContactDraft((d) => ({
+                                ...d,
+                                email: e.target.value,
+                              }))
+                            }
+                            placeholder="Email (optional)"
+                          />
+                          <Input
+                            value={editingEmergencyContactDraft.relationship}
+                            onChange={(e) =>
+                              setEditingEmergencyContactDraft((d) => ({
+                                ...d,
+                                relationship: e.target.value,
+                              }))
+                            }
+                            placeholder="Relationship (optional)"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={handleSaveEmergencyContact}
+                              disabled={
+                                savingContactField ||
+                                !editingEmergencyContactDraft.name.trim() ||
+                                !editingEmergencyContactDraft.phone.trim()
+                              }
+                            >
+                              {savingContactField ? "Saving..." : "Save"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingEmergencyContactId(null);
+                                setEditingEmergencyContactDraft({
+                                  name: "",
+                                  phone: "",
+                                  email: "",
+                                  relationship: "",
+                                });
+                                setContactFieldError(null);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-medium">{ec.name}</p>
+                            {ec.relationship && (
+                              <p className="text-sm text-muted-foreground">{ec.relationship}</p>
+                            )}
+                            <a
+                              href={`tel:${(ec.phone ?? "").replace(/\D/g, "")}`}
+                              className="text-primary hover:underline text-sm flex items-center gap-1 mt-1"
+                            >
+                              {formatPhoneNumber(ec.phone)}
+                            </a>
+                            {ec.email && (
+                              <a
+                                href={`mailto:${ec.email}`}
+                                className="text-primary hover:underline text-sm block"
+                              >
+                                {ec.email}
+                              </a>
+                            )}
+                          </div>
+                          {contact.status !== "deleted" && (
+                            <div className="flex gap-1 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => {
+                                  setEditingEmergencyContactId(ec.id);
+                                  setEditingEmergencyContactDraft({
+                                    name: ec.name,
+                                    phone: ec.phone,
+                                    email: ec.email ?? "",
+                                    relationship: ec.relationship ?? "",
+                                  });
+                                }}
+                              >
+                                <Pencil className="size-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteEmergencyContact(ec.id)}
+                              >
+                                <Trash2Icon className="size-3.5" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {addingEmergencyContact && (
+                    <div className="rounded-lg border border-dashed p-4 space-y-3">
+                      <Input
+                        value={newEmergencyContactDraft.name}
+                        onChange={(e) =>
+                          setNewEmergencyContactDraft((d) => ({ ...d, name: e.target.value }))
+                        }
+                        placeholder="Name"
+                      />
+                      <Input
+                        value={newEmergencyContactDraft.phone}
+                        onChange={(e) =>
+                          setNewEmergencyContactDraft((d) => ({ ...d, phone: e.target.value }))
+                        }
+                        placeholder="Phone"
+                      />
+                      <Input
+                        type="email"
+                        value={newEmergencyContactDraft.email}
+                        onChange={(e) =>
+                          setNewEmergencyContactDraft((d) => ({ ...d, email: e.target.value }))
+                        }
+                        placeholder="Email (optional)"
+                      />
+                      <Input
+                        value={newEmergencyContactDraft.relationship}
+                        onChange={(e) =>
+                          setNewEmergencyContactDraft((d) => ({
+                            ...d,
+                            relationship: e.target.value,
+                          }))
+                        }
+                        placeholder="Relationship (optional)"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleAddEmergencyContact}
+                          disabled={
+                            savingContactField ||
+                            !newEmergencyContactDraft.name.trim() ||
+                            !newEmergencyContactDraft.phone.trim()
+                          }
+                        >
+                          {savingContactField ? "Adding..." : "Add"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setAddingEmergencyContact(false);
+                            setNewEmergencyContactDraft({
+                              name: "",
+                              phone: "",
+                              email: "",
+                              relationship: "",
+                            });
+                            setContactFieldError(null);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* How we know them */}
+            {contact.how_we_know_them && (
+              <section>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                  How we know them
+                </h3>
+                <p className="whitespace-pre-wrap">{contact.how_we_know_them}</p>
+              </section>
             )}
-          </section>
+
+            {/* Notes */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">Notes</h3>
+                {contact.status !== "deleted" && (
+                  <Button variant="outline" size="sm" onClick={() => setAddNoteOpen(true)}>
+                    <Plus className="size-4" />
+                    Add note
+                  </Button>
+                )}
+              </div>
+              {notes.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No notes yet. Click + to add one.</p>
+              ) : (
+                <div className="space-y-3">
+                  {notes.map((note) => (
+                    <div key={note.id} className="rounded-lg border p-4 bg-muted/30">
+                      {editingNoteId === note.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editingNoteContent}
+                            onChange={(e) => setEditingNoteContent(e.target.value)}
+                            rows={3}
+                            className="resize-none"
+                          />
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={handleUpdateNote}>
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingNoteId(null);
+                                setEditingNoteContent("");
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="whitespace-pre-wrap text-sm">{note.content}</p>
+                            {note.created_at && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {formatDateTime(note.created_at)}
+                              </p>
+                            )}
+                          </div>
+                          {contact.status !== "deleted" && (
+                            <div className="flex gap-1 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => {
+                                  setEditingNoteId(note.id);
+                                  setEditingNoteContent(note.content);
+                                }}
+                              >
+                                <Pencil className="size-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteNote(note.id)}
+                              >
+                                <Trash2Icon className="size-3.5" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Mailing Lists */}
+            <section>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Mailing lists</h3>
+              {listsWithContact.length === 0 ? (
+                <p className="text-muted-foreground">Not on any lists.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {listsWithContact.map((l) => (
+                    <li key={l.id}>
+                      <Link to={`/contacts/lists/${l.id}`} className="text-primary hover:underline">
+                        {l.name}
+                        {l.event ? ` (${l.event.name})` : ""}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </CardContent>
         </Card>
 
@@ -1440,7 +1799,12 @@ function ContactDetailContent({ id }: { id: string }) {
         />
       )}
 
-      <EditContactDialog open={editOpen} onOpenChange={setEditOpen} contact={contact} onSuccess={refresh} />
+      <EditContactDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        contact={contact}
+        onSuccess={refresh}
+      />
 
       <Dialog open={addNoteOpen} onOpenChange={setAddNoteOpen}>
         <DialogContent>

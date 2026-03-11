@@ -29,14 +29,8 @@ interface ProjectionsSubNavProps {
 export function ProjectionsSubNav({ className, onPrint, onEmail }: ProjectionsSubNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    budgets,
-    scenarios,
-    selectedBudgetId,
-    selectedScenarioId,
-    selectBudget,
-    selectScenario,
-  } = useAppState();
+  const { budgets, scenarios, selectedBudgetId, selectedScenarioId, selectBudget, selectScenario } =
+    useAppState();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -49,17 +43,14 @@ export function ProjectionsSubNav({ className, onPrint, onEmail }: ProjectionsSu
     <div
       className={cn(
         "sticky top-14 z-30 flex flex-wrap items-center justify-between gap-4 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        className
+        className,
       )}
     >
       <div className="flex flex-wrap items-center gap-4 sm:gap-6">
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-4 sm:gap-6 min-w-0">
           <div className="space-y-2 min-w-0 flex-1 sm:flex-initial">
             <Label className="text-xs text-muted-foreground">Budget</Label>
-            <Select
-              value={selectedBudgetId ?? ""}
-              onValueChange={(v) => selectBudget(v || null)}
-            >
+            <Select value={selectedBudgetId ?? ""} onValueChange={(v) => selectBudget(v || null)}>
               <SelectTrigger className="h-8 w-full min-w-0 sm:w-[180px]">
                 <SelectValue placeholder="Select budget" />
               </SelectTrigger>
@@ -116,9 +107,7 @@ export function ProjectionsSubNav({ className, onPrint, onEmail }: ProjectionsSu
         >
           <ChevronUp className="size-4" />
         </Button>
-        {onPrint && onEmail && (
-          <ExportDropdown onPrint={onPrint} onEmail={onEmail} />
-        )}
+        {onPrint && onEmail && <ExportDropdown onPrint={onPrint} onEmail={onEmail} />}
       </div>
     </div>
   );

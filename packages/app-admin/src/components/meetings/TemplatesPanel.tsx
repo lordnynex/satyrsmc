@@ -2,12 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,7 +18,6 @@ import {
   useMeetingTemplatesSuspense,
   unwrapSuspenseData,
 } from "@/queries/hooks";
-import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -80,10 +74,7 @@ export function TemplatesPanel() {
           <h2 className="mb-3 text-lg font-medium">Agenda templates</h2>
           <ul className="space-y-2">
             {agendaTemplates.map((t) => (
-              <li
-                key={t.id}
-                className="flex items-center justify-between rounded-md border p-3"
-              >
+              <li key={t.id} className="flex items-center justify-between rounded-md border p-3">
                 <Link
                   to={`/meetings/templates/${t.id}`}
                   className="flex items-center gap-2 font-medium text-primary hover:underline"
@@ -110,10 +101,7 @@ export function TemplatesPanel() {
           <h2 className="mb-3 text-lg font-medium">Minutes templates</h2>
           <ul className="space-y-2">
             {minutesTemplates.map((t) => (
-              <li
-                key={t.id}
-                className="flex items-center justify-between rounded-md border p-3"
-              >
+              <li key={t.id} className="flex items-center justify-between rounded-md border p-3">
                 <Link
                   to={`/meetings/templates/${t.id}`}
                   className="flex items-center gap-2 font-medium text-primary hover:underline"

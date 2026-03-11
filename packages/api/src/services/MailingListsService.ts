@@ -9,8 +9,12 @@ import type {
   MailingListIncludedPage,
 } from "@satyrsmc/shared/dto/admin/mailingList";
 import type { ContactsService } from "./ContactsService";
-import { IsNull } from "typeorm";
-import { Contact as ContactEntity, MailingList as MailingListEntity, MailingListMember as MailingListMemberEntity, ContactAddress as ContactAddressEntity } from "../entities";
+import {
+  Contact as ContactEntity,
+  MailingList as MailingListEntity,
+  MailingListMember as MailingListMemberEntity,
+  ContactAddress as ContactAddressEntity,
+} from "../entities";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
 
@@ -18,7 +22,7 @@ export class MailingListsService {
   constructor(
     private db: DbLike,
     private ds: DataSource,
-    private contactsService: ContactsService
+    private contactsService: ContactsService,
   ) {}
 
   private async evaluateDynamicCriteria(criteria: MailingListCriteria | null): Promise<string[]> {
@@ -30,7 +34,9 @@ export class MailingListsService {
       .createQueryBuilder("c")
       .select("c.id")
       .where("c.deletedAt IS NULL")
-      .andWhere("c.status = :status", { status: criteria.active === false ? "inactive" : "active" });
+      .andWhere("c.status = :status", {
+        status: criteria.active === false ? "inactive" : "active",
+      });
 
     if (criteria.okToMail === true) {
       qb.andWhere("(c.okToMail = 'yes' OR c.okToMail = 'unknown') AND c.doNotContact = false");
@@ -39,7 +45,9 @@ export class MailingListsService {
       qb.andWhere("(c.okToEmail = 'yes' OR c.okToEmail = 'unknown') AND c.doNotContact = false");
     }
     if (criteria.hasPostalAddress === true) {
-      qb.andWhere("EXISTS (SELECT 1 FROM contact_addresses ca WHERE ca.contact_id = c.id AND ca.address_line1 IS NOT NULL AND ca.address_line1 != '')");
+      qb.andWhere(
+        "EXISTS (SELECT 1 FROM contact_addresses ca WHERE ca.contact_id = c.id AND ca.address_line1 IS NOT NULL AND ca.address_line1 != '')",
+      );
     }
     if (criteria.hasEmail === true) {
       qb.andWhere("EXISTS (SELECT 1 FROM contact_emails ce WHERE ce.contact_id = c.id)");
@@ -51,10 +59,16 @@ export class MailingListsService {
       qb.andWhere("c.clubName ILIKE :club", { club: `%${criteria.clubName}%` });
     }
     if (Array.isArray(criteria.tagIn) && criteria.tagIn.length > 0) {
-      qb.andWhere("c.id IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagIn)))", { tagIn: criteria.tagIn });
+      qb.andWhere(
+        "c.id IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagIn)))",
+        { tagIn: criteria.tagIn },
+      );
     }
     if (Array.isArray(criteria.tagNotIn) && criteria.tagNotIn.length > 0) {
-      qb.andWhere("c.id NOT IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagNotIn)))", { tagNotIn: criteria.tagNotIn });
+      qb.andWhere(
+        "c.id NOT IN (SELECT contact_id FROM contact_tags WHERE tag_id IN (SELECT id FROM tags WHERE name IN (:...tagNotIn)))",
+        { tagNotIn: criteria.tagNotIn },
+      );
     }
     if (criteria.hellenic === true) {
       qb.andWhere("c.hellenic = true");
@@ -74,7 +88,7 @@ export class MailingListsService {
       .addSelect("e.name", "event_name")
       .addSelect(
         "(SELECT COUNT(*) FROM mailing_list_members mlm WHERE mlm.list_id = ml.id AND mlm.suppressed = false AND mlm.unsubscribed = false)",
-        "manual_count"
+        "manual_count",
       )
       .orderBy("ml.name")
       .getRawMany();
@@ -101,7 +115,18 @@ export class MailingListsService {
       .getRepository(MailingListEntity)
       .createQueryBuilder("ml")
       .leftJoin("events", "e", "e.id = ml.event_id")
-      .addSelect(["ml.id", "ml.name", "ml.description", "ml.listType", "ml.deliveryType", "ml.eventId", "ml.template", "ml.criteria", "ml.createdAt", "ml.updatedAt"])
+      .addSelect([
+        "ml.id",
+        "ml.name",
+        "ml.description",
+        "ml.listType",
+        "ml.deliveryType",
+        "ml.eventId",
+        "ml.template",
+        "ml.criteria",
+        "ml.createdAt",
+        "ml.updatedAt",
+      ])
       .addSelect("e.name", "event_name")
       .where("ml.id = :id", { id })
       .getRawOne();
@@ -148,7 +173,7 @@ export class MailingListsService {
         body.event_id ?? null,
         body.template ?? null,
         body.criteria ? JSON.stringify(body.criteria) : null,
-      ]
+      ],
     );
     return this.get(id)!;
   }
@@ -163,7 +188,7 @@ export class MailingListsService {
       event_id: string | null;
       template: string | null;
       criteria: MailingListCriteria | null;
-    }>
+    }>,
   ) {
     /* Original: SELECT * FROM mailing_lists WHERE id = ? */
     const existing = await this.ds.getRepository(MailingListEntity).findOne({ where: { id } });
@@ -172,14 +197,30 @@ export class MailingListsService {
     const name = body.name ?? existing.name;
     const description = body.description !== undefined ? body.description : existing.description;
     const list_type = (body.list_type ?? existing.listType) as MailingList["list_type"];
-    const delivery_type = (body.delivery_type ?? existing.deliveryType) as MailingList["delivery_type"];
+    const delivery_type = (body.delivery_type ??
+      existing.deliveryType) as MailingList["delivery_type"];
     const event_id = body.event_id !== undefined ? body.event_id : existing.eventId;
     const template = body.template !== undefined ? body.template : existing.template;
-    const criteria = body.criteria !== undefined ? body.criteria : (existing.criteria ? JSON.parse(existing.criteria) : null);
+    const criteria =
+      body.criteria !== undefined
+        ? body.criteria
+        : existing.criteria
+          ? JSON.parse(existing.criteria)
+          : null;
 
     await this.db.run(
       "UPDATE mailing_lists SET name = ?, description = ?, list_type = ?, delivery_type = ?, event_id = ?, template = ?, criteria = ?, updated_at = ? WHERE id = ?",
-      [name, description, list_type, delivery_type, event_id, template, criteria ? JSON.stringify(criteria) : null, new Date().toISOString(), id]
+      [
+        name,
+        description,
+        list_type,
+        delivery_type,
+        event_id,
+        template,
+        criteria ? JSON.stringify(criteria) : null,
+        new Date().toISOString(),
+        id,
+      ],
     );
     return this.get(id)!;
   }
@@ -190,12 +231,16 @@ export class MailingListsService {
     return { ok: true };
   }
 
-  async addMember(listId: string, contactId: string, source: "manual" | "import" | "rule" = "manual") {
+  async addMember(
+    listId: string,
+    contactId: string,
+    source: "manual" | "import" | "rule" = "manual",
+  ) {
     const id = uuid();
     try {
       await this.db.run(
         "INSERT INTO mailing_list_members (id, list_id, contact_id, source) VALUES (?, ?, ?, ?)",
-        [id, listId, contactId, source]
+        [id, listId, contactId, source],
       );
     } catch {
       return null;
@@ -204,25 +249,34 @@ export class MailingListsService {
   }
 
   async removeMember(listId: string, contactId: string) {
-    await this.db.run("DELETE FROM mailing_list_members WHERE list_id = ? AND contact_id = ?", [listId, contactId]);
+    await this.db.run("DELETE FROM mailing_list_members WHERE list_id = ? AND contact_id = ?", [
+      listId,
+      contactId,
+    ]);
     return { ok: true };
   }
 
   async removeExclusion(listId: string, contactId: string) {
-    const result = await this.ds.getRepository(MailingListMemberEntity).update(
-      { listId, contactId },
-      { suppressed: false, suppressReason: null, unsubscribed: false }
-    );
+    const result = await this.ds
+      .getRepository(MailingListMemberEntity)
+      .update(
+        { listId, contactId },
+        { suppressed: false, suppressReason: null, unsubscribed: false },
+      );
     if (!result.affected) return null;
     return { ok: true };
   }
 
-  async addMembersBulk(listId: string, contactIds: string[], source: "manual" | "import" | "rule" = "manual") {
+  async addMembersBulk(
+    listId: string,
+    contactIds: string[],
+    source: "manual" | "import" | "rule" = "manual",
+  ) {
     for (const contactId of contactIds) {
       try {
         await this.db.run(
           "INSERT INTO mailing_list_members (id, list_id, contact_id, source) VALUES (?, ?, ?, ?)",
-          [uuid(), listId, contactId, source]
+          [uuid(), listId, contactId, source],
         );
       } catch {
         // duplicate, skip
@@ -264,7 +318,7 @@ export class MailingListsService {
     const list = await this.get(id);
     if (!list) return { included: [], excluded: [], totalIncluded: 0, totalExcluded: 0 };
 
-    let contactIds: string[] = [];
+    let contactIds: string[];
 
     if (list.list_type === "static") {
       /* Original: SELECT contact_id FROM mailing_list_members WHERE list_id = ? AND suppressed = 0 AND unsubscribed = 0 */
@@ -274,7 +328,9 @@ export class MailingListsService {
       });
       contactIds = rows.map((r) => r.contactId);
     } else if (list.list_type === "dynamic") {
-      contactIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
+      contactIds = await this.evaluateDynamicCriteria(
+        (list.criteria ?? null) as MailingListCriteria,
+      );
     } else {
       /* Original: SELECT contact_id FROM mailing_list_members WHERE list_id = ? AND suppressed = 0 AND unsubscribed = 0 */
       const manualRows = await this.ds.getRepository(MailingListMemberEntity).find({
@@ -282,7 +338,9 @@ export class MailingListsService {
         select: ["contactId"],
       });
       const manualIds = new Set(manualRows.map((r) => r.contactId));
-      const dynamicIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
+      const dynamicIds = await this.evaluateDynamicCriteria(
+        (list.criteria ?? null) as MailingListCriteria,
+      );
       contactIds = [...new Set([...manualIds, ...dynamicIds])];
     }
 
@@ -317,23 +375,41 @@ export class MailingListsService {
       const dt = list.delivery_type ?? "both";
       if (dt === "physical" || dt === "both") {
         if (contact.ok_to_mail === "no") {
-          excluded.push({ contact, reason: "No consent for physical mail", canRemoveFromList: hasMembership });
+          excluded.push({
+            contact,
+            reason: "No consent for physical mail",
+            canRemoveFromList: hasMembership,
+          });
           continue;
         }
       }
       if (dt === "email" || dt === "both") {
         if (contact.ok_to_email === "no") {
-          excluded.push({ contact, reason: "No consent for email", canRemoveFromList: hasMembership });
+          excluded.push({
+            contact,
+            reason: "No consent for email",
+            canRemoveFromList: hasMembership,
+          });
           continue;
         }
       }
 
       if (memberRow?.suppressed) {
-        excluded.push({ contact, reason: memberRow.suppressReason ?? "Suppressed", removable: true, canRemoveFromList: true });
+        excluded.push({
+          contact,
+          reason: memberRow.suppressReason ?? "Suppressed",
+          removable: true,
+          canRemoveFromList: true,
+        });
         continue;
       }
       if (memberRow?.unsubscribed) {
-        excluded.push({ contact, reason: "Unsubscribed", removable: true, canRemoveFromList: true });
+        excluded.push({
+          contact,
+          reason: "Unsubscribed",
+          removable: true,
+          canRemoveFromList: true,
+        });
         continue;
       }
 
@@ -343,19 +419,34 @@ export class MailingListsService {
     /* For static lists, include suppressed/unsubscribed members in excluded (they're not in contactIds) */
     if (list.list_type === "static") {
       const suppressedRows = await this.ds.getRepository(MailingListMemberEntity).find({
-        where: [{ listId: id, suppressed: true }, { listId: id, unsubscribed: true }],
+        where: [
+          { listId: id, suppressed: true },
+          { listId: id, unsubscribed: true },
+        ],
         select: ["contactId", "suppressed", "suppressReason", "unsubscribed"],
       });
-      const seenExcluded = new Set((excluded as Array<{ contact: { id: string } }>).map((e) => e.contact.id));
+      const seenExcluded = new Set(
+        (excluded as Array<{ contact: { id: string } }>).map((e) => e.contact.id),
+      );
       for (const r of suppressedRows) {
         if (seenExcluded.has(r.contactId)) continue;
         const contact = await this.contactsService.get(r.contactId);
         if (!contact) continue;
         seenExcluded.add(r.contactId);
         if (r.suppressed) {
-          excluded.push({ contact, reason: r.suppressReason ?? "Suppressed", removable: true, canRemoveFromList: true });
+          excluded.push({
+            contact,
+            reason: r.suppressReason ?? "Suppressed",
+            removable: true,
+            canRemoveFromList: true,
+          });
         } else if (r.unsubscribed) {
-          excluded.push({ contact, reason: "Unsubscribed", removable: true, canRemoveFromList: true });
+          excluded.push({
+            contact,
+            reason: "Unsubscribed",
+            removable: true,
+            canRemoveFromList: true,
+          });
         }
       }
     }
@@ -397,11 +488,13 @@ export class MailingListsService {
   }
 
   /** Returns included contact IDs and whether each has manual membership (can be removed). */
-  private async getIncludedContactIds(listId: string): Promise<{ contactIds: string[]; membershipMap: Map<string, boolean> }> {
+  private async getIncludedContactIds(
+    listId: string,
+  ): Promise<{ contactIds: string[]; membershipMap: Map<string, boolean> }> {
     const list = await this.get(listId);
     if (!list) return { contactIds: [], membershipMap: new Map() };
 
-    let contactIds: string[] = [];
+    let contactIds: string[];
     if (list.list_type === "static") {
       const rows = await this.ds.getRepository(MailingListMemberEntity).find({
         where: { listId, suppressed: false, unsubscribed: false },
@@ -409,14 +502,18 @@ export class MailingListsService {
       });
       contactIds = rows.map((r) => r.contactId);
     } else if (list.list_type === "dynamic") {
-      contactIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
+      contactIds = await this.evaluateDynamicCriteria(
+        (list.criteria ?? null) as MailingListCriteria,
+      );
     } else {
       const manualRows = await this.ds.getRepository(MailingListMemberEntity).find({
         where: { listId, suppressed: false, unsubscribed: false },
         select: ["contactId"],
       });
       const manualIds = new Set(manualRows.map((r) => r.contactId));
-      const dynamicIds = await this.evaluateDynamicCriteria((list.criteria ?? null) as MailingListCriteria);
+      const dynamicIds = await this.evaluateDynamicCriteria(
+        (list.criteria ?? null) as MailingListCriteria,
+      );
       contactIds = [...new Set([...manualIds, ...dynamicIds])];
     }
 
@@ -437,7 +534,7 @@ export class MailingListsService {
         where: { listId, contactId: cid },
         select: ["suppressed", "suppressReason", "unsubscribed"],
       });
-      const hasMembership = !!memberRow;
+      const _hasMembership = !!memberRow;
 
       if (contact.deceased) continue;
       if (contact.do_not_contact) continue;
@@ -460,7 +557,11 @@ export class MailingListsService {
   async getStats(listId: string): Promise<MailingListStats> {
     const list = await this.get(listId);
     const stats: MailingListStats = {
-      duplicateAddresses: { totalDuplicateContacts: 0, uniqueAddressesWithDuplicates: 0, groups: [] },
+      duplicateAddresses: {
+        totalDuplicateContacts: 0,
+        uniqueAddressesWithDuplicates: 0,
+        groups: [],
+      },
     };
 
     if (!list) return stats;
@@ -474,13 +575,24 @@ export class MailingListsService {
     const addrRepo = this.ds.getRepository(ContactAddressEntity);
     const addresses = await addrRepo
       .createQueryBuilder("ca")
-      .select(["ca.contactId", "ca.addressLine1", "ca.addressLine2", "ca.city", "ca.state", "ca.postalCode", "ca.country"])
+      .select([
+        "ca.contactId",
+        "ca.addressLine1",
+        "ca.addressLine2",
+        "ca.city",
+        "ca.state",
+        "ca.postalCode",
+        "ca.country",
+      ])
       .where("ca.contactId IN (:...ids)", { ids: contactIds })
       .orderBy("ca.isPrimaryMailing", "DESC")
       .addOrderBy("ca.id", "ASC")
       .getMany();
 
-    const contactToAddr = new Map<string, { line1: string; line2: string; city: string; state: string; postal: string; country: string }>();
+    const contactToAddr = new Map<
+      string,
+      { line1: string; line2: string; city: string; state: string; postal: string; country: string }
+    >();
     for (const a of addresses) {
       if (!contactToAddr.has(a.contactId)) {
         contactToAddr.set(a.contactId, {
@@ -494,7 +606,14 @@ export class MailingListsService {
       }
     }
 
-    const normalizeAddr = (addr: { line1: string; line2: string; city: string; state: string; postal: string; country: string }) =>
+    const normalizeAddr = (addr: {
+      line1: string;
+      line2: string;
+      city: string;
+      state: string;
+      postal: string;
+      country: string;
+    }) =>
       [addr.line1, addr.line2, addr.city, addr.state, addr.postal, addr.country]
         .map((s) => (s ?? "").toLowerCase().replace(/\s+/g, " "))
         .join("|");
@@ -529,14 +648,22 @@ export class MailingListsService {
       addrToContacts.get(key)!.push(cid);
     }
 
-    const duplicateGroups = Array.from(addrToContacts.entries()).filter(([, ids]) => ids.length > 1);
+    const duplicateGroups = Array.from(addrToContacts.entries()).filter(
+      ([, ids]) => ids.length > 1,
+    );
     let totalDuplicateContacts = 0;
-    const groups: Array<{ address: string; contactIds: string[]; contacts: Array<{ id: string; display_name: string }> }> = [];
+    const groups: Array<{
+      address: string;
+      contactIds: string[];
+      contacts: Array<{ id: string; display_name: string }>;
+    }> = [];
     for (const [, ids] of duplicateGroups) {
       totalDuplicateContacts += ids.length;
       const addr = contactToAddr.get(ids[0]!);
       const addressStr = addr
-        ? [addr.line1, addr.line2, addr.city, addr.state, addr.postal, addr.country].filter(Boolean).join(", ")
+        ? [addr.line1, addr.line2, addr.city, addr.state, addr.postal, addr.country]
+            .filter(Boolean)
+            .join(", ")
         : "";
       const contacts: Array<{ id: string; display_name: string }> = [];
       for (const id of ids) {
@@ -554,7 +681,12 @@ export class MailingListsService {
     return stats;
   }
 
-  async getIncludedPaginated(listId: string, page: number, limit: number, search?: string): Promise<MailingListIncludedPage> {
+  async getIncludedPaginated(
+    listId: string,
+    page: number,
+    limit: number,
+    search?: string,
+  ): Promise<MailingListIncludedPage> {
     const { contactIds, membershipMap } = await this.getIncludedContactIds(listId);
 
     let filteredIds = contactIds;

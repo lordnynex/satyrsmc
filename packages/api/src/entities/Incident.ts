@@ -32,4 +32,3 @@ export class Incident {
   @Column({ name: "created_at", type: "timestamptz", nullable: true })
   createdAt!: Date | null;
 }
-

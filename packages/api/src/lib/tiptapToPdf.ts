@@ -8,8 +8,7 @@ import { join } from "path";
 import { jsPDF } from "jspdf";
 
 const FONT_FAMILY = "DejaVuSans";
-const TWEMOJI_CDN =
-  "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72";
+const TWEMOJI_CDN = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72";
 /** Emoji drawn at this size in mm to align with body text. */
 const EMOJI_SIZE_MM = 4;
 
@@ -19,13 +18,22 @@ function sanitizeForPdf(text: string): string {
 }
 
 /** Segment of content: either text or an emoji (by Unicode codepoint hex). */
-type ContentSegment =
-  | { type: "text"; content: string }
-  | { type: "emoji"; codepoint: string };
+type ContentSegment = { type: "text"; content: string } | { type: "emoji"; codepoint: string };
 
 /** Segment for paragraph runs: text with formatting or emoji. */
 type RunSegment =
-  | { type: "text"; content: string; bold: boolean; italic: boolean; underline?: boolean; strike?: boolean; color?: string; fontSize?: number; subscript?: boolean; superscript?: boolean }
+  | {
+      type: "text";
+      content: string;
+      bold: boolean;
+      italic: boolean;
+      underline?: boolean;
+      strike?: boolean;
+      color?: string;
+      fontSize?: number;
+      subscript?: boolean;
+      superscript?: boolean;
+    }
   | { type: "emoji"; codepoint: string };
 
 /** Split string into alternating text and emoji segments (emoji = supplementary plane). */
@@ -41,8 +49,7 @@ function splitIntoTextAndEmoji(text: string): ContentSegment[] {
     segments.push({ type: "emoji", codepoint });
     lastIndex = m.index + m[0].length;
   }
-  if (lastIndex < text.length)
-    segments.push({ type: "text", content: text.slice(lastIndex) });
+  if (lastIndex < text.length) segments.push({ type: "text", content: text.slice(lastIndex) });
   return segments;
 }
 
@@ -80,9 +87,7 @@ function loadDejaVuFonts(doc: jsPDF): boolean {
       fontCache = fontSpecs.map(({ file, style }) => ({
         file,
         style,
-        base64: Buffer.from(readFileSync(join(ttfDir, file))).toString(
-          "base64",
-        ),
+        base64: Buffer.from(readFileSync(join(ttfDir, file))).toString("base64"),
       }));
     }
     for (const { file, style, base64 } of fontCache) {
@@ -155,12 +160,6 @@ function getTextFromNode(node: ProseNode): string {
   return node.content.map(getTextFromNode).join("");
 }
 
-function getTextWithFormatting(node: ProseNode): string {
-  if (node.type === "text") return node.text ?? "";
-  if (!node.content) return "";
-  return node.content.map(getTextWithFormatting).join("");
-}
-
 /** Collect inline text runs from block content (paragraph, heading), preserving formatting marks. */
 function getTextRuns(node: ProseNode): TextRun[] {
   if (!node.content) return [];
@@ -176,7 +175,18 @@ function getTextRuns(node: ProseNode): TextRun[] {
       const textStyleMark = child.marks?.find((m) => m.type === "textStyle");
       const color = textStyleMark?.attrs?.color;
       const fontSize = parseFontSizeToPoints(textStyleMark?.attrs?.fontSize);
-      if (child.text.length) runs.push({ text: child.text, bold, italic, underline, strike, color, fontSize, subscript, superscript });
+      if (child.text.length)
+        runs.push({
+          text: child.text,
+          bold,
+          italic,
+          underline,
+          strike,
+          color,
+          fontSize,
+          subscript,
+          superscript,
+        });
     } else if (child.content) {
       runs.push(...getTextRuns(child));
     }
@@ -191,8 +201,7 @@ const FONT_SIZES = { h1: 18, h2: 14, h3: 12, body: 11, small: 9 };
 const EMPTY_PARAGRAPH_GAP_MM = 4;
 
 function toTextAlign(value: unknown): TextAlign {
-  if (value === "center" || value === "right" || value === "justify")
-    return value;
+  if (value === "center" || value === "right" || value === "justify") return value;
   return "left";
 }
 
@@ -212,9 +221,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
   } catch {
     parsed = {
       type: "doc",
-      content: [
-        { type: "paragraph", content: [{ type: "text", text: contentJson }] },
-      ],
+      content: [{ type: "paragraph", content: [{ type: "text", text: contentJson }] }],
     };
   }
 
@@ -239,14 +246,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
 
   function setFontStyle(fontSize: number, bold: boolean, italic: boolean, color?: string) {
     doc.setFontSize(fontSize);
-    const style =
-      bold && italic
-        ? "bolditalic"
-        : bold
-          ? "bold"
-          : italic
-            ? "italic"
-            : "normal";
+    const style = bold && italic ? "bolditalic" : bold ? "bold" : italic ? "italic" : "normal";
     doc.setFont(useUnicodeFont ? FONT_FAMILY : "helvetica", style);
     if (color) {
       const hex = color.replace("#", "");
@@ -257,13 +257,6 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
     } else {
       doc.setTextColor(0, 0, 0);
     }
-  }
-
-  /** Reference x for alignment: left edge, page center, or right edge. */
-  function getTextRefX(align: TextAlign, indent: number): number {
-    if (align === "center") return pageWidth / 2;
-    if (align === "right") return pageWidth - MARGIN;
-    return MARGIN + indent;
   }
 
   /** Build lines from content segments (text + emoji). Text wraps; emoji are atomic. */
@@ -281,10 +274,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
     setFontStyle(fontSize, bold, italic);
     for (const seg of segments) {
       if (seg.type === "emoji") {
-        if (
-          currentWidth + EMOJI_SIZE_MM > lineMaxWidth &&
-          currentLine.length > 0
-        ) {
+        if (currentWidth + EMOJI_SIZE_MM > lineMaxWidth && currentLine.length > 0) {
           lines.push(currentLine);
           currentLine = [];
           currentWidth = 0;
@@ -337,13 +327,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
     } = options;
     const lineMaxWidth = maxWidth - indent;
     const segments = splitIntoTextAndEmoji(text);
-    const lines = buildLinesFromContentSegments(
-      segments,
-      lineMaxWidth,
-      fontSize,
-      bold,
-      italic,
-    );
+    const lines = buildLinesFromContentSegments(segments, lineMaxWidth, fontSize, bold, italic);
     const lh = fontSize * lineHeightMultiplier * 0.35;
     const leftX = MARGIN + indent;
     const rightX = pageWidth - MARGIN;
@@ -353,8 +337,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
       setFontStyle(fontSize, bold, italic);
       let totalLineWidth = 0;
       for (const seg of line) {
-        if (seg.type === "text")
-          totalLineWidth += doc.getTextWidth(seg.content);
+        if (seg.type === "text") totalLineWidth += doc.getTextWidth(seg.content);
         else totalLineWidth += EMOJI_SIZE_MM;
       }
       let x: number;
@@ -369,14 +352,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
         } else {
           const base64 = await getEmojiBase64(seg.codepoint);
           if (base64)
-            doc.addImage(
-              base64,
-              "PNG",
-              x,
-              y - EMOJI_SIZE_MM,
-              EMOJI_SIZE_MM,
-              EMOJI_SIZE_MM,
-            );
+            doc.addImage(base64, "PNG", x, y - EMOJI_SIZE_MM, EMOJI_SIZE_MM, EMOJI_SIZE_MM);
           x += EMOJI_SIZE_MM;
         }
       }
@@ -424,10 +400,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
 
     for (const seg of segments) {
       if (seg.type === "emoji") {
-        if (
-          currentWidth + EMOJI_SIZE_MM > lineMaxWidth &&
-          currentLine.length > 0
-        ) {
+        if (currentWidth + EMOJI_SIZE_MM > lineMaxWidth && currentLine.length > 0) {
           lines.push(currentLine);
           currentLine = [];
           currentWidth = 0;
@@ -437,7 +410,8 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
         continue;
       }
       const baseFontSize = seg.fontSize ?? defaultFontSize;
-      const effectiveFontSize = (seg.subscript || seg.superscript) ? baseFontSize * 0.7 : baseFontSize;
+      const effectiveFontSize =
+        seg.subscript || seg.superscript ? baseFontSize * 0.7 : baseFontSize;
       setFontStyle(effectiveFontSize, seg.bold, seg.italic, seg.color);
       let remaining = seg.content;
       while (remaining.length > 0) {
@@ -483,11 +457,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
     const lineMaxWidth = rightX - leftX;
 
     const segments = runsToSegments(runs);
-    const logicalLines = buildLinesFromRunSegments(
-      segments,
-      defaultFontSize,
-      lineMaxWidth,
-    );
+    const logicalLines = buildLinesFromRunSegments(segments, defaultFontSize, lineMaxWidth);
 
     for (const lineSegments of logicalLines) {
       let maxLineHeight = defaultFontSize * LINE_HEIGHT * 0.35;
@@ -496,7 +466,8 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
       for (const seg of lineSegments) {
         if (seg.type === "text") {
           const baseFontSize = seg.fontSize ?? defaultFontSize;
-          const effectiveFontSize = (seg.subscript || seg.superscript) ? baseFontSize * 0.7 : baseFontSize;
+          const effectiveFontSize =
+            seg.subscript || seg.superscript ? baseFontSize * 0.7 : baseFontSize;
           setFontStyle(effectiveFontSize, seg.bold, seg.italic, seg.color);
           totalWidth += doc.getTextWidth(seg.content);
           const segLineHeight = baseFontSize * LINE_HEIGHT * 0.35;
@@ -512,7 +483,8 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
       for (const seg of lineSegments) {
         if (seg.type === "text") {
           const baseFontSize = seg.fontSize ?? defaultFontSize;
-          const effectiveFontSize = (seg.subscript || seg.superscript) ? baseFontSize * 0.7 : baseFontSize;
+          const effectiveFontSize =
+            seg.subscript || seg.superscript ? baseFontSize * 0.7 : baseFontSize;
           setFontStyle(effectiveFontSize, seg.bold, seg.italic, seg.color);
           let textY = y;
           if (seg.subscript) {
@@ -547,14 +519,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
         } else {
           const base64 = await getEmojiBase64(seg.codepoint);
           if (base64)
-            doc.addImage(
-              base64,
-              "PNG",
-              segX,
-              y - EMOJI_SIZE_MM,
-              EMOJI_SIZE_MM,
-              EMOJI_SIZE_MM,
-            );
+            doc.addImage(base64, "PNG", segX, y - EMOJI_SIZE_MM, EMOJI_SIZE_MM, EMOJI_SIZE_MM);
           segX += EMOJI_SIZE_MM;
         }
       }
@@ -585,12 +550,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
       case "heading": {
         const level = node.attrs?.level ?? 1;
         const text = getTextFromNode(node);
-        const size =
-          level === 1
-            ? FONT_SIZES.h1
-            : level === 2
-              ? FONT_SIZES.h2
-              : FONT_SIZES.h3;
+        const size = level === 1 ? FONT_SIZES.h1 : level === 2 ? FONT_SIZES.h2 : FONT_SIZES.h3;
         const headingAlign = toTextAlign(node.attrs?.textAlign);
         const headingIndent = (node.attrs?.indent ?? 0) * 8;
         checkPageBreak(size * 0.8 * 0.35);
@@ -626,8 +586,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
         break;
 
       case "blockquote":
-        for (const c of node.content ?? [])
-          await processNode(c, listIndent + 8);
+        for (const c of node.content ?? []) await processNode(c, listIndent + 8);
         break;
 
       case "horizontalRule":
@@ -643,9 +602,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
           if (row.type === "tableRow" && row.content) {
             const cells = row.content
               .filter((c) => c.type === "tableCell" || c.type === "tableHeader")
-              .map((c) =>
-                sanitizeForPdf(getTextFromNode(c)).replace(/\n/g, " ").trim(),
-              );
+              .map((c) => sanitizeForPdf(getTextFromNode(c)).replace(/\n/g, " ").trim());
             if (cells.length) {
               checkPageBreak(FONT_SIZES.body * LINE_HEIGHT * 0.5);
               const colWidth = maxWidth / cells.length;
@@ -653,10 +610,7 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
               let maxCellHeight = FONT_SIZES.small * 0.35;
               cells.forEach((cell, colIdx) => {
                 doc.setFontSize(FONT_SIZES.small);
-                doc.setFont(
-                  useUnicodeFont ? FONT_FAMILY : "helvetica",
-                  "normal",
-                );
+                doc.setFont(useUnicodeFont ? FONT_FAMILY : "helvetica", "normal");
                 const lines = doc.splitTextToSize(cell, colWidth - 2);
                 let lineY = cellY;
                 lines.forEach((line: string) => {
@@ -700,20 +654,15 @@ export async function tiptapJsonToPdf(contentJson: string): Promise<Buffer> {
     const indent = baseIndent + 6;
     for (const c of item.content ?? []) {
       if (c.type === "paragraph") {
-        const prefix =
-          style === "bullet" ? "• " : num !== undefined ? `${num}. ` : "";
+        const prefix = style === "bullet" ? "• " : num !== undefined ? `${num}. ` : "";
         const runs = getTextRuns(c);
         const text = runs.map((r) => r.text).join("");
         const align = toTextAlign(c.attrs?.textAlign);
         if (text.trim()) {
-          await addRuns(
-            [{ text: prefix, bold: false, italic: false }, ...runs],
-            { indent, align },
-          );
+          await addRuns([{ text: prefix, bold: false, italic: false }, ...runs], { indent, align });
         }
       } else if (c.type === "bulletList") {
-        for (const sub of c.content ?? [])
-          await processListItem(sub, "bullet", indent, undefined);
+        for (const sub of c.content ?? []) await processListItem(sub, "bullet", indent, undefined);
       } else if (c.type === "orderedList") {
         const ordContent = c.content ?? [];
         for (let i = 0; i < ordContent.length; i++) {

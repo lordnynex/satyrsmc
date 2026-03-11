@@ -125,14 +125,10 @@ export function MotionsPanel() {
           </div>
 
           {isPending ? (
-            <div className="py-12 text-center text-muted-foreground">
-              Loading motions…
-            </div>
+            <div className="py-12 text-center text-muted-foreground">Loading motions…</div>
           ) : items.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
-              {qFromUrl
-                ? "No motions match your search."
-                : "No motions recorded in any meeting."}
+              {qFromUrl ? "No motions match your search." : "No motions recorded in any meeting."}
             </div>
           ) : (
             <>
@@ -165,34 +161,34 @@ export function MotionsPanel() {
                       Page {safePage} of {totalPages}
                     </span>
                     <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={safePage <= 1}
-                      onClick={() => {
-                        const next = new URLSearchParams(searchParams);
-                        next.set("page", String(safePage - 1));
-                        setSearchParams(next);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    >
-                      <ChevronLeft className="size-4" />
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={safePage >= totalPages}
-                      onClick={() => {
-                        const next = new URLSearchParams(searchParams);
-                        next.set("page", String(safePage + 1));
-                        setSearchParams(next);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    >
-                      Next
-                      <ChevronRight className="size-4" />
-                    </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={safePage <= 1}
+                        onClick={() => {
+                          const next = new URLSearchParams(searchParams);
+                          next.set("page", String(safePage - 1));
+                          setSearchParams(next);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        <ChevronLeft className="size-4" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={safePage >= totalPages}
+                        onClick={() => {
+                          const next = new URLSearchParams(searchParams);
+                          next.set("page", String(safePage + 1));
+                          setSearchParams(next);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        Next
+                        <ChevronRight className="size-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

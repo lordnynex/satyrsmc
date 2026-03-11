@@ -20,10 +20,7 @@ export interface PstImportPreviewItem {
 
 /** Normalize for fuzzy comparison */
 function normalize(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  return s.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 /** Check if two strings are fuzzy-equal (ignoring minor differences) */
@@ -37,9 +34,12 @@ function fuzzyMatch(a: string, b: string): boolean {
 
 export async function previewPstImport(
   fileBuffer: Buffer,
-  getForDeduplication: GetForDeduplication
+  getForDeduplication: GetForDeduplication,
 ): Promise<PstImportPreviewItem[]> {
-  const tmpPath = join(tmpdir(), `pst-import-${Date.now()}-${Math.random().toString(36).slice(2)}.pst`);
+  const tmpPath = join(
+    tmpdir(),
+    `pst-import-${Date.now()}-${Math.random().toString(36).slice(2)}.pst`,
+  );
   try {
     writeFileSync(tmpPath, fileBuffer);
     const parsed = extractContactsFromPst(tmpPath);
@@ -76,7 +76,11 @@ export async function previewPstImport(
       }
       if (!duplicateOf && p.addressKey && p.payload.display_name) {
         for (const [key, c] of addressKeyToContact) {
-          if (key && fuzzyMatch(key, p.addressKey) && fuzzyMatch(p.payload.display_name, c.display_name)) {
+          if (
+            key &&
+            fuzzyMatch(key, p.addressKey) &&
+            fuzzyMatch(p.payload.display_name, c.display_name)
+          ) {
             duplicateOf = c;
             break;
           }

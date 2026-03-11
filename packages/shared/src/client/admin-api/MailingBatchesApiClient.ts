@@ -15,12 +15,7 @@ export class MailingBatchesApiClient {
     return this.client.admin.mailingBatches.create.mutate({ listId, name });
   }
 
-  updateRecipientStatus(
-    batchId: string,
-    recipientId: string,
-    status: string,
-    reason?: string
-  ) {
+  updateRecipientStatus(batchId: string, recipientId: string, status: string, reason?: string) {
     return this.client.admin.mailingBatches.updateRecipientStatus.mutate({
       batchId,
       recipientId,

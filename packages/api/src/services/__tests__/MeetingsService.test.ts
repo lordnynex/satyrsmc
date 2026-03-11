@@ -6,12 +6,12 @@ import { BAD_ID, createMeeting, createMember } from "./helpers";
 
 describe("MeetingsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -129,7 +129,10 @@ describe("MeetingsService", () => {
       if (!m) throw new Error("createMeeting failed");
       const item = await api.meetings.createActionItem(m.id, { description: "Do something" });
       expect(item.id).toBeDefined();
-      const updated = await api.meetings.updateActionItem(m.id, item.id, { description: "Updated", status: "completed" });
+      const updated = await api.meetings.updateActionItem(m.id, item.id, {
+        description: "Updated",
+        status: "completed",
+      });
       expect(updated).not.toBeNull();
       expect(updated!.status).toBe("completed");
       const delOk = await api.meetings.deleteActionItem(m.id, item.id);

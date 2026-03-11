@@ -8,22 +8,23 @@ import type { AppRouter } from "@satyrsmc/api/trpc";
  * without a real backend. List procedures return []; get-like return null; mutations return undefined.
  */
 export function createMockTrpcLink(): TRPCLink<AppRouter> {
-  return () => ({ op }) => {
-    return observable((observer) => {
-      const path = op.path;
-      let data: unknown;
-      if (op.type === "query") {
-        data = path.endsWith(".list") || path.includes(".list") ? [] : null;
-      } else {
-        data = undefined;
-      }
-      observer.next({
-        result: {
-          data,
-        } as { data: unknown },
-        context: op.context,
+  return () =>
+    ({ op }) => {
+      return observable((observer) => {
+        const path = op.path;
+        let data: unknown;
+        if (op.type === "query") {
+          data = path.endsWith(".list") || path.includes(".list") ? [] : null;
+        } else {
+          data = undefined;
+        }
+        observer.next({
+          result: {
+            data,
+          } as { data: unknown },
+          context: op.context,
+        });
+        observer.complete();
       });
-      observer.complete();
-    });
-  };
+    };
 }

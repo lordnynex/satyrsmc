@@ -3,7 +3,8 @@
 */
 @font-face {
   font-family: "Brush Script MT";
-  src: url("../../public/fonts/Brush Script MT.woff2") format("woff2"),
+  src:
+    url("../../public/fonts/Brush Script MT.woff2") format("woff2"),
     url("../../public/fonts/Brush Script MT.woff") format("woff");
   font-weight: 400;
   font-style: normal;

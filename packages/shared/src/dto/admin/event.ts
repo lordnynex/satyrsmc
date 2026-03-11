@@ -72,7 +72,10 @@ export const EventUpdateAttendeeInputSchema = z.object({
   attendeeId: z.string(),
   waiver_signed: z.boolean().optional(),
 });
-export const EventDeleteAttendeeInputSchema = z.object({ eventId: z.string(), attendeeId: z.string() });
+export const EventDeleteAttendeeInputSchema = z.object({
+  eventId: z.string(),
+  attendeeId: z.string(),
+});
 
 export const EventAddMemberAttendeeInputSchema = z.object({
   eventId: z.string(),
@@ -84,7 +87,10 @@ export const EventUpdateMemberAttendeeInputSchema = z.object({
   memberAttendeeId: z.string(),
   waiver_signed: z.boolean().optional(),
 });
-export const EventDeleteMemberAttendeeInputSchema = z.object({ eventId: z.string(), memberAttendeeId: z.string() });
+export const EventDeleteMemberAttendeeInputSchema = z.object({
+  eventId: z.string(),
+  memberAttendeeId: z.string(),
+});
 
 export const EventCreateIncidentInputSchema = z.object({
   eventId: z.string(),
@@ -107,7 +113,10 @@ export const EventUpdateIncidentInputSchema = z.object({
   contact_id: z.string().nullable().optional(),
   member_id: z.string().nullable().optional(),
 });
-export const EventDeleteIncidentInputSchema = z.object({ eventId: z.string(), incidentId: z.string() });
+export const EventDeleteIncidentInputSchema = z.object({
+  eventId: z.string(),
+  incidentId: z.string(),
+});
 
 export const EventCreateScheduleItemInputSchema = z.object({
   eventId: z.string(),
@@ -122,7 +131,10 @@ export const EventUpdateScheduleItemInputSchema = z.object({
   label: z.string().optional(),
   location: z.string().nullable().optional(),
 });
-export const EventDeleteScheduleItemInputSchema = z.object({ eventId: z.string(), scheduleId: z.string() });
+export const EventDeleteScheduleItemInputSchema = z.object({
+  eventId: z.string(),
+  scheduleId: z.string(),
+});
 
 export const EventCreateMilestoneInputSchema = z.object({
   eventId: z.string(),
@@ -141,16 +153,30 @@ export const EventUpdateMilestoneInputSchema = z.object({
   due_date: z.string().optional(),
 });
 export const EventDeleteMilestoneInputSchema = z.object({ eventId: z.string(), mid: z.string() });
-export const EventAddMilestoneMemberInputSchema = z.object({ eventId: z.string(), mid: z.string(), memberId: z.string() });
-export const EventRemoveMilestoneMemberInputSchema = z.object({ eventId: z.string(), mid: z.string(), memberId: z.string() });
+export const EventAddMilestoneMemberInputSchema = z.object({
+  eventId: z.string(),
+  mid: z.string(),
+  memberId: z.string(),
+});
+export const EventRemoveMilestoneMemberInputSchema = z.object({
+  eventId: z.string(),
+  mid: z.string(),
+  memberId: z.string(),
+});
 
-export const EventCreatePackingCategoryInputSchema = z.object({ eventId: z.string(), name: z.string() });
+export const EventCreatePackingCategoryInputSchema = z.object({
+  eventId: z.string(),
+  name: z.string(),
+});
 export const EventUpdatePackingCategoryInputSchema = z.object({
   eventId: z.string(),
   cid: z.string(),
   name: z.string().optional(),
 });
-export const EventDeletePackingCategoryInputSchema = z.object({ eventId: z.string(), cid: z.string() });
+export const EventDeletePackingCategoryInputSchema = z.object({
+  eventId: z.string(),
+  cid: z.string(),
+});
 
 export const EventCreatePackingItemInputSchema = z.object({
   eventId: z.string(),
@@ -195,8 +221,16 @@ export const EventUpdateAssignmentInputSchema = z.object({
   category: z.enum(EVENT_ASSIGNMENT_CATEGORIES).optional(),
 });
 export const EventDeleteAssignmentInputSchema = z.object({ eventId: z.string(), aid: z.string() });
-export const EventAddAssignmentMemberInputSchema = z.object({ eventId: z.string(), aid: z.string(), memberId: z.string() });
-export const EventRemoveAssignmentMemberInputSchema = z.object({ eventId: z.string(), aid: z.string(), memberId: z.string() });
+export const EventAddAssignmentMemberInputSchema = z.object({
+  eventId: z.string(),
+  aid: z.string(),
+  memberId: z.string(),
+});
+export const EventRemoveAssignmentMemberInputSchema = z.object({
+  eventId: z.string(),
+  aid: z.string(),
+  memberId: z.string(),
+});
 
 // ----- Output entity schemas -----
 
@@ -418,10 +452,18 @@ export type EventCreateMilestoneOutput = z.infer<typeof EventCreateMilestoneOutp
 export type EventUpdateMilestoneOutput = z.infer<typeof EventUpdateMilestoneOutputSchema>;
 export type EventDeleteMilestoneOutput = z.infer<typeof EventDeleteMilestoneOutputSchema>;
 export type EventAddMilestoneMemberOutput = z.infer<typeof EventAddMilestoneMemberOutputSchema>;
-export type EventRemoveMilestoneMemberOutput = z.infer<typeof EventRemoveMilestoneMemberOutputSchema>;
-export type EventCreatePackingCategoryOutput = z.infer<typeof EventCreatePackingCategoryOutputSchema>;
-export type EventUpdatePackingCategoryOutput = z.infer<typeof EventUpdatePackingCategoryOutputSchema>;
-export type EventDeletePackingCategoryOutput = z.infer<typeof EventDeletePackingCategoryOutputSchema>;
+export type EventRemoveMilestoneMemberOutput = z.infer<
+  typeof EventRemoveMilestoneMemberOutputSchema
+>;
+export type EventCreatePackingCategoryOutput = z.infer<
+  typeof EventCreatePackingCategoryOutputSchema
+>;
+export type EventUpdatePackingCategoryOutput = z.infer<
+  typeof EventUpdatePackingCategoryOutputSchema
+>;
+export type EventDeletePackingCategoryOutput = z.infer<
+  typeof EventDeletePackingCategoryOutputSchema
+>;
 export type EventCreatePackingItemOutput = z.infer<typeof EventCreatePackingItemOutputSchema>;
 export type EventUpdatePackingItemOutput = z.infer<typeof EventUpdatePackingItemOutputSchema>;
 export type EventDeletePackingItemOutput = z.infer<typeof EventDeletePackingItemOutputSchema>;
@@ -432,7 +474,9 @@ export type EventCreateAssignmentOutput = z.infer<typeof EventCreateAssignmentOu
 export type EventUpdateAssignmentOutput = z.infer<typeof EventUpdateAssignmentOutputSchema>;
 export type EventDeleteAssignmentOutput = z.infer<typeof EventDeleteAssignmentOutputSchema>;
 export type EventAddAssignmentMemberOutput = z.infer<typeof EventAddAssignmentMemberOutputSchema>;
-export type EventRemoveAssignmentMemberOutput = z.infer<typeof EventRemoveAssignmentMemberOutputSchema>;
+export type EventRemoveAssignmentMemberOutput = z.infer<
+  typeof EventRemoveAssignmentMemberOutputSchema
+>;
 
 // Alias for API
 export type Event = EventGetOutput;

@@ -4,7 +4,22 @@ import { useMailingListsOptional } from "@/queries/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Users, Mail, Plus, Mailbox, AtSign, QrCode, PanelLeftClose, PanelLeftOpen, FileText, MailPlus, Image, BookOpen, Building2, Menu } from "lucide-react";
+import {
+  Users,
+  Mail,
+  Plus,
+  Mailbox,
+  AtSign,
+  QrCode,
+  PanelLeftClose,
+  PanelLeftOpen,
+  FileText,
+  MailPlus,
+  Image,
+  BookOpen,
+  Building2,
+  Menu,
+} from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) =>
   cn(
@@ -12,9 +27,8 @@ const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) 
     collapsed ? "justify-center" : "gap-2",
     isActive
       ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
   );
-
 
 export function ContactsLayout() {
   const navigate = useNavigate();
@@ -31,7 +45,7 @@ export function ContactsLayout() {
       (isCollapsed ?? collapsed) ? "justify-center" : "gap-2",
       isActive
         ? "bg-muted font-medium text-foreground"
-        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
     );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -45,14 +59,11 @@ export function ContactsLayout() {
       <aside
         className={cn(
           "hidden md:block sticky top-16 self-start shrink-0 border-r pr-4 transition-[width] duration-200 ease-in-out",
-          collapsed ? "w-14" : "w-56"
+          collapsed ? "w-14" : "w-56",
         )}
       >
         <div
-          className={cn(
-            "flex items-center py-4",
-            collapsed ? "justify-center" : "justify-between"
-          )}
+          className={cn("flex items-center py-4", collapsed ? "justify-center" : "justify-between")}
         >
           {!collapsed && (
             <span className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -75,15 +86,28 @@ export function ContactsLayout() {
         </div>
         <nav className="space-y-6 py-4" aria-label="Contacts section">
           <div className="space-y-0.5">
-            <NavLink to="/contacts" end className={({ isActive }) => navLinkClass({ isActive }, collapsed)} title={collapsed ? "All contacts" : undefined}>
+            <NavLink
+              to="/contacts"
+              end
+              className={({ isActive }) => navLinkClass({ isActive }, collapsed)}
+              title={collapsed ? "All contacts" : undefined}
+            >
               <Users className="size-4 shrink-0" />
               {!collapsed && <span>All contacts</span>}
             </NavLink>
-            <NavLink to="/contacts/hellenics" className={({ isActive }) => navLinkClass({ isActive }, collapsed)} title={collapsed ? "Hellenics" : undefined}>
+            <NavLink
+              to="/contacts/hellenics"
+              className={({ isActive }) => navLinkClass({ isActive }, collapsed)}
+              title={collapsed ? "Hellenics" : undefined}
+            >
               <BookOpen className="size-4 shrink-0" />
               {!collapsed && <span>Hellenics</span>}
             </NavLink>
-            <NavLink to="/contacts/vendors" className={({ isActive }) => navLinkClass({ isActive }, collapsed)} title={collapsed ? "Vendors" : undefined}>
+            <NavLink
+              to="/contacts/vendors"
+              className={({ isActive }) => navLinkClass({ isActive }, collapsed)}
+              title={collapsed ? "Vendors" : undefined}
+            >
               <Building2 className="size-4 shrink-0" />
               {!collapsed && <span>Vendors</span>}
             </NavLink>
@@ -107,7 +131,7 @@ export function ContactsLayout() {
                     end
                     className={cn(
                       "text-xs font-semibold uppercase tracking-wider transition-colors hover:text-foreground",
-                      "text-muted-foreground"
+                      "text-muted-foreground",
                     )}
                   >
                     Mailing lists
@@ -123,89 +147,83 @@ export function ContactsLayout() {
                 </div>
 
                 {physicalLists.length > 0 && (
-              <div className="mb-3">
-                <p className="mb-1 px-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-                  Physical
-                </p>
-                <ul className="space-y-0.5">
-                  {physicalLists.map((list) => (
-                    <li key={list.id}>
-                      <NavLink
-                        to={`/contacts/lists/${list.id}`}
-                        className={listLinkClass}
-                      >
-                        <Mailbox className="size-4 shrink-0 opacity-60" />
-                        <span className="truncate">{list.name}</span>
-                        {list.member_count != null && (
-                          <span className="ml-auto text-xs text-muted-foreground">
-                            {list.member_count}
-                          </span>
-                        )}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  <div className="mb-3">
+                    <p className="mb-1 px-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                      Physical
+                    </p>
+                    <ul className="space-y-0.5">
+                      {physicalLists.map((list) => (
+                        <li key={list.id}>
+                          <NavLink to={`/contacts/lists/${list.id}`} className={listLinkClass}>
+                            <Mailbox className="size-4 shrink-0 opacity-60" />
+                            <span className="truncate">{list.name}</span>
+                            {list.member_count != null && (
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {list.member_count}
+                              </span>
+                            )}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            {emailLists.length > 0 && (
-              <div className="mb-3">
-                <p className="mb-1 px-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-                  Email
-                </p>
-                <ul className="space-y-0.5">
-                  {emailLists.map((list) => (
-                    <li key={list.id}>
-                      <NavLink
-                        to={`/contacts/lists/${list.id}`}
-                        className={listLinkClass}
-                      >
-                        <AtSign className="size-4 shrink-0 opacity-60" />
-                        <span className="truncate">{list.name}</span>
-                        {list.member_count != null && (
-                          <span className="ml-auto text-xs text-muted-foreground">
-                            {list.member_count}
-                          </span>
-                        )}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                {emailLists.length > 0 && (
+                  <div className="mb-3">
+                    <p className="mb-1 px-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                      Email
+                    </p>
+                    <ul className="space-y-0.5">
+                      {emailLists.map((list) => (
+                        <li key={list.id}>
+                          <NavLink to={`/contacts/lists/${list.id}`} className={listLinkClass}>
+                            <AtSign className="size-4 shrink-0 opacity-60" />
+                            <span className="truncate">{list.name}</span>
+                            {list.member_count != null && (
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {list.member_count}
+                              </span>
+                            )}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            {bothLists.length > 0 && (
-              <div className="mb-3">
-                <p className="mb-1 px-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-                  Both
-                </p>
-                <ul className="space-y-0.5">
-                  {bothLists.map((list) => (
-                    <li key={list.id}>
-                      <NavLink
-                        to={`/contacts/lists/${list.id}`}
-                        className={listLinkClass}
-                      >
-                        <Mail className="size-4 shrink-0 opacity-60" />
-                        <span className="truncate">{list.name}</span>
-                        {list.member_count != null && (
-                          <span className="ml-auto text-xs text-muted-foreground">
-                            {list.member_count}
-                          </span>
-                        )}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
+                {bothLists.length > 0 && (
+                  <div className="mb-3">
+                    <p className="mb-1 px-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                      Both
+                    </p>
+                    <ul className="space-y-0.5">
+                      {bothLists.map((list) => (
+                        <li key={list.id}>
+                          <NavLink to={`/contacts/lists/${list.id}`} className={listLinkClass}>
+                            <Mail className="size-4 shrink-0 opacity-60" />
+                            <span className="truncate">{list.name}</span>
+                            {list.member_count != null && (
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {list.member_count}
+                              </span>
+                            )}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </>
             )}
           </div>
 
           <div>
-            <NavLink to="/contacts/qr-codes" className={({ isActive }) => navLinkClass({ isActive }, collapsed)} title={collapsed ? "QR Codes" : undefined}>
+            <NavLink
+              to="/contacts/qr-codes"
+              className={({ isActive }) => navLinkClass({ isActive }, collapsed)}
+              title={collapsed ? "QR Codes" : undefined}
+            >
               <QrCode className="size-4 shrink-0" />
               {!collapsed && <span>QR Codes</span>}
             </NavLink>
@@ -254,12 +272,7 @@ export function ContactsLayout() {
         <div className="md:hidden mb-4">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                aria-label="Open Contacts menu"
-              >
+              <Button variant="outline" size="sm" className="gap-2" aria-label="Open Contacts menu">
                 <Menu className="size-4" />
                 Contacts
               </Button>

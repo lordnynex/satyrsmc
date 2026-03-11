@@ -7,11 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { useAppState } from "@/state/AppState";
-import {
-  useCreateScenario,
-  useDeleteScenario,
-  useUpdateScenario,
-} from "@/queries/hooks";
+import { useCreateScenario, useDeleteScenario, useUpdateScenario } from "@/queries/hooks";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +20,7 @@ import { ScenarioInputsCard } from "./ScenarioInputsCard";
 export function ScenariosPanel() {
   const { id: scenarioId } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const {
-    scenarios,
-    currentScenario,
-    refreshScenarios,
-    refreshScenario,
-  } = useAppState();
+  const { scenarios, currentScenario, refreshScenarios, refreshScenario } = useAppState();
   const createScenarioMutation = useCreateScenario();
   const deleteScenarioMutation = useDeleteScenario();
   const updateScenarioMutation = useUpdateScenario();
@@ -37,7 +28,11 @@ export function ScenariosPanel() {
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [editOpen, setEditOpen] = useState(false);
-  const [editingScenario, setEditingScenario] = useState<{ id: string; name: string; description: string | null } | null>(null);
+  const [editingScenario, setEditingScenario] = useState<{
+    id: string;
+    name: string;
+    description: string | null;
+  } | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editSaved, setEditSaved] = useState(false);
@@ -145,9 +140,7 @@ export function ScenariosPanel() {
                     <div>
                       <p className="font-medium">{s.name}</p>
                       {s.description && (
-                        <p className="text-muted-foreground text-sm mt-1">
-                          {s.description}
-                        </p>
+                        <p className="text-muted-foreground text-sm mt-1">{s.description}</p>
                       )}
                     </div>
                     <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -176,7 +169,13 @@ export function ScenariosPanel() {
         </Card>
       </div>
 
-      <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) setEditingScenario(null); }}>
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setEditingScenario(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Scenario</DialogTitle>
@@ -262,7 +261,7 @@ function ScenarioDetail({
   onSaveEdit,
   editOpen,
   setEditOpen,
-  editingScenario,
+  editingScenario: _editingScenario,
   setEditingScenario,
   editName,
   setEditName,
@@ -307,10 +306,7 @@ function ScenarioDetail({
           Back to Scenarios
         </Button>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onEdit(currentScenario)}
-          >
+          <Button variant="outline" onClick={() => onEdit(currentScenario)}>
             <Pencil className="size-4" />
             Edit
           </Button>

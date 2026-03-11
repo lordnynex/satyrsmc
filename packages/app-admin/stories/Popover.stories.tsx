@@ -1,10 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@app-admin/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@app-admin/components/ui/popover";
 import { Button } from "@app-admin/components/ui/button";
 
 import "@app-admin/index.css";
@@ -31,9 +27,7 @@ export const Default: Story = {
       <PopoverContent>
         <div className="grid gap-2">
           <h4 className="font-medium leading-none">Popover title</h4>
-          <p className="text-sm text-muted-foreground">
-            Short description or extra information.
-          </p>
+          <p className="text-sm text-muted-foreground">Short description or extra information.</p>
         </div>
       </PopoverContent>
     </Popover>
@@ -60,9 +54,7 @@ export const WithForm: Story = {
       <PopoverContent className="w-80">
         <div className="grid gap-2">
           <p className="text-sm font-medium">Quick actions</p>
-          <p className="text-xs text-muted-foreground">
-            Place form fields or action buttons here.
-          </p>
+          <p className="text-xs text-muted-foreground">Place form fields or action buttons here.</p>
         </div>
       </PopoverContent>
     </Popover>

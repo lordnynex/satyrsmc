@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "test": "bun test src/",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov src/"
   },
   "dependencies": {
     "@satyrsmc/api": "workspace:*",

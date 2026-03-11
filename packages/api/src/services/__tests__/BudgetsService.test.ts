@@ -6,12 +6,12 @@ import { BAD_ID, createBudget } from "./helpers";
 
 describe("BudgetsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -109,7 +109,10 @@ describe("BudgetsService", () => {
         unitCost: 1,
         quantity: 1,
       });
-      const updated = await api.budgets.updateLineItem(budget.id, item.id, { name: "NewName", quantity: 2 });
+      const updated = await api.budgets.updateLineItem(budget.id, item.id, {
+        name: "NewName",
+        quantity: 2,
+      });
       expect(updated).not.toBeNull();
       expect(updated!.name).toBe("NewName");
       expect(updated!.quantity).toBe(2);

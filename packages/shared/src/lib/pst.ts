@@ -3,11 +3,12 @@
  * Uses pst-extractor to read .pst files and extract contacts.
  */
 
-import { PSTFile, PSTFolder } from "pst-extractor";
+import type { PSTFolder } from "pst-extractor";
+import { PSTFile } from "pst-extractor";
 import type { Contact, ContactEmail, ContactPhone, ContactAddress } from "../types/contact";
 
 /** Minimal interface for PST contact items (IPM.Contact) from getNextChild */
-interface PstContactLike {
+export interface PstContactLike {
   givenName?: string;
   surname?: string;
   displayName?: string;
@@ -75,16 +76,13 @@ function findContactsFolder(folder: PSTFolder): PSTFolder | null {
 }
 
 /** Map PST contact item to our contact payload format */
-function pstContactToPayload(contact: PstContactLike): PstContactPayload {
+export function pstContactToPayload(contact: PstContactLike): PstContactPayload {
   const given = trim(contact.givenName);
   const surname = trim(contact.surname);
   const displayNameRaw = trim(contact.displayName);
   const company = trim(contact.companyName);
   const displayName =
-    displayNameRaw ||
-    [given, surname].filter(Boolean).join(" ") ||
-    company ||
-    "Unknown";
+    displayNameRaw || [given, surname].filter(Boolean).join(" ") || company || "Unknown";
 
   const emails: ContactEmail[] = [];
   for (const [addr, type] of [
@@ -209,8 +207,7 @@ function pstContactToPayload(contact: PstContactLike): PstContactPayload {
     }
   }
 
-  const type =
-    company && !given && !surname ? "organization" : "person";
+  const type = company && !given && !surname ? "organization" : "person";
 
   return {
     type,
@@ -250,14 +247,9 @@ export function extractContactsFromPst(filePath: string): ParsedPstContact[] {
     const contact = child as PstContactLike;
     try {
       const payload = pstContactToPayload(contact);
-      const primaryEmail =
-        payload.emails?.[0]?.email?.toLowerCase().trim() ?? null;
+      const primaryEmail = payload.emails?.[0]?.email?.toLowerCase().trim() ?? null;
       const addr = payload.addresses?.[0];
-      const addressKey = [
-        addr?.address_line1 ?? "",
-        addr?.city ?? "",
-        addr?.postal_code ?? "",
-      ]
+      const addressKey = [addr?.address_line1 ?? "", addr?.city ?? "", addr?.postal_code ?? ""]
         .map((s) => (s ?? "").toLowerCase().replace(/\s+/g, " "))
         .join("|");
       if (payload.display_name || primaryEmail) {

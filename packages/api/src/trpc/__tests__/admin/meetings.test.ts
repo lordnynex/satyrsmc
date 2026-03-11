@@ -5,7 +5,7 @@
  * createOldBusiness, updateOldBusiness, deleteOldBusiness.
  */
 
-import { TRPCError } from "@trpc/server";
+import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";

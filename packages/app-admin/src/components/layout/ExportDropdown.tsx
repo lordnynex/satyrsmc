@@ -8,7 +8,12 @@ import {
 import { Download, Mail, Printer } from "lucide-react";
 import { useAppState } from "@/state/AppState";
 
-function downloadJson(data: { inputs: unknown; lineItems: unknown; budget: unknown; scenario: unknown }) {
+function downloadJson(data: {
+  inputs: unknown;
+  lineItems: unknown;
+  budget: unknown;
+  scenario: unknown;
+}) {
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);

@@ -1,5 +1,8 @@
 import type { TrpcClient } from "../trpc";
-import type { DocumentGetOutput, DocumentGetVersionsOutput } from "@satyrsmc/shared/dto/admin/document";
+import type {
+  DocumentGetOutput,
+  DocumentGetVersionsOutput,
+} from "@satyrsmc/shared/dto/admin/document";
 
 export class DocumentsApiClient {
   constructor(private client: TrpcClient) {}

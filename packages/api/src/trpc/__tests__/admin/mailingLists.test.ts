@@ -3,7 +3,7 @@
  * Covers list, get, create, update, delete, getMembers, addMember, removeMember, preview, getStats, getIncluded.
  */
 
-import { TRPCError } from "@trpc/server";
+import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
@@ -97,7 +97,10 @@ describe("admin.mailingLists", () => {
       await harness.caller.admin.mailingLists.addMember({ listId: list.id, contactId: contact.id });
       const afterAdd = await harness.caller.admin.mailingLists.getMembers({ listId: list.id });
       expect(afterAdd.some((m) => m.contact_id === contact.id)).toBe(true);
-      await harness.caller.admin.mailingLists.removeMember({ listId: list.id, contactId: contact.id });
+      await harness.caller.admin.mailingLists.removeMember({
+        listId: list.id,
+        contactId: contact.id,
+      });
       const afterRemove = await harness.caller.admin.mailingLists.getMembers({ listId: list.id });
       expect(afterRemove.some((m) => m.contact_id === contact.id)).toBe(false);
     });

@@ -13,8 +13,16 @@ import type {
   MeetingCreateActionItemOutput,
   MeetingCreateOldBusinessOutput,
 } from "@satyrsmc/shared/dto/admin/meeting";
-import type { CommitteeListOutput, CommitteeGetOutput, CommitteeListMeetingsOutput, CommitteeGetMeetingOutput } from "@satyrsmc/shared/dto/admin/committee";
-import type { DocumentGetOutput, DocumentGetVersionsOutput } from "@satyrsmc/shared/dto/admin/document";
+import type {
+  CommitteeListOutput,
+  CommitteeGetOutput,
+  CommitteeListMeetingsOutput,
+  CommitteeGetMeetingOutput,
+} from "@satyrsmc/shared/dto/admin/committee";
+import type {
+  DocumentGetOutput,
+  DocumentGetVersionsOutput,
+} from "@satyrsmc/shared/dto/admin/document";
 import type { BudgetGetOutput, BudgetListOutput } from "@satyrsmc/shared/dto/admin/budget";
 import type { ScenarioGetOutput, ScenarioListOutput } from "@satyrsmc/shared/dto/admin/scenario";
 

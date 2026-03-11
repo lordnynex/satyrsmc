@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  parseVCardFile,
-  contactToVCard4,
-  contactsToVCardFile,
-  parsedToContactPayload,
-} from "./vcard";
+import { parseVCardFile, contactToVCard4, parsedToContactPayload } from "./vcard";
 
 describe("vCard parsing", () => {
   test("parses single vCard 3.0", () => {
@@ -79,7 +74,15 @@ describe("vCard export round-trip", () => {
       club_name: null,
       role: null,
       uid: "test-1@badger",
-      emails: [{ id: "e1", contact_id: "c1", email: "test@example.com", type: "work" as const, is_primary: true }],
+      emails: [
+        {
+          id: "e1",
+          contact_id: "c1",
+          email: "test@example.com",
+          type: "work" as const,
+          is_primary: true,
+        },
+      ],
       phones: [],
       addresses: [
         {

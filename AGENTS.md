@@ -69,6 +69,7 @@ See the "End-to-End Type Safety" section in [CONTRIBUTING.md](CONTRIBUTING.md) f
 The `@satyrsmc/shared` package contains Zod DTO schemas, derived TypeScript types, and shared domain enums. Types are inferred from Zod schemas via `z.infer<>`.
 
 **Exports** (from `packages/shared/package.json`):
+
 ```
 @satyrsmc/shared/client           — tRPC client, React providers, type aliases, domain enums, constants, helpers
 @satyrsmc/shared/client/admin-api — buildApi, useApi, ApiProvider, *ApiClient (admin-only)
@@ -78,14 +79,17 @@ The `@satyrsmc/shared` package contains Zod DTO schemas, derived TypeScript type
 ```
 
 **Rules:**
+
 1. Check `@satyrsmc/shared` first for existing types before defining new ones
 2. When adding a new domain, create the shared type FIRST, then the entity, service, router, and frontend
 3. Never duplicate types that already exist in shared — import and extend them
 4. **String literal types use `const` array + derived type pattern** in `packages/shared/src/lib/enums.ts`:
+
    ```typescript
    export const COMMITTEE_STATUSES = ["active", "closed"] as const;
    export type CommitteeStatus = (typeof COMMITTEE_STATUSES)[number];
    ```
+
    - In DTO Zod schemas, derive from the const: `z.enum(COMMITTEE_STATUSES)`
    - Never hardcode the same strings in a `z.enum()` call
    - Never define a local type alias in a service, router, or component that duplicates a shared type
@@ -141,6 +145,7 @@ satyrsmc/
 **Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var (or in-memory PGlite when `USE_PGLITE=1` for local dev). Migrations auto-run on startup.
 
 **Adding a schema change:**
+
 1. Create a `MigrationInterface` class in `packages/api/src/db/migrations/`
 2. Register it in `dataSource.ts` migrations array
 3. If new table: create entity, register in `dataSource.ts` entities array
@@ -151,11 +156,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 
 ## Content Ownership
 
-| Content | Source | Notes |
-|---|---|---|
-| Members, contacts, events, budgets, meetings | Postgres via TypeORM | Full CRUD in app-admin |
-| Website pages, blog posts, menus, settings | Postgres via TypeORM | CMS in app-admin, served to app-public via `website` tRPC router |
-| Static events, gallery | Files in app-public `src/content/` | Some content not yet migrated to database |
+| Content                                      | Source                             | Notes                                                            |
+| -------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| Members, contacts, events, budgets, meetings | Postgres via TypeORM               | Full CRUD in app-admin                                           |
+| Website pages, blog posts, menus, settings   | Postgres via TypeORM               | CMS in app-admin, served to app-public via `website` tRPC router |
+| Static events, gallery                       | Files in app-public `src/content/` | Some content not yet migrated to database                        |
 
 ## Local Development
 

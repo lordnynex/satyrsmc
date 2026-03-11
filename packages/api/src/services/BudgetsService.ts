@@ -17,7 +17,7 @@ import type {
 export class BudgetsService {
   constructor(
     private db: DbLike,
-    private ds: DataSource
+    private ds: DataSource,
   ) {}
 
   async list(): Promise<BudgetListOutput> {
@@ -61,23 +61,37 @@ export class BudgetsService {
     };
   }
 
-  async create(body: { name: string; year: number; description?: string }): Promise<BudgetCreateOutput | null> {
+  async create(body: {
+    name: string;
+    year: number;
+    description?: string;
+  }): Promise<BudgetCreateOutput | null> {
     const id = uuid();
-    await this.db.run(
-      "INSERT INTO budgets (id, name, year, description) VALUES (?, ?, ?, ?)",
-      [id, body.name, body.year, body.description ?? null]
-    );
+    await this.db.run("INSERT INTO budgets (id, name, year, description) VALUES (?, ?, ?, ?)", [
+      id,
+      body.name,
+      body.year,
+      body.description ?? null,
+    ]);
     return { id, ...body, lineItems: [] };
   }
 
-  async update(id: string, body: { name?: string; year?: number; description?: string }): Promise<BudgetUpdateOutput | null> {
+  async update(
+    id: string,
+    body: { name?: string; year?: number; description?: string },
+  ): Promise<BudgetUpdateOutput | null> {
     /* Original: SELECT * FROM budgets WHERE id = ? */
     const existing = await this.ds.getRepository(Budget).findOne({ where: { id } });
     if (!existing) return null;
     const name = body.name ?? existing.name;
     const year = body.year ?? existing.year;
     const description = body.description !== undefined ? body.description : existing.description;
-    await this.db.run("UPDATE budgets SET name = ?, year = ?, description = ? WHERE id = ?", [name, year, description, id]);
+    await this.db.run("UPDATE budgets SET name = ?, year = ?, description = ? WHERE id = ?", [
+      name,
+      year,
+      description,
+      id,
+    ]);
     return { id, name, year, description, lineItems: [] };
   }
 
@@ -96,12 +110,21 @@ export class BudgetsService {
       unitCost: number;
       quantity: number;
       historicalCosts?: Record<string, number>;
-    }
+    },
   ): Promise<BudgetAddLineItemOutput> {
     const itemId = uuid();
     await this.db.run(
       "INSERT INTO line_items (id, budget_id, name, category, comments, unit_cost, quantity, historical_costs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [itemId, budgetId, body.name, body.category, body.comments ?? null, body.unitCost, body.quantity, body.historicalCosts ? JSON.stringify(body.historicalCosts) : null]
+      [
+        itemId,
+        budgetId,
+        body.name,
+        body.category,
+        body.comments ?? null,
+        body.unitCost,
+        body.quantity,
+        body.historicalCosts ? JSON.stringify(body.historicalCosts) : null,
+      ],
     );
     return {
       id: itemId,
@@ -119,7 +142,7 @@ export class BudgetsService {
       unitCost: number;
       quantity: number;
       historicalCosts: Record<string, number>;
-    }>
+    }>,
   ): Promise<BudgetUpdateLineItemOutput | null> {
     /* Original: SELECT * FROM line_items WHERE id = ? AND budget_id = ? */
     const existing = await this.ds.getRepository(LineItem).findOne({
@@ -137,7 +160,7 @@ export class BudgetsService {
         : existing.historicalCosts;
     await this.db.run(
       "UPDATE line_items SET name = ?, category = ?, comments = ?, unit_cost = ?, quantity = ?, historical_costs = ? WHERE id = ? AND budget_id = ?",
-      [name, category, comments, unitCost, quantity, historicalCosts, itemId, budgetId]
+      [name, category, comments, unitCost, quantity, historicalCosts, itemId, budgetId],
     );
     return {
       id: itemId,
@@ -146,7 +169,9 @@ export class BudgetsService {
       comments,
       unitCost,
       quantity,
-      historicalCosts: historicalCosts ? (JSON.parse(historicalCosts) as Record<string, number>) : undefined,
+      historicalCosts: historicalCosts
+        ? (JSON.parse(historicalCosts) as Record<string, number>)
+        : undefined,
     };
   }
 

@@ -6,12 +6,12 @@ import { BAD_ID, createMeetingTemplate } from "./helpers";
 
 describe("MeetingTemplatesService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -48,7 +48,11 @@ describe("MeetingTemplatesService", () => {
 
   describe("create", () => {
     test("creates template", async () => {
-      const t = await createMeetingTemplate(api, { name: "New Template", type: "minutes", content: "Text" });
+      const t = await createMeetingTemplate(api, {
+        name: "New Template",
+        type: "minutes",
+        content: "Text",
+      });
       if (!t) throw new Error("createMeetingTemplate failed");
       expect(t.id).toBeDefined();
       expect(t.name).toBe("New Template");

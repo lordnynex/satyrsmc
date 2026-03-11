@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Contact, ContactSearchParams, MailingList, Tag } from "@satyrsmc/shared/client";
+import type { Contact, ContactSearchParams } from "@satyrsmc/shared/client";
 
 const DEFAULT_LIST_PARAMS: ContactSearchParams = { page: 1, limit: 25 };
 
@@ -13,10 +13,7 @@ export function useContactsSuspense(params?: ContactSearchParams) {
 }
 
 /** Data: { contacts: Contact[]; total: number; page: number; limit: number }. Always paginated (default page 1, limit 25). */
-export function useContactsOptional(
-  params?: ContactSearchParams,
-  options?: { enabled?: boolean }
-) {
+export function useContactsOptional(params?: ContactSearchParams, options?: { enabled?: boolean }) {
   const input = { ...DEFAULT_LIST_PARAMS, ...params } as Record<string, unknown>;
   return trpc.admin.contacts.list.useQuery(input, options);
 }
@@ -58,7 +55,8 @@ export function useDeleteContact() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.contacts.delete(id),
-    onSuccess: () => qc.invalidateQueries({ predicate: (q) => (q.queryKey as unknown[])[0] === "contacts" }),
+    onSuccess: () =>
+      qc.invalidateQueries({ predicate: (q) => (q.queryKey as unknown[])[0] === "contacts" }),
   });
 }
 
@@ -75,15 +73,13 @@ export function useContactsBulkUpdate() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (
-      args: {
-        ids: string[];
-        updates: {
-          tags?: (string | { id: string; name: string })[];
-          status?: "active" | "inactive";
-        };
-      }
-    ) => api.contacts.bulkUpdate(args.ids, args.updates),
+    mutationFn: (args: {
+      ids: string[];
+      updates: {
+        tags?: (string | { id: string; name: string })[];
+        status?: "active" | "inactive";
+      };
+    }) => api.contacts.bulkUpdate(args.ids, args.updates),
     onSuccess: () =>
       qc.invalidateQueries({ predicate: (q) => (q.queryKey as unknown[])[0] === "contacts" }),
   });
@@ -106,7 +102,7 @@ export function useContactMailingLists(contactId: string | null) {
         lists.map(async (l) => {
           const mems = await api.mailingLists.getMembers(l.id);
           return mems.some((m) => m.contact_id === contactId) ? l : null;
-        })
+        }),
       );
       return withContact.filter(Boolean) as Awaited<ReturnType<typeof api.mailingLists.list>>;
     },
@@ -205,9 +201,8 @@ export function useContactsImportPstExecute() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (
-      toCreate: Array<Record<string, unknown> & { display_name: string }>
-    ) => api.contacts.importPstExecute(toCreate),
+    mutationFn: (toCreate: Array<Record<string, unknown> & { display_name: string }>) =>
+      api.contacts.importPstExecute(toCreate),
     onSuccess: () =>
       qc.invalidateQueries({ predicate: (q) => (q.queryKey as unknown[])[0] === "contacts" }),
   });

@@ -19,13 +19,13 @@ interface RideScheduleCardProps {
   onAdd: (body: { scheduled_time: string; label: string; location?: string }) => Promise<void>;
   onUpdate: (
     scheduleId: string,
-    body: { scheduled_time?: string; label?: string; location?: string | null }
+    body: { scheduled_time?: string; label?: string; location?: string | null },
   ) => Promise<void>;
   onDelete: (scheduleId: string) => Promise<void>;
 }
 
 export function RideScheduleCard({
-  eventId,
+  eventId: _eventId,
   items,
   onAdd,
   onUpdate,
@@ -48,7 +48,11 @@ export function RideScheduleCard({
 
   const handleEdit = async (item: RideScheduleItem) => {
     if (!newTime || !newLabel) return;
-    await onUpdate(item.id, { scheduled_time: newTime, label: newLabel, location: newLocation || null });
+    await onUpdate(item.id, {
+      scheduled_time: newTime,
+      label: newLabel,
+      location: newLocation || null,
+    });
     setEditId(null);
     setNewTime("");
     setNewLabel("");
@@ -84,10 +88,7 @@ export function RideScheduleCard({
         ) : (
           <ul className="space-y-3">
             {items.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-start gap-3 rounded-lg border p-3"
-              >
+              <li key={item.id} className="flex items-start gap-3 rounded-lg border p-3">
                 <Clock className="size-4 shrink-0 text-muted-foreground mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{item.label}</p>
@@ -128,11 +129,7 @@ export function RideScheduleCard({
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Time</Label>
-              <Input
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-              />
+              <Input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Label</Label>
@@ -152,8 +149,12 @@ export function RideScheduleCard({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button onClick={handleAdd} disabled={!newTime || !newLabel}>Add</Button>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAdd} disabled={!newTime || !newLabel}>
+              Add
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -166,29 +167,21 @@ export function RideScheduleCard({
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Time</Label>
-              <Input
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-              />
+              <Input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Label</Label>
-              <Input
-                value={newLabel}
-                onChange={(e) => setNewLabel(e.target.value)}
-              />
+              <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Location (optional)</Label>
-              <Input
-                value={newLocation}
-                onChange={(e) => setNewLocation(e.target.value)}
-              />
+              <Input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditId(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditId(null)}>
+              Cancel
+            </Button>
             <Button
               onClick={() => {
                 const item = editId ? items.find((i) => i.id === editId) : null;

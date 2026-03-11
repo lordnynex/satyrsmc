@@ -53,14 +53,14 @@ export function EventDetailsCard({ event, budgetName, scenarioName }: EventDetai
           <div className="grid grid-cols-2 gap-4 text-sm">
             {event.ga_ticket_cost != null && (
               <div>
-                <span className="text-muted-foreground">GA Ticket:</span>{" "}
-                ${event.ga_ticket_cost.toLocaleString()}
+                <span className="text-muted-foreground">GA Ticket:</span> $
+                {event.ga_ticket_cost.toLocaleString()}
               </div>
             )}
             {event.day_pass_cost != null && (
               <div>
-                <span className="text-muted-foreground">Day Pass:</span>{" "}
-                ${event.day_pass_cost.toLocaleString()}
+                <span className="text-muted-foreground">Day Pass:</span> $
+                {event.day_pass_cost.toLocaleString()}
               </div>
             )}
           </div>
@@ -69,8 +69,7 @@ export function EventDetailsCard({ event, budgetName, scenarioName }: EventDetai
           <div className="grid grid-cols-2 gap-4 text-sm">
             {event.ga_tickets_sold != null && (
               <div>
-                <span className="text-muted-foreground">GA Sold:</span>{" "}
-                {event.ga_tickets_sold}
+                <span className="text-muted-foreground">GA Sold:</span> {event.ga_tickets_sold}
               </div>
             )}
             {event.day_passes_sold != null && (

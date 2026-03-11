@@ -59,12 +59,7 @@ export function RevenueChart({ metrics }: RevenueChartProps) {
       description="Gross revenue: total ticket income before costs. Higher attendance and ticket prices increase revenue."
       calculationNote="(Attendees × Ticket Price) + (Staff × Staff Price)"
     >
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <Chart options={options} series={series} type="bar" height={280} />
     </ChartCard>
   );
 }

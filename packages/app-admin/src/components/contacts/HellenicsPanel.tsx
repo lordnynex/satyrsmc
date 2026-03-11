@@ -18,7 +18,7 @@ import {
   unwrapSuspenseData,
 } from "@/queries/hooks";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
-import { BookOpen, Plus, Search, Download, List } from "lucide-react";
+import { Plus, Search, Download, List } from "lucide-react";
 import { AddContactDialog } from "./AddContactDialog";
 import { AddToMailingListDialog } from "./AddToMailingListDialog";
 import { ContactDirectoryTable } from "./ContactDirectoryTable";
@@ -40,7 +40,7 @@ export function HellenicsPanel() {
   const addAllHellenicsMutation = useMailingListAddAllHellenics();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [addToListOpen, setAddToListOpen] = useState(false);
   const [createListOpen, setCreateListOpen] = useState(false);
@@ -120,7 +120,8 @@ export function HellenicsPanel() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Hellenics</h1>
           <p className="mt-1 text-muted-foreground">
-            A directory of the club&apos;s Hellenics. Mark contacts as Hellenic in their profile to include them here.
+            A directory of the club&apos;s Hellenics. Mark contacts as Hellenic in their profile to
+            include them here.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -190,10 +191,20 @@ export function HellenicsPanel() {
                 Showing {(page - 1) * 25 + 1}–{Math.min(page * 25, total)} of {total}
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
                   Previous
                 </Button>
-                <Button variant="outline" size="sm" disabled={page * 25 >= total} onClick={() => setPage((p) => p + 1)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page * 25 >= total}
+                  onClick={() => setPage((p) => p + 1)}
+                >
                   Next
                 </Button>
               </div>
@@ -202,7 +213,12 @@ export function HellenicsPanel() {
         </CardContent>
       </Card>
 
-      <AddContactDialog open={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} defaultHellenic />
+      <AddContactDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSuccess={refresh}
+        defaultHellenic
+      />
       <AddToMailingListDialog
         open={addToListOpen}
         onOpenChange={setAddToListOpen}

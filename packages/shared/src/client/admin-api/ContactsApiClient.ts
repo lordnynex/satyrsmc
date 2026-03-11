@@ -23,7 +23,7 @@ export class ContactsApiClient {
 
   list(params?: ContactSearchParams): Promise<ContactSearchResult> {
     return this.client.admin.contacts.list.query(
-      params as Record<string, unknown> | undefined
+      params as Record<string, unknown> | undefined,
     ) as Promise<ContactSearchResult>;
   }
 
@@ -52,7 +52,7 @@ export class ContactsApiClient {
     updates: {
       tags?: (string | { id: string; name: string })[];
       status?: "active" | "inactive";
-    }
+    },
   ) {
     return fetchJson<Contact[]>(`/api/contacts/bulk-update`, {
       method: "POST",
@@ -63,7 +63,7 @@ export class ContactsApiClient {
   merge(
     sourceId: string,
     targetId: string,
-    conflictResolution?: Record<string, "source" | "target">
+    conflictResolution?: Record<string, "source" | "target">,
   ) {
     return fetchJson<Contact>(`/api/contacts/merge`, {
       method: "POST",
@@ -84,9 +84,7 @@ export class ContactsApiClient {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }));
-      throw new Error(
-        (err as { error?: string }).error ?? "PST import failed"
-      );
+      throw new Error((err as { error?: string }).error ?? "PST import failed");
     }
     return res.json() as Promise<{
       contacts: Array<{
@@ -97,9 +95,7 @@ export class ContactsApiClient {
     }>;
   }
 
-  importPstExecute(
-    toCreate: Array<Record<string, unknown> & { display_name: string }>
-  ) {
+  importPstExecute(toCreate: Array<Record<string, unknown> & { display_name: string }>) {
     return fetchJson<Contact[]>(`/api/contacts/import-pst-execute`, {
       method: "POST",
       body: JSON.stringify({ toCreate }),
@@ -108,9 +104,7 @@ export class ContactsApiClient {
 
   readonly tags = {
     list: () =>
-      this.client.admin.contacts.listTags.query() as Promise<
-        Array<{ id: string; name: string }>
-      >,
+      this.client.admin.contacts.listTags.query() as Promise<Array<{ id: string; name: string }>>,
     create: async (name: string) => {
       const res = await fetch("/api/contacts/tags", {
         method: "POST",
@@ -132,7 +126,7 @@ export class ContactsApiClient {
       options?: {
         type?: "profile" | "contact";
         set_as_profile?: boolean;
-      }
+      },
     ): Promise<ContactPhoto> => {
       const form = new FormData();
       form.append("file", file);
@@ -150,60 +144,41 @@ export class ContactsApiClient {
       return res.json();
     },
     delete: async (contactId: string, photoId: string): Promise<void> => {
-      const res = await fetch(
-        `/api/contacts/${contactId}/photos/${photoId}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`/api/contacts/${contactId}/photos/${photoId}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error((err as { error?: string }).error ?? "Delete failed");
       }
     },
-    setProfile: async (
-      contactId: string,
-      photoId: string
-    ): Promise<void> => {
-      const res = await fetch(
-        `/api/contacts/${contactId}/photos/${photoId}/set-profile`,
-        { method: "POST" }
-      );
+    setProfile: async (contactId: string, photoId: string): Promise<void> => {
+      const res = await fetch(`/api/contacts/${contactId}/photos/${photoId}/set-profile`, {
+        method: "POST",
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(
-          (err as { error?: string }).error ?? "Set profile failed"
-        );
+        throw new Error((err as { error?: string }).error ?? "Set profile failed");
       }
     },
   };
 
   readonly notes = {
     create: async (contactId: string, content: string) => {
-      return fetchJson<{ id: string; content: string }>(
-        `/api/contacts/${contactId}/notes`,
-        {
-          method: "POST",
-          body: JSON.stringify({ content }),
-        }
-      );
+      return fetchJson<{ id: string; content: string }>(`/api/contacts/${contactId}/notes`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
     },
-    update: async (
-      contactId: string,
-      noteId: string,
-      content: string
-    ) => {
+    update: async (contactId: string, noteId: string, content: string) => {
       return fetchJson<{ id: string; content: string }>(
         `/api/contacts/${contactId}/notes/${noteId}`,
         {
           method: "PUT",
           body: JSON.stringify({ content }),
-        }
+        },
       );
     },
     delete: async (contactId: string, noteId: string) => {
-      const res = await fetch(
-        `/api/contacts/${contactId}/notes/${noteId}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`/api/contacts/${contactId}/notes/${noteId}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error((err as { error?: string }).error ?? "Request failed");

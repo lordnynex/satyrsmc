@@ -18,12 +18,7 @@ export const Default: Story = {
   render: function EditableNumberInputStory() {
     const [value, setValue] = useState(42);
     return (
-      <EditableNumberInput
-        value={value}
-        onChange={setValue}
-        label="Quantity"
-        className="w-32"
-      />
+      <EditableNumberInput value={value} onChange={setValue} label="Quantity" className="w-32" />
     );
   },
 };

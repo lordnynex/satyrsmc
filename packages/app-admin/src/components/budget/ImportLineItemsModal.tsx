@@ -36,7 +36,7 @@ export function ImportLineItemsModal({
   onImport,
 }: ImportLineItemsModalProps) {
   const [sourceBudgetId, setSourceBudgetId] = useState<string>("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [importing, setImporting] = useState(false);
 
   const { data: sourceBudget, isLoading: loading } = useBudgetOptional(sourceBudgetId, {
@@ -77,7 +77,7 @@ export function ImportLineItemsModal({
   const handleImport = async () => {
     const toImport = sourceLineItems
       .filter((li) => selectedIds.has(li.id))
-      .map(({ id, ...rest }) => rest);
+      .map(({ id: _id, ...rest }) => rest);
     if (toImport.length === 0) return;
     setImporting(true);
     try {
@@ -127,23 +127,14 @@ export function ImportLineItemsModal({
               <div className="flex items-center justify-between p-3 border-b bg-muted/30">
                 <Label className="text-base font-medium">Line Items</Label>
                 {sourceLineItems.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleAll}
-                    className="text-sm"
-                  >
-                    {selectedIds.size === sourceLineItems.length
-                      ? "Deselect all"
-                      : "Select all"}
+                  <Button variant="ghost" size="sm" onClick={toggleAll} className="text-sm">
+                    {selectedIds.size === sourceLineItems.length ? "Deselect all" : "Select all"}
                   </Button>
                 )}
               </div>
               <div className="flex-1 overflow-y-auto p-2 max-h-[280px]">
                 {loading ? (
-                  <p className="py-8 text-center text-muted-foreground">
-                    Loading line items...
-                  </p>
+                  <p className="py-8 text-center text-muted-foreground">Loading line items...</p>
                 ) : sourceLineItems.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
                     This budget has no line items.
@@ -159,7 +150,7 @@ export function ImportLineItemsModal({
                           onClick={() => toggleItem(item.id)}
                           className={cn(
                             "flex items-center gap-3 rounded-md px-3 py-2 cursor-pointer transition-colors hover:bg-muted/50",
-                            isSelected && "bg-primary/10"
+                            isSelected && "bg-primary/10",
                           )}
                         >
                           <div
@@ -167,16 +158,14 @@ export function ImportLineItemsModal({
                               "flex h-5 w-5 shrink-0 items-center justify-center rounded border",
                               isSelected
                                 ? "bg-primary border-primary text-primary-foreground"
-                                : "border-input"
+                                : "border-input",
                             )}
                           >
                             {isSelected && <Check className="size-3.5" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <span className="font-medium">{item.name}</span>
-                            <span className="text-muted-foreground ml-2">
-                              ({item.category})
-                            </span>
+                            <span className="text-muted-foreground ml-2">({item.category})</span>
                           </div>
                           <span className="text-sm tabular-nums shrink-0">
                             ${total.toLocaleString("en-US", { minimumFractionDigits: 2 })}
@@ -194,11 +183,10 @@ export function ImportLineItemsModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleImport}
-            disabled={selectedCount === 0 || importing}
-          >
-            {importing ? "Importing..." : `Import ${selectedCount} item${selectedCount !== 1 ? "s" : ""}`}
+          <Button onClick={handleImport} disabled={selectedCount === 0 || importing}>
+            {importing
+              ? "Importing..."
+              : `Import ${selectedCount} item${selectedCount !== 1 ? "s" : ""}`}
           </Button>
         </DialogFooter>
       </DialogContent>

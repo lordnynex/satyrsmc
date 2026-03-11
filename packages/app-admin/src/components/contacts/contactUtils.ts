@@ -28,15 +28,7 @@ function escapeCsvValue(val: string): string {
 
 /** Export contacts as CSV with common fields */
 export function downloadContactsCsv(contacts: Contact[]): void {
-  const headers = [
-    "Name",
-    "Organization",
-    "Email",
-    "Phone",
-    "Address",
-    "Tags",
-    "Status",
-  ];
+  const headers = ["Name", "Organization", "Email", "Phone", "Address", "Tags", "Status"];
   const rows = contacts.map((c) => {
     const primaryEmail = c.emails?.find((e) => e.is_primary) ?? c.emails?.[0];
     const primaryPhone = c.phones?.find((p) => p.is_primary) ?? c.phones?.[0];
@@ -52,7 +44,9 @@ export function downloadContactsCsv(contacts: Contact[]): void {
       addressStr,
       tagsStr,
       c.status,
-    ].map(String).map(escapeCsvValue);
+    ]
+      .map(String)
+      .map(escapeCsvValue);
   });
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -83,9 +77,7 @@ export function downloadContactsPdf(contacts: Contact[]): void {
   let rowY = margin;
   let maxY = margin;
 
-  const sortedContacts = [...contacts].sort((a, b) =>
-    a.display_name.localeCompare(b.display_name)
-  );
+  const sortedContacts = [...contacts].sort((a, b) => a.display_name.localeCompare(b.display_name));
 
   for (const c of sortedContacts) {
     if (col === 0 && rowY + 60 > pageHeight - margin) {

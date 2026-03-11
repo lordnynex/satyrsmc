@@ -41,38 +41,41 @@ const sampleContent = JSON.stringify({
       content: [
         {
           type: "listItem",
-          content: [
-            { type: "paragraph", content: [{ type: "text", text: "Budget review" }] },
-          ],
+          content: [{ type: "paragraph", content: [{ type: "text", text: "Budget review" }] }],
         },
         {
           type: "listItem",
-          content: [
-            { type: "paragraph", content: [{ type: "text", text: "New initiatives" }] },
-          ],
+          content: [{ type: "paragraph", content: [{ type: "text", text: "New initiatives" }] }],
         },
         {
           type: "listItem",
-          content: [
-            { type: "paragraph", content: [{ type: "text", text: "Open discussion" }] },
-          ],
+          content: [{ type: "paragraph", content: [{ type: "text", text: "Open discussion" }] }],
         },
       ],
     },
   ],
 });
 
-function ControlledEditor(props: Omit<React.ComponentProps<typeof RichDocumentEditor>, "value" | "onChange">) {
+function ControlledEditor(
+  props: Omit<React.ComponentProps<typeof RichDocumentEditor>, "value" | "onChange">,
+) {
   const [value, setValue] = useState("");
   return <RichDocumentEditor value={value} onChange={setValue} {...props} />;
 }
 
-function EditorWithContent(props: Omit<React.ComponentProps<typeof RichDocumentEditor>, "value" | "onChange">) {
+function EditorWithContent(
+  props: Omit<React.ComponentProps<typeof RichDocumentEditor>, "value" | "onChange">,
+) {
   const [value, setValue] = useState(sampleContent);
   return <RichDocumentEditor value={value} onChange={setValue} {...props} />;
 }
 
-function EditorWithToolbarActions(props: Omit<React.ComponentProps<typeof RichDocumentEditor>, "value" | "onChange" | "toolbarActions">) {
+function EditorWithToolbarActions(
+  props: Omit<
+    React.ComponentProps<typeof RichDocumentEditor>,
+    "value" | "onChange" | "toolbarActions"
+  >,
+) {
   const [value, setValue] = useState(sampleContent);
   return (
     <RichDocumentEditor

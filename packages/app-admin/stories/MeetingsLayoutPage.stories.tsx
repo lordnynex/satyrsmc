@@ -31,7 +31,9 @@ export const LayoutOnly: Story = {
                 element={
                   <div className="rounded-lg border border-dashed bg-muted/30 p-8 text-center text-muted-foreground">
                     <p className="text-sm">Meetings list would load here (requires API).</p>
-                    <p className="mt-2 text-xs">Sidebar shows Meetings sub-navigation (Bylaws, Old Business, etc.).</p>
+                    <p className="mt-2 text-xs">
+                      Sidebar shows Meetings sub-navigation (Bylaws, Old Business, etc.).
+                    </p>
                   </div>
                 }
               />

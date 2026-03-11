@@ -125,7 +125,12 @@ export async function createSitePage(
 
 export async function createBlogPost(
   api: Api,
-  overrides: { slug?: string; title?: string; published_at?: string | null; [key: string]: unknown } = {},
+  overrides: {
+    slug?: string;
+    title?: string;
+    published_at?: string | null;
+    [key: string]: unknown;
+  } = {},
 ) {
   const slug = (overrides.slug as string) ?? unique("post").toLowerCase().replace(/\s/g, "-");
   const title = (overrides.title as string) ?? unique("Post");

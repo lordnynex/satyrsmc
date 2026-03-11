@@ -17,7 +17,7 @@ export interface LabelLayout {
 /** Avery 5160: 3×10, 1" × 2.625" labels, 0.5" margins, 1/8" gap between columns */
 export const AVERY_5160: LabelLayout = {
   id: "avery5160",
-  name: "Avery 5160 (1\" × 2⅝\", 30/sheet)",
+  name: 'Avery 5160 (1" × 2⅝", 30/sheet)',
   cols: 3,
   rows: 10,
   labelWidth: 189, // 2.625" in points
@@ -31,7 +31,7 @@ export const AVERY_5160: LabelLayout = {
 /** Avery 5161: 2×10, 1" × 4" labels */
 export const AVERY_5161: LabelLayout = {
   id: "avery5161",
-  name: "Avery 5161 (1\" × 4\", 20/sheet)",
+  name: 'Avery 5161 (1" × 4", 20/sheet)',
   cols: 2,
   rows: 10,
   labelWidth: 288, // 4"
@@ -45,7 +45,7 @@ export const AVERY_5161: LabelLayout = {
 /** Avery 5162: 2×7, 1⅓" × 4" labels */
 export const AVERY_5162: LabelLayout = {
   id: "avery5162",
-  name: "Avery 5162 (1⅓\" × 4\", 14/sheet)",
+  name: 'Avery 5162 (1⅓" × 4", 14/sheet)',
   cols: 2,
   rows: 7,
   labelWidth: 288, // 4"
@@ -59,7 +59,7 @@ export const AVERY_5162: LabelLayout = {
 /** Avery 5163: 2×5, 2" × 4" labels */
 export const AVERY_5163: LabelLayout = {
   id: "avery5163",
-  name: "Avery 5163 (2\" × 4\", 10/sheet)",
+  name: 'Avery 5163 (2" × 4", 10/sheet)',
   cols: 2,
   rows: 5,
   labelWidth: 288, // 4"
@@ -73,7 +73,7 @@ export const AVERY_5163: LabelLayout = {
 /** Avery 5164: 2×3, 3⅓" × 4" labels */
 export const AVERY_5164: LabelLayout = {
   id: "avery5164",
-  name: "Avery 5164 (3⅓\" × 4\", 6/sheet)",
+  name: 'Avery 5164 (3⅓" × 4", 6/sheet)',
   cols: 2,
   rows: 3,
   labelWidth: 288, // 4"
@@ -113,7 +113,7 @@ export interface PdfLabelOptions {
 
 export function generatePdfLabels(
   recipients: LabelRecipient[],
-  options: PdfLabelOptions = {}
+  options: PdfLabelOptions = {},
 ): Blob {
   const opts = {
     fontSize: 10,
@@ -121,10 +121,7 @@ export function generatePdfLabels(
     ...options,
   };
 
-  const layout =
-    opts.layout ??
-    AVERY_LAYOUTS.find((l) => l.id === opts.template) ??
-    AVERY_5160;
+  const layout = opts.layout ?? AVERY_LAYOUTS.find((l) => l.id === opts.template) ?? AVERY_5160;
 
   const { cols, rows, labelWidth, labelHeight, marginLeft, marginTop, gapX, gapY } = layout;
   const labelsPerPage = cols * rows;
@@ -167,7 +164,9 @@ export function generatePdfLabels(
       lineY += lineHeight;
     }
 
-    const cityStateZip = [recipient.city, recipient.state, recipient.postalCode].filter(Boolean).join(", ");
+    const cityStateZip = [recipient.city, recipient.state, recipient.postalCode]
+      .filter(Boolean)
+      .join(", ");
     if (cityStateZip) {
       doc.text(cityStateZip, x, lineY);
       lineY += lineHeight;

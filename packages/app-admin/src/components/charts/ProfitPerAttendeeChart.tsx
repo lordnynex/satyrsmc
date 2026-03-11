@@ -60,12 +60,7 @@ export function ProfitPerAttendeeChart({ metrics }: ProfitPerAttendeeChartProps)
       description="How much profit each attendee generates. Higher values mean more efficient revenue per person."
       calculationNote="Net Revenue ÷ Attendees"
     >
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <Chart options={options} series={series} type="bar" height={280} />
     </ChartCard>
   );
 }

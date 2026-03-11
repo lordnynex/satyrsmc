@@ -29,7 +29,8 @@ export function WebsiteEventsFeedPanel() {
         <CardContent>
           <p className="text-muted-foreground mb-4">
             Toggle which events appear on the public site. Events with &quot;Show on website&quot;
-            on will be included in the public feed at <code className="text-xs bg-muted px-1 rounded">/api/website/events</code>.
+            on will be included in the public feed at{" "}
+            <code className="text-xs bg-muted px-1 rounded">/api/website/events</code>.
           </p>
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
@@ -46,7 +47,9 @@ export function WebsiteEventsFeedPanel() {
                       <span className="ml-2 text-muted-foreground text-sm">{event.year}</span>
                     )}
                     {event.event_type && event.event_type !== "badger" && (
-                      <span className="ml-2 text-muted-foreground text-sm">({event.event_type})</span>
+                      <span className="ml-2 text-muted-foreground text-sm">
+                        ({event.event_type})
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -73,10 +76,14 @@ export function WebsiteEventsFeedPanel() {
           )}
           {feedEvents.length > 0 && (
             <div className="mt-6 rounded-md border bg-muted/30 p-3">
-              <p className="text-sm font-medium mb-2">Public feed preview ({feedEvents.length} events)</p>
+              <p className="text-sm font-medium mb-2">
+                Public feed preview ({feedEvents.length} events)
+              </p>
               <ul className="text-sm text-muted-foreground list-disc list-inside">
-                {(feedEvents as { name: string; year?: number }[]).slice(0, 5).map((e, i) => (
-                  <li key={i}>{e.name} {e.year != null ? `(${e.year})` : ""}</li>
+                {(feedEvents as { name: string; year?: number }[]).slice(0, 5).map((e) => (
+                  <li key={`${e.name}-${e.year ?? "no-year"}`}>
+                    {e.name} {e.year != null ? `(${e.year})` : ""}
+                  </li>
                 ))}
                 {feedEvents.length > 5 && <li>…and {feedEvents.length - 5} more</li>}
               </ul>

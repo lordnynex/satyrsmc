@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MailingList, ListPreview } from "@satyrsmc/shared/client";
+import type { MailingList } from "@satyrsmc/shared/client";
 import {
   useCreateMailingList,
   useDeleteMailingList,
@@ -28,11 +28,33 @@ import {
   useInvalidateQueries,
 } from "@/queries/hooks";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
-import { ArrowLeft, Plus, Pencil, Trash2, Download, Printer, Users, MapPin, Copy, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Pencil,
+  Trash2,
+  Download,
+  Printer,
+  Users,
+  MapPin,
+  Copy,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+} from "lucide-react";
 import { AddContactToMailingListDialog } from "./AddContactToMailingListDialog";
 import { ContactDirectoryTable } from "./ContactDirectoryTable";
 import { CreateMailLabelsDialog } from "./CreateMailLabelsDialog";
-import { useMailingListsSuspense, useEventsSuspense, useMailingListSuspense, useMailingListPreview, useMailingListStats, useMailingListIncluded, useInvalidateQueries, unwrapSuspenseData } from "@/queries/hooks";
+import {
+  useMailingListsSuspense,
+  useEventsSuspense,
+  useMailingListSuspense,
+  useMailingListPreview,
+  useMailingListStats,
+  useMailingListIncluded,
+  useInvalidateQueries,
+  unwrapSuspenseData,
+} from "@/queries/hooks";
 import { PageLoading } from "@/components/layout/PageLoading";
 
 export function MailingListsPanel() {
@@ -62,7 +84,7 @@ export function MailingListsPanel() {
       description: newDescription.trim() || undefined,
       list_type: newListType,
       delivery_type: newDeliveryType,
-      event_id: (newEventId && newEventId !== "__none__") ? newEventId : null,
+      event_id: newEventId && newEventId !== "__none__" ? newEventId : null,
     });
     setNewName("");
     setNewDescription("");
@@ -127,7 +149,14 @@ export function MailingListsPanel() {
                       )}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/contacts/lists/${l.id}`); }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/contacts/lists/${l.id}`);
+                    }}
+                  >
                     Open
                   </Button>
                 </div>
@@ -141,7 +170,12 @@ export function MailingListsPanel() {
         open={createOpen}
         onOpenChange={(open) => {
           setCreateOpen(open);
-          if (!open) setSearchParams((p) => { const n = new URLSearchParams(p); n.delete("create"); return n; });
+          if (!open)
+            setSearchParams((p) => {
+              const n = new URLSearchParams(p);
+              n.delete("create");
+              return n;
+            });
         }}
       >
         <DialogContent>
@@ -151,15 +185,26 @@ export function MailingListsPanel() {
           <div className="space-y-4">
             <div>
               <Label>Name</Label>
-              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Badger South 2026 Invitations" />
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Badger South 2026 Invitations"
+              />
             </div>
             <div>
               <Label>Description</Label>
-              <Input value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Optional" />
+              <Input
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div>
               <Label>Delivery type</Label>
-              <Select value={newDeliveryType} onValueChange={(v) => setNewDeliveryType(v as MailingList["delivery_type"])}>
+              <Select
+                value={newDeliveryType}
+                onValueChange={(v) => setNewDeliveryType(v as MailingList["delivery_type"])}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -172,7 +217,10 @@ export function MailingListsPanel() {
             </div>
             <div>
               <Label>List type</Label>
-              <Select value={newListType} onValueChange={(v) => setNewListType(v as MailingList["list_type"])}>
+              <Select
+                value={newListType}
+                onValueChange={(v) => setNewListType(v as MailingList["list_type"])}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -185,7 +233,10 @@ export function MailingListsPanel() {
             </div>
             <div>
               <Label>Event (optional)</Label>
-              <Select value={newEventId || "__none__"} onValueChange={(v) => setNewEventId(v === "__none__" ? "" : v)}>
+              <Select
+                value={newEventId || "__none__"}
+                onValueChange={(v) => setNewEventId(v === "__none__" ? "" : v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
@@ -305,21 +356,41 @@ function MailingListDetail({
             <Users className="size-4" />
             Add Contacts
           </Button>
-          <Button variant="outline" onClick={handleExportVCard} disabled={!preview || preview.totalIncluded === 0}>
+          <Button
+            variant="outline"
+            onClick={handleExportVCard}
+            disabled={!preview || preview.totalIncluded === 0}
+          >
             <Download className="size-4" />
             Export vCard
           </Button>
-          {((selectedList.delivery_type ?? "both") === "physical" || (selectedList.delivery_type ?? "both") === "both") && (
-            <Button onClick={() => setLabelsDialogOpen(true)} disabled={!preview || preview.totalIncluded === 0}>
+          {((selectedList.delivery_type ?? "both") === "physical" ||
+            (selectedList.delivery_type ?? "both") === "both") && (
+            <Button
+              onClick={() => setLabelsDialogOpen(true)}
+              disabled={!preview || preview.totalIncluded === 0}
+            >
               <Printer className="size-4" />
               Create Mail Labels
             </Button>
           )}
-          <Button variant="outline" onClick={() => { setEditName(selectedList.name); setEditDescription(selectedList.description ?? ""); setEditDeliveryType(selectedList.delivery_type ?? "both"); setEditOpen(true); }}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setEditName(selectedList.name);
+              setEditDescription(selectedList.description ?? "");
+              setEditDeliveryType(selectedList.delivery_type ?? "both");
+              setEditOpen(true);
+            }}
+          >
             <Pencil className="size-4" />
             Edit
           </Button>
-          <Button variant="outline" onClick={handleDeleteList} className="text-destructive hover:text-destructive">
+          <Button
+            variant="outline"
+            onClick={handleDeleteList}
+            className="text-destructive hover:text-destructive"
+          >
             <Trash2 className="size-4" />
             Delete
           </Button>
@@ -350,11 +421,11 @@ function MailingListDetail({
               <div className="mt-2 rounded-lg border p-3">
                 <p className="text-sm font-medium">Excluded ({preview.excluded.length})</p>
                 <ul className="mt-1 max-h-48 overflow-y-auto space-y-1 text-sm text-muted-foreground">
-                  {preview.excluded.map((e, i) => {
+                  {preview.excluded.map((e) => {
                     const canRemoveFromList = e.canRemoveFromList === true;
                     const canReinstate = e.removable === true;
                     return (
-                      <li key={`${e.contact.id}-${i}`} className="flex items-center justify-between gap-2">
+                      <li key={e.contact.id} className="flex items-center justify-between gap-2">
                         <span>
                           {e.contact.display_name} – {e.reason}
                         </span>
@@ -420,7 +491,8 @@ function MailingListDetail({
         <CardContent className="space-y-6">
           {stats && (
             <>
-              {((selectedList.delivery_type ?? "both") === "physical" || (selectedList.delivery_type ?? "both") === "both") &&
+              {((selectedList.delivery_type ?? "both") === "physical" ||
+                (selectedList.delivery_type ?? "both") === "both") &&
                 stats.geographic &&
                 (stats.geographic.byState.length > 0 || stats.geographic.byCountry.length > 0) && (
                   <div>
@@ -444,7 +516,9 @@ function MailingListDetail({
                       )}
                       {stats.geographic.byCountry.length > 0 && (
                         <div className="rounded-lg border p-3">
-                          <p className="text-sm font-medium text-muted-foreground mb-2">By country</p>
+                          <p className="text-sm font-medium text-muted-foreground mb-2">
+                            By country
+                          </p>
                           <ul className="space-y-1 text-sm max-h-40 overflow-y-auto">
                             {stats.geographic.byCountry.map(({ country, count }) => (
                               <li key={country} className="flex justify-between">
@@ -464,14 +538,18 @@ function MailingListDetail({
                   Duplicate addresses
                 </h4>
                 <p className="text-sm text-muted-foreground mb-2">
-                  {stats.duplicateAddresses.totalDuplicateContacts} contacts share an address with others across{" "}
-                  {stats.duplicateAddresses.uniqueAddressesWithDuplicates} unique addresses.
+                  {stats.duplicateAddresses.totalDuplicateContacts} contacts share an address with
+                  others across {stats.duplicateAddresses.uniqueAddressesWithDuplicates} unique
+                  addresses.
                 </p>
                 {stats.duplicateAddresses.groups.length > 0 && (
                   <div className="rounded-lg border p-3 max-h-48 overflow-y-auto space-y-3">
-                    {stats.duplicateAddresses.groups.map((group, i) => (
-                      <div key={i} className="text-sm">
-                        <p className="font-medium text-muted-foreground truncate" title={group.address}>
+                    {stats.duplicateAddresses.groups.map((group) => (
+                      <div key={group.address} className="text-sm">
+                        <p
+                          className="font-medium text-muted-foreground truncate"
+                          title={group.address}
+                        >
                           {group.address}
                         </p>
                         <ul className="mt-1 space-y-0.5 pl-2">
@@ -492,14 +570,14 @@ function MailingListDetail({
                   </div>
                 )}
                 {stats.duplicateAddresses.groups.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No duplicate addresses in this list.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No duplicate addresses in this list.
+                  </p>
                 )}
               </div>
             </>
           )}
-          {!stats && (
-            <p className="text-sm text-muted-foreground">Loading stats…</p>
-          )}
+          {!stats && <p className="text-sm text-muted-foreground">Loading stats…</p>}
         </CardContent>
       </Card>
 
@@ -566,7 +644,8 @@ function MailingListDetail({
                     <div className="flex items-center justify-between pt-4 mt-4 border-t">
                       <p className="text-sm text-muted-foreground">
                         Showing {(membersPage - 1) * membersLimit + 1}–
-                        {Math.min(membersPage * membersLimit, includedPage.total)} of {includedPage.total}
+                        {Math.min(membersPage * membersLimit, includedPage.total)} of{" "}
+                        {includedPage.total}
                       </p>
                       <div className="flex gap-2">
                         <Button
@@ -629,7 +708,10 @@ function MailingListDetail({
             </div>
             <div>
               <Label>Delivery type</Label>
-              <Select value={editDeliveryType} onValueChange={(v) => setEditDeliveryType(v as MailingList["delivery_type"])}>
+              <Select
+                value={editDeliveryType}
+                onValueChange={(v) => setEditDeliveryType(v as MailingList["delivery_type"])}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -642,7 +724,9 @@ function MailingListDetail({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleSaveEdit}>Save</Button>
           </DialogFooter>
         </DialogContent>

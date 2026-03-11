@@ -31,7 +31,10 @@ export class SiteMenusService {
     return byKey;
   }
 
-  async updateMenu(key: string, items: MenuItemUpdateInput[]): Promise<WebsiteAdminUpdateMenuOutput> {
+  async updateMenu(
+    key: string,
+    items: MenuItemUpdateInput[],
+  ): Promise<WebsiteAdminUpdateMenuOutput> {
     const repo = this.ds.getRepository(SiteMenuItem);
     const existing = await repo.find({ where: { menuKey: key }, order: { sortOrder: "ASC" } });
     for (const e of existing) {

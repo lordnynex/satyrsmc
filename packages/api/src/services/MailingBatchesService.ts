@@ -4,7 +4,10 @@ import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
 import type { MailingList } from "@satyrsmc/shared/dto/admin/mailingList";
 import type { MailingBatch, MailingBatchRecipient } from "@satyrsmc/shared/dto/admin/mailingBatch";
 import type { MailingListsService } from "./MailingListsService";
-import { MailingBatch as MailingBatchEntity, MailingBatchRecipient as MailingBatchRecipientEntity } from "../entities";
+import {
+  MailingBatch as MailingBatchEntity,
+  MailingBatchRecipient as MailingBatchRecipientEntity,
+} from "../entities";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
 
@@ -12,7 +15,7 @@ export class MailingBatchesService {
   constructor(
     private db: DbLike,
     private ds: DataSource,
-    private mailingListsService: MailingListsService
+    private mailingListsService: MailingListsService,
   ) {}
 
   async create(listId: string, name: string): Promise<MailingBatch | null> {
@@ -25,7 +28,7 @@ export class MailingBatchesService {
 
     await this.db.run(
       "INSERT INTO mailing_batches (id, list_id, event_id, name, recipient_count) VALUES (?, ?, ?, ?, ?)",
-      [id, listId, eventId, name, preview.totalIncluded]
+      [id, listId, eventId, name, preview.totalIncluded],
     );
 
     const primaryAddress = (c: Contact) => {
@@ -52,7 +55,7 @@ export class MailingBatchesService {
           addr?.postal_code ?? null,
           addr?.country ?? null,
           contact.organization_name ?? null,
-        ]
+        ],
       );
     }
 
@@ -136,22 +139,22 @@ export class MailingBatchesService {
     batchId: string,
     recipientId: string,
     status: MailingBatchRecipient["status"],
-    reason?: string
+    reason?: string,
   ) {
     if (status === "returned") {
       await this.db.run(
         "UPDATE mailing_batch_recipients SET status = ?, returned_reason = ? WHERE id = ? AND batch_id = ?",
-        [status, reason ?? null, recipientId, batchId]
+        [status, reason ?? null, recipientId, batchId],
       );
     } else if (status === "invalid") {
       await this.db.run(
         "UPDATE mailing_batch_recipients SET status = ?, invalid_reason = ? WHERE id = ? AND batch_id = ?",
-        [status, reason ?? null, recipientId, batchId]
+        [status, reason ?? null, recipientId, batchId],
       );
     } else {
       await this.db.run(
         "UPDATE mailing_batch_recipients SET status = ? WHERE id = ? AND batch_id = ?",
-        [status, recipientId, batchId]
+        [status, recipientId, batchId],
       );
     }
     return { ok: true };

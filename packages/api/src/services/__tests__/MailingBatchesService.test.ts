@@ -6,12 +6,12 @@ import { BAD_ID, createContact, createMailingList } from "./helpers";
 
 describe("MailingBatchesService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("create", () => {
@@ -33,7 +33,15 @@ describe("MailingBatchesService", () => {
     test("returns batch with recipients", async () => {
       const contact = await createContact(api, {
         display_name: "Batch Contact",
-        addresses: [{ address_line1: "1 St", city: "City", country: "US", type: "home", is_primary_mailing: true }],
+        addresses: [
+          {
+            address_line1: "1 St",
+            city: "City",
+            country: "US",
+            type: "home",
+            is_primary_mailing: true,
+          },
+        ],
       });
       const list = await createMailingList(api, { name: "Get Batch List" });
       await api.mailingLists.addMember(list.id, contact.id);
@@ -64,7 +72,15 @@ describe("MailingBatchesService", () => {
     test("updates recipient status", async () => {
       const contact = await createContact(api, {
         display_name: "Status Contact",
-        addresses: [{ address_line1: "2 St", city: "Town", country: "US", type: "home", is_primary_mailing: true }],
+        addresses: [
+          {
+            address_line1: "2 St",
+            city: "Town",
+            country: "US",
+            type: "home",
+            is_primary_mailing: true,
+          },
+        ],
       });
       const list = await createMailingList(api, { name: "Status List" });
       await api.mailingLists.addMember(list.id, contact.id);

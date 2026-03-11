@@ -6,12 +6,12 @@ import { BAD_ID, MINIMAL_JPEG_BUFFER, createContact } from "./helpers";
 
 describe("ContactsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("create", () => {
@@ -51,7 +51,9 @@ describe("ContactsService", () => {
       const contact = await createContact(api, { display_name: "Searchable Alice Smith" });
       const result = await api.contacts.list({ q: "alice" });
       expect(result.contacts.some((c) => c.id === contact.id)).toBe(true);
-      expect(result.contacts.find((c) => c.id === contact.id)?.display_name).toBe("Searchable Alice Smith");
+      expect(result.contacts.find((c) => c.id === contact.id)?.display_name).toBe(
+        "Searchable Alice Smith",
+      );
     });
 
     test("pagination: page and limit", async () => {
@@ -93,14 +95,25 @@ describe("ContactsService", () => {
     test("hasPostalAddress filter when contact has address", async () => {
       const contact = await createContact(api, {
         display_name: "With Address",
-        addresses: [{ address_line1: "123 Main St", city: "City", country: "US", type: "home", is_primary_mailing: true }],
+        addresses: [
+          {
+            address_line1: "123 Main St",
+            city: "City",
+            country: "US",
+            type: "home",
+            is_primary_mailing: true,
+          },
+        ],
       });
       const result = await api.contacts.list({ hasPostalAddress: true });
       expect(result.contacts.some((c) => c.id === contact.id)).toBe(true);
     });
 
     test("hellenic filter", async () => {
-      const contact = await createContact(api, { display_name: "Hellenic Contact", hellenic: true });
+      const contact = await createContact(api, {
+        display_name: "Hellenic Contact",
+        hellenic: true,
+      });
       const result = await api.contacts.list({ hellenic: true });
       expect(result.contacts.some((c) => c.id === contact.id)).toBe(true);
     });
@@ -127,7 +140,15 @@ describe("ContactsService", () => {
         display_name: "Full Contact",
         emails: [{ email: "e@example.com", type: "work", is_primary: true }],
         phones: [{ phone: "555-1234", type: "cell", is_primary: true }],
-        addresses: [{ address_line1: "1 St", city: "Town", country: "US", type: "home", is_primary_mailing: true }],
+        addresses: [
+          {
+            address_line1: "1 St",
+            city: "Town",
+            country: "US",
+            type: "home",
+            is_primary_mailing: true,
+          },
+        ],
         emergency_contacts: [{ name: "Emergency", phone: "555-9999" }],
       });
       const contact = await api.contacts.get(created.id);
@@ -147,7 +168,10 @@ describe("ContactsService", () => {
   describe("update", () => {
     test("partial update", async () => {
       const created = await createContact(api, { display_name: "To Update", first_name: "Old" });
-      const updated = await api.contacts.update(created.id, { first_name: "New", last_name: "Name" });
+      const updated = await api.contacts.update(created.id, {
+        first_name: "New",
+        last_name: "Name",
+      });
       expect(updated).not.toBeNull();
       expect(updated!.first_name).toBe("New");
       expect(updated!.last_name).toBe("Name");
@@ -250,7 +274,12 @@ describe("ContactsService", () => {
   });
 
   describe("photos", () => {
-    type AddPhotoResult = { id: string; contact_id: string; photo_url: string; photo_thumbnail_url: string };
+    type AddPhotoResult = {
+      id: string;
+      contact_id: string;
+      photo_url: string;
+      photo_thumbnail_url: string;
+    };
 
     test("addPhoto returns photo with urls", async () => {
       const contact = await createContact(api, { display_name: "Photo Contact" });

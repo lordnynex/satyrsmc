@@ -16,5 +16,5 @@ createRoot(elem).render(
         <App />
       </ThemeProvider>
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );

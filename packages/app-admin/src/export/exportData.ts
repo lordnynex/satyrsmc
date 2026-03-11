@@ -19,8 +19,18 @@ export interface ExportSummary {
   breakEvenTicketsRange: { min: number; max: number } | null;
   breakEvenPercent: number | null;
   breakEvenTicketContext: string | null;
-  mostAccessible: { ticketPrice: number; staffPrice: number; attendancePercent: number; profit: number } | null;
-  bestScenario: { profit: number; ticketPrice: number; staffPrice: number; attendancePercent: number } | null;
+  mostAccessible: {
+    ticketPrice: number;
+    staffPrice: number;
+    attendancePercent: number;
+    profit: number;
+  } | null;
+  bestScenario: {
+    profit: number;
+    ticketPrice: number;
+    staffPrice: number;
+    attendancePercent: number;
+  } | null;
   worstProfitable: { profit: number } | null;
   revenueMix: { attendee: number; staff: number; dayPass: number } | null;
   gaTicketsAvailable: number;
@@ -47,12 +57,9 @@ export interface ExportScenarioMatrix {
 export function computeExportSummary(
   inputs: Inputs,
   lineItems: LineItem[],
-  metrics: ScenarioMetrics[]
+  metrics: ScenarioMetrics[],
 ): ExportSummary {
-  const totalCosts = lineItems.reduce(
-    (sum, li) => sum + li.unitCost * li.quantity,
-    0
-  );
+  const totalCosts = lineItems.reduce((sum, li) => sum + li.unitCost * li.quantity, 0);
   const totalWithProfitTarget = totalCosts + inputs.profitTarget;
   const maxOccupancy = inputs.maxOccupancy;
   const staffCount = inputs.staffCount;
@@ -63,11 +70,8 @@ export function computeExportSummary(
   }));
 
   const profitableScenarios = metrics.filter((m) => m.profit >= 0);
-  const meetingTargetScenarios = metrics.filter(
-    (m) => m.profitVsBreakEven >= 0
-  );
-  const minStaffPrice =
-    metrics.length > 0 ? Math.min(...metrics.map((m) => m.staffPrice)) : 0;
+  const meetingTargetScenarios = metrics.filter((m) => m.profitVsBreakEven >= 0);
+  const minStaffPrice = metrics.length > 0 ? Math.min(...metrics.map((m) => m.staffPrice)) : 0;
   const atLowestStaff = (m: ScenarioMetrics) => m.staffPrice === minStaffPrice;
 
   const lowestBreakEven =
@@ -109,7 +113,7 @@ export function computeExportSummary(
       m.breakEvenTotalAttendees != null &&
       m.breakEvenAttendancePercent != null &&
       m.breakEvenAttendancePercent >= 0 &&
-      m.breakEvenAttendancePercent <= 100
+      m.breakEvenAttendancePercent <= 100,
   );
   const breakEvenTicketCounts = breakEvenFiltered.map((m) => m.breakEvenTotalAttendees!);
   const breakEvenTicketsMin =
@@ -137,9 +141,7 @@ export function computeExportSummary(
   }
 
   const bestScenario =
-    metrics.length > 0
-      ? metrics.reduce((a, b) => (b.profit > a.profit ? b : a))
-      : null;
+    metrics.length > 0 ? metrics.reduce((a, b) => (b.profit > a.profit ? b : a)) : null;
   const worstProfitable =
     profitableScenarios.length > 0
       ? profitableScenarios.reduce((a, b) => (b.profit < a.profit ? b : a))
@@ -189,9 +191,7 @@ export function computeExportSummary(
           attendancePercent: bestScenario.attendancePercent,
         }
       : null,
-    worstProfitable: worstProfitable
-      ? { profit: worstProfitable.profit }
-      : null,
+    worstProfitable: worstProfitable ? { profit: worstProfitable.profit } : null,
     revenueMix,
     gaTicketsAvailable,
     maxOccupancy,
@@ -202,7 +202,7 @@ export function computeExportSummary(
 
 export function computeExportFoodCost(
   inputs: Inputs,
-  lineItems: LineItem[]
+  lineItems: LineItem[],
 ): ExportFoodCost | null {
   const totalFoodCost = lineItems
     .filter((li) => isFoodCategory(li.category))
@@ -230,9 +230,7 @@ export function computeExportFoodCost(
   };
 }
 
-export function computeExportScenarioMatrix(
-  metrics: ScenarioMetrics[]
-): ExportScenarioMatrix {
+export function computeExportScenarioMatrix(metrics: ScenarioMetrics[]): ExportScenarioMatrix {
   const byAttendance = metrics.reduce(
     (acc, m) => {
       const key = m.attendancePercent;
@@ -240,7 +238,7 @@ export function computeExportScenarioMatrix(
       acc[key].push(m);
       return acc;
     },
-    {} as Record<number, ScenarioMetrics[]>
+    {} as Record<number, ScenarioMetrics[]>,
   );
   const attendanceLevels = Object.keys(byAttendance)
     .map(Number)
@@ -248,15 +246,13 @@ export function computeExportScenarioMatrix(
   return { byAttendance, attendanceLevels };
 }
 
-export function getCategoryTotals(
-  lineItems: LineItem[]
-): Record<string, number> {
+export function getCategoryTotals(lineItems: LineItem[]): Record<string, number> {
   return lineItems.reduce(
     (acc, li) => {
       const total = li.unitCost * li.quantity;
       acc[li.category] = (acc[li.category] ?? 0) + total;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 }

@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Wallet, GitBranch, TrendingUp, PanelLeftClose, PanelLeftOpen, Plus, BarChart3, Menu } from "lucide-react";
+import {
+  Wallet,
+  GitBranch,
+  TrendingUp,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  BarChart3,
+  Menu,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -30,7 +39,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) 
     collapsed ? "justify-center" : "gap-2",
     isActive
       ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
   );
 
 interface BudgetingLayoutProps {
@@ -102,7 +111,9 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
           <NavLink
             to="/budgeting/budget"
             end={false}
-            className={({ isActive }) => cn("flex-1 min-w-0", navLinkClass({ isActive }, collapsed))}
+            className={({ isActive }) =>
+              cn("flex-1 min-w-0", navLinkClass({ isActive }, collapsed))
+            }
             title={collapsed ? "Budgets" : undefined}
             onClick={() => setMobileNavOpen(false)}
           >
@@ -135,7 +146,7 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
                     "block truncate rounded-md px-2 py-1.5 text-xs transition-colors",
                     isActive
                       ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                   )
                 }
                 onClick={() => setMobileNavOpen(false)}
@@ -153,7 +164,9 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
           <NavLink
             to="/budgeting/scenarios"
             end={false}
-            className={({ isActive }) => cn("flex-1 min-w-0", navLinkClass({ isActive }, collapsed))}
+            className={({ isActive }) =>
+              cn("flex-1 min-w-0", navLinkClass({ isActive }, collapsed))
+            }
             title={collapsed ? "Scenarios" : undefined}
             onClick={() => setMobileNavOpen(false)}
           >
@@ -186,7 +199,7 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
                     "block truncate rounded-md px-2 py-1.5 text-xs transition-colors",
                     isActive
                       ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                   )
                 }
                 onClick={() => setMobileNavOpen(false)}
@@ -228,14 +241,11 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
       <aside
         className={cn(
           "hidden md:block sticky top-16 self-start shrink-0 border-r pr-4 transition-[width] duration-200 ease-in-out",
-          collapsed ? "w-14" : "w-56"
+          collapsed ? "w-14" : "w-56",
         )}
       >
         <div
-          className={cn(
-            "flex items-center py-4",
-            collapsed ? "justify-center" : "justify-between"
-          )}
+          className={cn("flex items-center py-4", collapsed ? "justify-center" : "justify-between")}
         >
           {!collapsed && (
             <span className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -286,7 +296,9 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
                       <NavLink
                         to="/budgeting/budget"
                         end={false}
-                        className={({ isActive }) => cn("flex-1 min-w-0", navLinkClass({ isActive }, false))}
+                        className={({ isActive }) =>
+                          cn("flex-1 min-w-0", navLinkClass({ isActive }, false))
+                        }
                         onClick={() => setMobileNavOpen(false)}
                       >
                         <Wallet className="size-4 shrink-0" />
@@ -316,7 +328,7 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
                                 "block truncate rounded-md px-2 py-1.5 text-xs transition-colors",
                                 isActive
                                   ? "bg-muted font-medium text-foreground"
-                                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                               )
                             }
                             onClick={() => setMobileNavOpen(false)}
@@ -332,7 +344,9 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
                       <NavLink
                         to="/budgeting/scenarios"
                         end={false}
-                        className={({ isActive }) => cn("flex-1 min-w-0", navLinkClass({ isActive }, false))}
+                        className={({ isActive }) =>
+                          cn("flex-1 min-w-0", navLinkClass({ isActive }, false))
+                        }
                         onClick={() => setMobileNavOpen(false)}
                       >
                         <GitBranch className="size-4 shrink-0" />
@@ -362,7 +376,7 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
                                 "block truncate rounded-md px-2 py-1.5 text-xs transition-colors",
                                 isActive
                                   ? "bg-muted font-medium text-foreground"
-                                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                               )
                             }
                             onClick={() => setMobileNavOpen(false)}
@@ -421,7 +435,9 @@ export function BudgetingLayout({ onPrint, onEmail }: BudgetingLayoutProps) {
               <Input
                 type="number"
                 value={newBudgetYear}
-                onChange={(e) => setNewBudgetYear(parseInt(e.target.value, 10) || new Date().getFullYear())}
+                onChange={(e) =>
+                  setNewBudgetYear(parseInt(e.target.value, 10) || new Date().getFullYear())
+                }
                 min={2000}
                 max={2100}
               />

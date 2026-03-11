@@ -14,11 +14,11 @@ export function WebsiteGalleriesPanel() {
         <CardContent>
           <p className="text-muted-foreground">
             Manage event photo galleries for the public site. Event photos are stored with each
-            event (Events section). Events with &quot;Show on website&quot; in the Events feed
-            panel can expose a public gallery. Here you can enable/disable gallery per event,
-            reorder and curate photos, set captions and featured images. Public API:{" "}
-            <code className="text-xs bg-muted px-1 rounded">/api/website/events/:id/gallery</code> (to
-            be added).
+            event (Events section). Events with &quot;Show on website&quot; in the Events feed panel
+            can expose a public gallery. Here you can enable/disable gallery per event, reorder and
+            curate photos, set captions and featured images. Public API:{" "}
+            <code className="text-xs bg-muted px-1 rounded">/api/website/events/:id/gallery</code>{" "}
+            (to be added).
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             Gallery curation UI and per-event gallery API coming soon.

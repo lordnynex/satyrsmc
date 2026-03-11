@@ -127,10 +127,7 @@ export function AddEventDialog({
             </div>
             <div className="space-y-2">
               <Label>Event date</Label>
-              <DatePicker
-                value={eventDate}
-                onChange={setEventDate}
-              />
+              <DatePicker value={eventDate} onChange={setEventDate} />
             </div>
           </div>
           <div className="space-y-2">

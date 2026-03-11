@@ -26,7 +26,9 @@ import {
   unwrapSuspenseData,
 } from "@/queries/hooks";
 
-function recipientToContact(r: MailingBatchRecipient): Parameters<typeof contactsToVCardFileAsync>[0][number] {
+function recipientToContact(
+  r: MailingBatchRecipient,
+): Parameters<typeof contactsToVCardFileAsync>[0][number] {
   return {
     id: "",
     type: "person",
@@ -103,7 +105,10 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
       r.snapshot_organization ?? "",
     ]);
     const header = "FullName,AddressLine1,AddressLine2,City,State,PostalCode,Country,Organization";
-    const csv = [header, ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const csv = [
+      header,
+      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -125,7 +130,10 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
       country: r.snapshot_country ?? undefined,
       organization: pdfIncludeOrg ? (r.snapshot_organization ?? undefined) : undefined,
     }));
-    const blob = generatePdfLabels(recipients, { fontSize: pdfFontSize, includeOrganization: pdfIncludeOrg });
+    const blob = generatePdfLabels(recipients, {
+      fontSize: pdfFontSize,
+      includeOrganization: pdfIncludeOrg,
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -134,7 +142,11 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
     URL.revokeObjectURL(url);
   };
 
-  const handleStatusChange = async (recipientId: string, status: MailingBatchRecipient["status"], reason?: string) => {
+  const handleStatusChange = async (
+    recipientId: string,
+    status: MailingBatchRecipient["status"],
+    reason?: string,
+  ) => {
     await updateStatusMutation.mutateAsync({ batchId, recipientId, status, reason });
   };
 
@@ -153,15 +165,9 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleExportVCard}>
-              vCard (.vcf)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportCsv}>
-              CSV (labels)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportPdf}>
-              PDF labels
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportVCard}>vCard (.vcf)</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportCsv}>CSV (labels)</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportPdf}>PDF labels</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -178,7 +184,10 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
           <div className="mb-4 flex flex-wrap gap-4 rounded-lg border p-3">
             <div>
               <p className="text-xs text-muted-foreground">PDF font size</p>
-              <Select value={String(pdfFontSize)} onValueChange={(v) => setPdfFontSize(parseInt(v, 10))}>
+              <Select
+                value={String(pdfFontSize)}
+                onValueChange={(v) => setPdfFontSize(parseInt(v, 10))}
+              >
                 <SelectTrigger className="w-24">
                   <SelectValue />
                 </SelectTrigger>
@@ -199,7 +208,9 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
                 onChange={(e) => setPdfIncludeOrg(e.target.checked)}
                 className="rounded"
               />
-              <label htmlFor="pdfOrg" className="text-sm">Include organization in PDF</label>
+              <label htmlFor="pdfOrg" className="text-sm">
+                Include organization in PDF
+              </label>
             </div>
           </div>
 
@@ -223,7 +234,13 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
                       )}
                     </td>
                     <td className="px-2 py-2 text-muted-foreground">
-                      {[r.snapshot_address_line1, r.snapshot_address_line2, r.snapshot_city, r.snapshot_state, r.snapshot_postal_code]
+                      {[
+                        r.snapshot_address_line1,
+                        r.snapshot_address_line2,
+                        r.snapshot_city,
+                        r.snapshot_state,
+                        r.snapshot_postal_code,
+                      ]
                         .filter(Boolean)
                         .join(", ")}
                     </td>
@@ -241,7 +258,12 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
                       </span>
                     </td>
                     <td className="px-2 py-2">
-                      <Select value={r.status} onValueChange={(v) => handleStatusChange(r.id, v as MailingBatchRecipient["status"])}>
+                      <Select
+                        value={r.status}
+                        onValueChange={(v) =>
+                          handleStatusChange(r.id, v as MailingBatchRecipient["status"])
+                        }
+                      >
                         <SelectTrigger className="w-28 h-8">
                           <SelectValue />
                         </SelectTrigger>

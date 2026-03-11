@@ -11,11 +11,7 @@ export class ScenariosApiClient {
     return this.client.admin.scenarios.get.query({ id });
   }
 
-  create(body: {
-    name: string;
-    description?: string;
-    inputs?: Record<string, unknown>;
-  }) {
+  create(body: { name: string; description?: string; inputs?: Record<string, unknown> }) {
     return this.client.admin.scenarios.create.mutate(body as never);
   }
 
@@ -25,7 +21,7 @@ export class ScenariosApiClient {
       name?: string;
       description?: string;
       inputs?: Record<string, unknown>;
-    }
+    },
   ) {
     return this.client.admin.scenarios.update.mutate({ id, ...body } as never);
   }

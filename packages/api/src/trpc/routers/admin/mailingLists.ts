@@ -108,6 +108,6 @@ export const mailingListsRouter = t.router({
     .output(MailingListGetIncludedOutputSchema)
     .meta({ description: "Get paginated included contacts for a list." })
     .query(({ ctx, input }) =>
-      ctx.api.mailingLists.getIncludedPaginated(input.listId, input.page, input.limit, input.q)
+      ctx.api.mailingLists.getIncludedPaginated(input.listId, input.page, input.limit, input.q),
     ),
 });

@@ -1,7 +1,4 @@
-import {
-  useWebsiteContactSubmissions,
-  useWebsiteContactMemberSubmissions,
-} from "@/queries/hooks";
+import { useWebsiteContactSubmissions, useWebsiteContactMemberSubmissions } from "@/queries/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail } from "lucide-react";
 
@@ -41,9 +38,7 @@ export function WebsiteContactSubmissionsPanel() {
                     <li key={s.id} className="rounded-md border px-3 py-2 text-sm">
                       <span className="font-medium">{s.name}</span>
                       <span className="text-muted-foreground"> — {s.email}</span>
-                      {s.subject && (
-                        <span className="text-muted-foreground"> — {s.subject}</span>
-                      )}
+                      {s.subject && <span className="text-muted-foreground"> — {s.subject}</span>}
                       <p className="mt-1 text-muted-foreground truncate">{s.message}</p>
                     </li>
                   ))}
@@ -54,7 +49,9 @@ export function WebsiteContactSubmissionsPanel() {
                   )}
                 </ul>
               )}
-              <h3 className="font-medium mb-2">Contact member ({contactMemberSubmissions.length})</h3>
+              <h3 className="font-medium mb-2">
+                Contact member ({contactMemberSubmissions.length})
+              </h3>
               {contactMemberSubmissions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No submissions yet.</p>
               ) : (

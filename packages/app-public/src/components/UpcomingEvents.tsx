@@ -19,9 +19,9 @@ export const UpcomingEvents: React.FC = () => {
           Upcoming Events
         </h2>
         <div className="max-w-3xl mx-auto">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {["a", "b", "c", "d"].map((skeletonKey, i) => (
             <div
-              key={i}
+              key={skeletonKey}
               className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 py-4 px-2"
               style={{
                 borderBottom: i < 3 ? "1px solid var(--color-border)" : "none",
@@ -116,10 +116,7 @@ export const UpcomingEvents: React.FC = () => {
             key={event.id}
             className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 py-4 px-2"
             style={{
-              borderBottom:
-                i < events.length - 1
-                  ? "1px solid var(--color-border)"
-                  : "none",
+              borderBottom: i < events.length - 1 ? "1px solid var(--color-border)" : "none",
             }}
           >
             <span

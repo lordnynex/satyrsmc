@@ -9,23 +9,14 @@ import { Label } from "@/components/ui/label";
 import { useAppState } from "@/state/AppState";
 
 export function BudgetScenarioSelectors() {
-  const {
-    budgets,
-    scenarios,
-    selectedBudgetId,
-    selectedScenarioId,
-    selectBudget,
-    selectScenario,
-  } = useAppState();
+  const { budgets, scenarios, selectedBudgetId, selectedScenarioId, selectBudget, selectScenario } =
+    useAppState();
 
   return (
     <div className="flex flex-wrap items-end gap-6">
       <div className="space-y-2">
         <Label>Budget</Label>
-        <Select
-          value={selectedBudgetId ?? ""}
-          onValueChange={(v) => selectBudget(v || null)}
-        >
+        <Select value={selectedBudgetId ?? ""} onValueChange={(v) => selectBudget(v || null)}>
           <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Select budget" />
           </SelectTrigger>
@@ -40,10 +31,7 @@ export function BudgetScenarioSelectors() {
       </div>
       <div className="space-y-2">
         <Label>Scenario</Label>
-        <Select
-          value={selectedScenarioId ?? ""}
-          onValueChange={(v) => selectScenario(v || null)}
-        >
+        <Select value={selectedScenarioId ?? ""} onValueChange={(v) => selectScenario(v || null)}>
           <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Select scenario" />
           </SelectTrigger>

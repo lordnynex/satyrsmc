@@ -67,9 +67,7 @@ export const DefaultOpen: Story = {
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent>
-        <p className="text-sm text-muted-foreground pt-2">
-          This section starts expanded.
-        </p>
+        <p className="text-sm text-muted-foreground pt-2">This section starts expanded.</p>
       </CollapsibleContent>
     </Collapsible>
   ),

@@ -29,7 +29,9 @@ const CommitteeUpdateFieldsSchema = z.object({
   chairperson_member_id: z.string().optional(),
 });
 
-export const CommitteeUpdateInputSchema = z.object({ id: z.string() }).merge(CommitteeUpdateFieldsSchema);
+export const CommitteeUpdateInputSchema = z
+  .object({ id: z.string() })
+  .merge(CommitteeUpdateFieldsSchema);
 
 export const CommitteeDeleteInputSchema = z.object({ id: z.string() });
 

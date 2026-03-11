@@ -26,11 +26,7 @@ const perfDecorators = performanceAddon.decorators
   : [];
 
 const preview: Preview = {
-  decorators: [
-    ...perfDecorators,
-    withMockTrpcSafe,
-    withMockApiSafe,
-  ],
+  decorators: [...perfDecorators, withMockTrpcSafe, withMockApiSafe],
   parameters: {
     controls: {
       matchers: {

@@ -17,9 +17,7 @@ function CommitteeRow({ c }: { c: CommitteeSummary }) {
           {c.name}
         </Link>
       </td>
-      <td className="px-4 py-3 text-muted-foreground">
-        {formatDateOnly(c.formed_date)}
-      </td>
+      <td className="px-4 py-3 text-muted-foreground">{formatDateOnly(c.formed_date)}</td>
       <td className="px-4 py-3">
         <span
           className={
@@ -46,10 +44,7 @@ export function CommitteesPanel() {
   const committees = unwrapSuspenseData(useCommitteesSuspense()) ?? [];
   const [filter, setFilter] = useState<"all" | CommitteeStatus>("all");
 
-  const filtered =
-    filter === "all"
-      ? committees
-      : committees.filter((c) => c.status === filter);
+  const filtered = filter === "all" ? committees : committees.filter((c) => c.status === filter);
 
   return (
     <div className="space-y-8">
@@ -94,9 +89,7 @@ export function CommitteesPanel() {
               <thead>
                 <tr className="border-b bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Name</th>
-                  <th className="px-4 py-3 text-left font-medium">
-                    Formation date
-                  </th>
+                  <th className="px-4 py-3 text-left font-medium">Formation date</th>
                   <th className="px-4 py-3 text-left font-medium">Status</th>
                   <th className="px-4 py-3 text-left font-medium">Members</th>
                   <th className="px-4 py-3 text-left font-medium">Meetings</th>

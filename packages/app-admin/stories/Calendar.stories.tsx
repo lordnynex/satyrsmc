@@ -17,24 +17,19 @@ type Story = StoryObj<typeof Calendar>;
 
 export const Single: Story = {
   render: function SingleCalendar() {
-    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [date, setDate] = useState<Date | undefined>(() => new Date());
     return (
-      <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
-        className="rounded-md border"
-      />
+      <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
     );
   },
 };
 
 export const Range: Story = {
   render: function RangeCalendar() {
-    const [range, setRange] = useState<DateRange | undefined>({
+    const [range, setRange] = useState<DateRange | undefined>(() => ({
       from: new Date(),
       to: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    });
+    }));
     return (
       <Calendar
         mode="range"

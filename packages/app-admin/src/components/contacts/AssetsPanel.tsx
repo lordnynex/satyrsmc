@@ -12,7 +12,8 @@ export function AssetsPanel() {
       <div className="flex min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed bg-muted/30 p-8">
         <Image className="size-12 text-muted-foreground/50" />
         <p className="mt-4 text-center text-muted-foreground">
-          This section is under construction. Image upload and management will be available here soon.
+          This section is under construction. Image upload and management will be available here
+          soon.
         </p>
       </div>
     </div>

@@ -28,21 +28,12 @@ export function InputsPanel({ readOnly, onEditScenario }: InputsPanelProps) {
         <CardTitle className="text-base">Scenario Inputs</CardTitle>
         <div className="flex items-center gap-2">
           {readOnly && onEditScenario && (
-            <Button
-              variant="link"
-              size="sm"
-              className="text-primary"
-              onClick={onEditScenario}
-            >
+            <Button variant="link" size="sm" className="text-primary" onClick={onEditScenario}>
               <ExternalLink className="size-4" />
               Edit on Scenarios page
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOpen(!open)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setOpen(!open)}>
             {open ? (
               <>
                 <ChevronUp className="size-4" />

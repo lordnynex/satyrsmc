@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { MOTION_RESULTS, ACTION_ITEM_STATUSES, OLD_BUSINESS_STATUSES, MEETING_TEMPLATE_TYPES, MEETING_SORT_FIELDS } from "../../lib/enums";
+import {
+  MOTION_RESULTS,
+  ACTION_ITEM_STATUSES,
+  OLD_BUSINESS_STATUSES,
+  MEETING_TEMPLATE_TYPES,
+  MEETING_SORT_FIELDS,
+} from "../../lib/enums";
 
 // ----- Input schemas (meetings) -----
 
@@ -35,7 +41,9 @@ const MeetingUpdateFieldsSchema = z.object({
   agenda_template_id: z.string().optional(),
 });
 
-export const MeetingUpdateInputSchema = z.object({ id: z.string() }).merge(MeetingUpdateFieldsSchema);
+export const MeetingUpdateInputSchema = z
+  .object({ id: z.string() })
+  .merge(MeetingUpdateFieldsSchema);
 
 export const MeetingDeleteInputSchema = z.object({
   id: z.string(),
@@ -144,7 +152,10 @@ export const MeetingTemplateDeleteInputSchema = z.object({ id: z.string() });
 
 // ----- Output entity schemas -----
 
-const dateLike = z.union([z.string(), z.date().transform((d) => (d instanceof Date ? d.toISOString().slice(0, 10) : ""))]);
+const dateLike = z.union([
+  z.string(),
+  z.date().transform((d) => (d instanceof Date ? d.toISOString().slice(0, 10) : "")),
+]);
 
 const MeetingSummarySchema = z.object({
   id: z.string(),

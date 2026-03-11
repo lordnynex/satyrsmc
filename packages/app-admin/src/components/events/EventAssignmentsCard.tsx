@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,12 @@ import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
 import { useMembersOptional } from "@/queries/hooks";
-import type { Event, EventAssignment, EventAssignmentCategory, Member } from "@satyrsmc/shared/client";
+import type {
+  Event,
+  EventAssignment,
+  EventAssignmentCategory,
+  Member,
+} from "@satyrsmc/shared/client";
 
 const CATEGORY_LABELS: Record<EventAssignmentCategory, string> = {
   planning: "Event Planning",
@@ -52,8 +57,12 @@ export function EventAssignmentsCard({
   const [roleCategory, setRoleCategory] = useState<EventAssignmentCategory>("planning");
 
   const assignments = event.assignments ?? [];
-  const planning = assignments.filter((a) => a.category === "planning").sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-  const during = assignments.filter((a) => a.category === "during").sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const planning = assignments
+    .filter((a) => a.category === "planning")
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const during = assignments
+    .filter((a) => a.category === "during")
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
   const handleCreateRole = async () => {
     if (!roleName.trim()) return;
@@ -82,7 +91,9 @@ export function EventAssignmentsCard({
                   <ClipboardList className="size-4" />
                   Assignments
                 </CardTitle>
-                <CardDescription>Roles and responsibilities for planning and during the event</CardDescription>
+                <CardDescription>
+                  Roles and responsibilities for planning and during the event
+                </CardDescription>
               </div>
               <ChevronDown className="size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
             </CollapsibleTrigger>
@@ -146,7 +157,9 @@ export function EventAssignmentsCard({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddRoleOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setAddRoleOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleCreateRole}>Add Role</Button>
           </DialogFooter>
         </DialogContent>
@@ -196,10 +209,7 @@ function AssignmentColumn({
       ) : (
         <div className="space-y-3">
           {roles.map((role) => (
-            <div
-              key={role.id}
-              className="rounded-lg border p-3 space-y-2"
-            >
+            <div key={role.id} className="rounded-lg border p-3 space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-medium text-sm">{role.name}</span>
                 <div className="flex items-center gap-1">
@@ -234,7 +244,7 @@ function AssignmentColumn({
                       onRemove={() => onRemoveMember(role.id, am.member_id)}
                       removeContextLabel="role"
                     />
-                  ) : null
+                  ) : null,
                 )}
               </div>
             </div>
@@ -253,13 +263,7 @@ interface AddMemberFormProps {
   onClose: () => void;
 }
 
-function AddMemberForm({
-  members,
-  assignmentId,
-  assignments,
-  onAdd,
-  onClose,
-}: AddMemberFormProps) {
+function AddMemberForm({ members, assignmentId, assignments, onAdd, onClose }: AddMemberFormProps) {
   const assignment = assignments.find((a) => a.id === assignmentId);
   const assignedIds = new Set((assignment?.members ?? []).map((m) => m.member_id));
 
@@ -277,7 +281,9 @@ function AddMemberForm({
         }}
       />
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
       </div>
     </div>
   );

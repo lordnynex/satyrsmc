@@ -7,11 +7,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export interface DatePickerProps {
   /** Value as YYYY-MM-DD string */
@@ -56,7 +52,7 @@ export function DatePicker({
           className={cn(
             "w-full justify-start text-left font-normal",
             "data-[empty=true]:text-muted-foreground",
-            className
+            className,
           )}
         >
           <CalendarIcon className="mr-2 size-4" />
@@ -64,12 +60,7 @@ export function DatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleSelect}
-          defaultMonth={date}
-        />
+        <Calendar mode="single" selected={date} onSelect={handleSelect} defaultMonth={date} />
       </PopoverContent>
     </Popover>
   );

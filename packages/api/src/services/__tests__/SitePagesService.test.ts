@@ -6,12 +6,12 @@ import { BAD_ID, createSitePage } from "./helpers";
 
 describe("SitePagesService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -39,7 +39,7 @@ describe("SitePagesService", () => {
 
   describe("getBySlug", () => {
     test("returns page by slug", async () => {
-      const p = await createSitePage(api, { slug: "get-by-slug-page", title: "Get By Slug" });
+      await createSitePage(api, { slug: "get-by-slug-page", title: "Get By Slug" });
       const got = await api.sitePages.getBySlug("get-by-slug-page");
       expect(got).not.toBeNull();
       expect(got!.slug).toBe("get-by-slug-page");
@@ -53,7 +53,11 @@ describe("SitePagesService", () => {
 
   describe("create", () => {
     test("creates page", async () => {
-      const p = await createSitePage(api, { slug: "create-page", title: "Create Page", body: "Body" });
+      const p = await createSitePage(api, {
+        slug: "create-page",
+        title: "Create Page",
+        body: "Body",
+      });
       expect(p.id).toBeDefined();
       expect(p.slug).toBe("create-page");
       expect(p.body).toBe("Body");
@@ -63,7 +67,10 @@ describe("SitePagesService", () => {
   describe("update", () => {
     test("updates page", async () => {
       const p = await createSitePage(api, { slug: "update-page", title: "Update Page" });
-      const updated = await api.sitePages.update(p.id, { title: "Updated Title", body: "New body" });
+      const updated = await api.sitePages.update(p.id, {
+        title: "Updated Title",
+        body: "New body",
+      });
       expect(updated).not.toBeNull();
       expect(updated!.title).toBe("Updated Title");
       expect(updated!.body).toBe("New body");

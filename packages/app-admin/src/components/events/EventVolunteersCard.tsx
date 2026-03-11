@@ -20,11 +20,7 @@ interface EventVolunteersCardProps {
   onAdd: (payload: { name: string; department: string }) => Promise<void>;
 }
 
-export function EventVolunteersCard({
-  event,
-  onDelete,
-  onAdd,
-}: EventVolunteersCardProps) {
+export function EventVolunteersCard({ event, onDelete, onAdd }: EventVolunteersCardProps) {
   const [open, setOpen] = useState(false);
   const [volunteerName, setVolunteerName] = useState("");
   const [volunteerDept, setVolunteerDept] = useState("");
@@ -43,7 +39,7 @@ export function EventVolunteersCard({
       (acc[v.department] ??= []).push(v);
       return acc;
     },
-    {} as Record<string, EventVolunteer[]>
+    {} as Record<string, EventVolunteer[]>,
   );
 
   return (
@@ -111,15 +107,25 @@ export function EventVolunteersCard({
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input value={volunteerName} onChange={(e) => setVolunteerName(e.target.value)} placeholder="Volunteer name" />
+              <Input
+                value={volunteerName}
+                onChange={(e) => setVolunteerName(e.target.value)}
+                placeholder="Volunteer name"
+              />
             </div>
             <div className="space-y-2">
               <Label>Department</Label>
-              <Input value={volunteerDept} onChange={(e) => setVolunteerDept(e.target.value)} placeholder="e.g. Registration, Food, Setup" />
+              <Input
+                value={volunteerDept}
+                onChange={(e) => setVolunteerDept(e.target.value)}
+                placeholder="e.g. Registration, Food, Setup"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleAdd}>Add</Button>
           </DialogFooter>
         </DialogContent>

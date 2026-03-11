@@ -23,7 +23,12 @@ interface AddToMailingListDialogProps {
   onSuccess: () => void;
 }
 
-export function AddToMailingListDialog({ open, onOpenChange, contactIds, onSuccess }: AddToMailingListDialogProps) {
+export function AddToMailingListDialog({
+  open,
+  onOpenChange,
+  contactIds,
+  onSuccess,
+}: AddToMailingListDialogProps) {
   const { data: lists = [] } = useMailingListsOptional();
   const addMembersBulkMutation = useMailingListAddMembersBulk();
   const [selectedListId, setSelectedListId] = useState<string>("");

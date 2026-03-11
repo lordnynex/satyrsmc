@@ -15,14 +15,13 @@ export function MemberChip({ memberId, name, photo, clickable = true }: MemberCh
   const baseClass =
     "inline-flex items-center gap-1.5 rounded-full border bg-muted/50 px-2 py-0.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20";
 
-  const icon =
-    !clickable ? (
-      <Users className="size-3 text-muted-foreground" />
-    ) : photo ? (
-      <img src={photo} alt="" className="size-full object-cover" />
-    ) : (
-      <User className="size-3 text-muted-foreground" />
-    );
+  const icon = !clickable ? (
+    <Users className="size-3 text-muted-foreground" />
+  ) : photo ? (
+    <img src={photo} alt="" className="size-full object-cover" />
+  ) : (
+    <User className="size-3 text-muted-foreground" />
+  );
 
   if (clickable) {
     return (

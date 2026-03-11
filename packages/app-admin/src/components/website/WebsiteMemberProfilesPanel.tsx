@@ -76,15 +76,13 @@ export function WebsiteMemberProfilesPanel() {
               <ul className="text-sm text-muted-foreground list-disc list-inside">
                 {(feedMembers as { name: string; position?: string | null }[])
                   .slice(0, 5)
-                  .map((m, i) => (
-                    <li key={i}>
+                  .map((m) => (
+                    <li key={m.name}>
                       {m.name}
                       {m.position ? ` — ${m.position}` : ""}
                     </li>
                   ))}
-                {feedMembers.length > 5 && (
-                  <li>…and {feedMembers.length - 5} more</li>
-                )}
+                {feedMembers.length > 5 && <li>…and {feedMembers.length - 5} more</li>}
               </ul>
             </div>
           )}

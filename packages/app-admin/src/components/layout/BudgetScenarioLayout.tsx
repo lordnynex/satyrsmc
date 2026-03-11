@@ -37,13 +37,21 @@ function BudgetScenarioListsSync({ children }: { children: ReactNode }) {
   // On projections, also read from search params for hot linking (validate IDs exist)
   const rawParamBudgetId = isProjections ? searchParams.get("budgetId") : null;
   const rawParamScenarioId = isProjections ? searchParams.get("scenarioId") : null;
-  const paramBudgetId = rawParamBudgetId && budgets.some((b) => b.id === rawParamBudgetId) ? rawParamBudgetId : null;
-  const paramScenarioId = rawParamScenarioId && scenarios.some((s) => s.id === rawParamScenarioId) ? rawParamScenarioId : null;
+  const paramBudgetId =
+    rawParamBudgetId && budgets.some((b) => b.id === rawParamBudgetId) ? rawParamBudgetId : null;
+  const paramScenarioId =
+    rawParamScenarioId && scenarios.some((s) => s.id === rawParamScenarioId)
+      ? rawParamScenarioId
+      : null;
 
   useEffect(() => {
     if (urlBudgetId && budgets.some((b) => b.id === urlBudgetId)) {
       dispatch({ type: "SET_SELECTED_BUDGET", payload: urlBudgetId });
-    } else if (paramBudgetId && budgets.some((b) => b.id === paramBudgetId) && selectedBudgetId == null) {
+    } else if (
+      paramBudgetId &&
+      budgets.some((b) => b.id === paramBudgetId) &&
+      selectedBudgetId == null
+    ) {
       dispatch({ type: "SET_SELECTED_BUDGET", payload: paramBudgetId });
     } else if (budgets.length && selectedBudgetId == null) {
       const first = budgets[0];
@@ -54,7 +62,11 @@ function BudgetScenarioListsSync({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (urlScenarioId && scenarios.some((s) => s.id === urlScenarioId)) {
       dispatch({ type: "SET_SELECTED_SCENARIO", payload: urlScenarioId });
-    } else if (paramScenarioId && scenarios.some((s) => s.id === paramScenarioId) && selectedScenarioId == null) {
+    } else if (
+      paramScenarioId &&
+      scenarios.some((s) => s.id === paramScenarioId) &&
+      selectedScenarioId == null
+    ) {
       dispatch({ type: "SET_SELECTED_SCENARIO", payload: paramScenarioId });
     } else if (scenarios.length && selectedScenarioId == null) {
       const first = scenarios[0];
@@ -65,21 +77,25 @@ function BudgetScenarioListsSync({ children }: { children: ReactNode }) {
   // Sync selection back to URL on projections for shareable links
   useEffect(() => {
     if (!isProjections || !selectedBudgetId || !selectedScenarioId) return;
-    setSearchParams((prev) => {
-      const current = prev.get("budgetId");
-      const currentScenario = prev.get("scenarioId");
-      if (current === selectedBudgetId && currentScenario === selectedScenarioId) return prev;
-      const next = new URLSearchParams(prev);
-      next.set("budgetId", selectedBudgetId);
-      next.set("scenarioId", selectedScenarioId);
-      return next;
-    }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        const current = prev.get("budgetId");
+        const currentScenario = prev.get("scenarioId");
+        if (current === selectedBudgetId && currentScenario === selectedScenarioId) return prev;
+        const next = new URLSearchParams(prev);
+        next.set("budgetId", selectedBudgetId);
+        next.set("scenarioId", selectedScenarioId);
+        return next;
+      },
+      { replace: true },
+    );
   }, [isProjections, selectedBudgetId, selectedScenarioId, setSearchParams]);
 
   // Prefer selectedBudgetId/selectedScenarioId over URL params so dropdown changes update immediately.
   // URL params are for initial load (shared links); AppState selection reflects user interaction.
   const budgetId = urlBudgetId ?? selectedBudgetId ?? paramBudgetId ?? budgets[0]?.id ?? null;
-  const scenarioId = urlScenarioId ?? selectedScenarioId ?? paramScenarioId ?? scenarios[0]?.id ?? null;
+  const scenarioId =
+    urlScenarioId ?? selectedScenarioId ?? paramScenarioId ?? scenarios[0]?.id ?? null;
 
   // On list-only or standalone pages, render children without full data sync
   const isBudgetList = location.pathname === "/budgeting/budget";

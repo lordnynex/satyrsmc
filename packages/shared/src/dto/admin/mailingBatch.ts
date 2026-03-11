@@ -60,7 +60,9 @@ export const MailingBatchUpdateRecipientStatusOutputSchema = z.object({ ok: z.li
 export type MailingBatchListOutput = z.infer<typeof MailingBatchListOutputSchema>;
 export type MailingBatchGetOutput = z.infer<typeof MailingBatchGetOutputSchema>;
 export type MailingBatchCreateOutput = z.infer<typeof MailingBatchCreateOutputSchema>;
-export type MailingBatchUpdateRecipientStatusOutput = z.infer<typeof MailingBatchUpdateRecipientStatusOutputSchema>;
+export type MailingBatchUpdateRecipientStatusOutput = z.infer<
+  typeof MailingBatchUpdateRecipientStatusOutputSchema
+>;
 
 // Aliases for API
 export type MailingBatch = MailingBatchGetOutput;

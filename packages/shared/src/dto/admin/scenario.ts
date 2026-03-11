@@ -27,7 +27,10 @@ const ScenarioSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().nullable().optional(),
-  inputs: z.union([z.record(z.unknown()), z.string()]).optional().default({}),
+  inputs: z
+    .union([z.record(z.unknown()), z.string()])
+    .optional()
+    .default({}),
   created_at: dateLike.optional(),
 });
 

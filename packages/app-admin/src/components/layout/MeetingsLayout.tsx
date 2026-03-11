@@ -3,7 +3,18 @@ import { Outlet, NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { PanelLeftClose, PanelLeftOpen, Menu, Calendar, FileText, Scale, ClipboardList, BookOpen, Gavel, Users } from "lucide-react";
+import {
+  PanelLeftClose,
+  PanelLeftOpen,
+  Menu,
+  Calendar,
+  FileText,
+  Scale,
+  ClipboardList,
+  BookOpen,
+  Gavel,
+  Users,
+} from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) =>
   cn(
@@ -11,7 +22,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) 
     collapsed ? "justify-center" : "gap-2",
     isActive
       ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
   );
 
 export function MeetingsLayout() {
@@ -24,14 +35,11 @@ export function MeetingsLayout() {
       <aside
         className={cn(
           "hidden md:block sticky top-16 self-start shrink-0 border-r pr-4 transition-[width] duration-200 ease-in-out",
-          collapsed ? "w-14" : "w-56"
+          collapsed ? "w-14" : "w-56",
         )}
       >
         <div
-          className={cn(
-            "flex items-center py-4",
-            collapsed ? "justify-center" : "justify-between"
-          )}
+          className={cn("flex items-center py-4", collapsed ? "justify-center" : "justify-between")}
         >
           {!collapsed && (
             <span className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -122,12 +130,7 @@ export function MeetingsLayout() {
         <div className="md:hidden mb-4">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                aria-label="Open Meetings menu"
-              >
+              <Button variant="outline" size="sm" className="gap-2" aria-label="Open Meetings menu">
                 <Menu className="size-4" />
                 Meetings
               </Button>

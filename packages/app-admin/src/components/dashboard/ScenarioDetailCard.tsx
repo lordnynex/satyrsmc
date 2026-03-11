@@ -14,7 +14,8 @@ export function ScenarioDetailCard({ metric }: ScenarioDetailCardProps) {
       <CardHeader>
         <h3 className="font-semibold">{metric.scenarioKey}</h3>
         <p className="text-muted-foreground text-sm">
-          {metric.attendees} attendees + staff at ${metric.ticketPrice}/ticket, staff @ ${metric.staffPrice}
+          {metric.attendees} attendees + staff at ${metric.ticketPrice}/ticket, staff @ $
+          {metric.staffPrice}
         </p>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -34,7 +35,9 @@ export function ScenarioDetailCard({ metric }: ScenarioDetailCardProps) {
         </div>
         <div>
           <p className="text-muted-foreground text-xs">Profit vs target</p>
-          <p className={`text-lg font-semibold ${meetsTarget ? "text-green-500" : "text-amber-500"}`}>
+          <p
+            className={`text-lg font-semibold ${meetsTarget ? "text-green-500" : "text-amber-500"}`}
+          >
             ${metric.profitVsBreakEven.toLocaleString()}
           </p>
           <p className="text-muted-foreground text-xs">

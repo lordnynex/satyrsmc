@@ -53,9 +53,7 @@ export async function resetTestDb(ds: DataSource): Promise<void> {
     WHERE schemaname = 'public' AND tablename != 'migrations'
   `);
   if (tables.length > 0) {
-    const tableNames = tables
-      .map((t: { tablename: string }) => `"${t.tablename}"`)
-      .join(", ");
+    const tableNames = tables.map((t: { tablename: string }) => `"${t.tablename}"`).join(", ");
     await ds.query(`TRUNCATE ${tableNames} CASCADE`);
   }
 }

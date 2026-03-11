@@ -53,7 +53,7 @@ export function ContactsPanel() {
   const [sort, setSort] = useState<ContactSearchParams["sort"]>("updated_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [addToListOpen, setAddToListOpen] = useState(false);
@@ -109,14 +109,22 @@ export function ContactsPanel() {
 
   const handleBulkMarkInactive = async () => {
     if (selectedIds.size === 0) return;
-    await bulkUpdateMutation.mutateAsync({ ids: [...selectedIds], updates: { status: "inactive" } });
+    await bulkUpdateMutation.mutateAsync({
+      ids: [...selectedIds],
+      updates: { status: "inactive" },
+    });
     setSelectedIds(new Set());
     refresh();
   };
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Delete ${selectedIds.size} contact${selectedIds.size !== 1 ? "s" : ""}? This cannot be undone.`)) return;
+    if (
+      !confirm(
+        `Delete ${selectedIds.size} contact${selectedIds.size !== 1 ? "s" : ""}? This cannot be undone.`,
+      )
+    )
+      return;
     for (const id of selectedIds) {
       await deleteContactMutation.mutateAsync(id);
     }
@@ -166,10 +174,7 @@ export function ContactsPanel() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ContactsExportDropdown
-            onExportCsv={handleExportCsv}
-            onExportPdf={handleExportPdf}
-          />
+          <ContactsExportDropdown onExportCsv={handleExportCsv} onExportPdf={handleExportPdf} />
           <Button variant="outline" onClick={() => setImportOpen(true)}>
             <Upload className="size-4" />
             Import
@@ -196,7 +201,10 @@ export function ContactsPanel() {
                 className="pl-9"
               />
             </div>
-            <Select value={status ?? "active"} onValueChange={(v) => setStatus(v as ContactSearchParams["status"])}>
+            <Select
+              value={status ?? "active"}
+              onValueChange={(v) => setStatus(v as ContactSearchParams["status"])}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -206,7 +214,10 @@ export function ContactsPanel() {
                 <SelectItem value="all">All</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={hasPostal === undefined ? "any" : hasPostal ? "yes" : "no"} onValueChange={(v) => setHasPostal(v === "any" ? undefined : v === "yes")}>
+            <Select
+              value={hasPostal === undefined ? "any" : hasPostal ? "yes" : "no"}
+              onValueChange={(v) => setHasPostal(v === "any" ? undefined : v === "yes")}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Address" />
               </SelectTrigger>
@@ -216,7 +227,10 @@ export function ContactsPanel() {
                 <SelectItem value="no">No postal</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={hasEmail === undefined ? "any" : hasEmail ? "yes" : "no"} onValueChange={(v) => setHasEmail(v === "any" ? undefined : v === "yes")}>
+            <Select
+              value={hasEmail === undefined ? "any" : hasEmail ? "yes" : "no"}
+              onValueChange={(v) => setHasEmail(v === "any" ? undefined : v === "yes")}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Email" />
               </SelectTrigger>
@@ -226,7 +240,14 @@ export function ContactsPanel() {
                 <SelectItem value="no">No email</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={`${sort}-${sortDir}`} onValueChange={(v) => { const [s, d] = v.split("-"); setSort(s as ContactSearchParams["sort"]); setSortDir((d as "asc" | "desc") ?? "desc"); }}>
+            <Select
+              value={`${sort}-${sortDir}`}
+              onValueChange={(v) => {
+                const [s, d] = v.split("-");
+                setSort(s as ContactSearchParams["sort"]);
+                setSortDir((d as "asc" | "desc") ?? "desc");
+              }}
+            >
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
@@ -253,7 +274,12 @@ export function ContactsPanel() {
               <Button variant="outline" size="sm" onClick={handleBulkMarkInactive}>
                 Mark inactive
               </Button>
-              <Button variant="outline" size="sm" onClick={handleBulkDelete} className="text-destructive hover:text-destructive">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="text-destructive hover:text-destructive"
+              >
                 <Trash2 className="size-4" />
                 Delete
               </Button>
@@ -296,11 +322,11 @@ export function ContactsPanel() {
                   size="sm"
                   disabled={page <= 1}
                   onClick={() => {
-                  const next = new URLSearchParams(searchParams);
-                  next.set("page", String(page - 1));
-                  setSearchParams(next);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
+                    const next = new URLSearchParams(searchParams);
+                    next.set("page", String(page - 1));
+                    setSearchParams(next);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
                 >
                   Previous
                 </Button>
@@ -309,11 +335,11 @@ export function ContactsPanel() {
                   size="sm"
                   disabled={page * 25 >= total}
                   onClick={() => {
-                  const next = new URLSearchParams(searchParams);
-                  next.set("page", String(page + 1));
-                  setSearchParams(next);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
+                    const next = new URLSearchParams(searchParams);
+                    next.set("page", String(page + 1));
+                    setSearchParams(next);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
                 >
                   Next
                 </Button>

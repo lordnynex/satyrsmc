@@ -16,15 +16,11 @@ export class AddEventNotesColumn1800000001000 implements MigrationInterface {
   name = "AddEventNotesColumn1800000001000";
 
   async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE events ADD COLUMN notes TEXT`
-    );
+    await queryRunner.query(`ALTER TABLE events ADD COLUMN notes TEXT`);
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE events DROP COLUMN notes`
-    );
+    await queryRunner.query(`ALTER TABLE events DROP COLUMN notes`);
   }
 }
 ```

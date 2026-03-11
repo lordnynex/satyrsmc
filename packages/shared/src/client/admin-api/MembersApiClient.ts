@@ -43,10 +43,6 @@ export class MembersApiClient {
       id,
       size: size as "thumbnail" | "medium" | "full",
     });
-    return b64
-      ? new Uint8Array(
-          Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
-        )
-      : null;
+    return b64 ? new Uint8Array(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))) : null;
   }
 }

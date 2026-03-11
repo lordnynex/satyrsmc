@@ -32,9 +32,7 @@ export function FoodCostBreakdown({ lineItems, inputs }: FoodCostBreakdownProps)
       <Card>
         <CardHeader>
           <CardTitle>Food cost breakdown</CardTitle>
-          <CardDescription>
-            No food or beverage line items in this budget.
-          </CardDescription>
+          <CardDescription>No food or beverage line items in this budget.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -45,7 +43,8 @@ export function FoodCostBreakdown({ lineItems, inputs }: FoodCostBreakdownProps)
       <CardHeader>
         <CardTitle>Food cost breakdown</CardTitle>
         <CardDescription>
-          Total food & beverage: ${totalFoodCost.toLocaleString()}. Assumes 4-day event; attendees and staff get 4 days of meals; day pass = 1 meal.
+          Total food & beverage: ${totalFoodCost.toLocaleString()}. Assumes 4-day event; attendees
+          and staff get 4 days of meals; day pass = 1 meal.
         </CardDescription>
       </CardHeader>
       <CardContent>

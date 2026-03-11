@@ -28,7 +28,12 @@ interface AddContactDialogProps {
   defaultHellenic?: boolean;
 }
 
-export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHellenic }: AddContactDialogProps) {
+export function AddContactDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  defaultHellenic,
+}: AddContactDialogProps) {
   const createContactMutation = useCreateContact();
   const [type, setType] = useState<Contact["type"]>("person");
   const [displayName, setDisplayName] = useState("");
@@ -77,7 +82,10 @@ export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHelleni
   };
 
   const handleSubmit = async () => {
-    const name = displayName.trim() || (type === "person" ? [firstName, lastName].filter(Boolean).join(" ") : orgName) || "Unknown";
+    const name =
+      displayName.trim() ||
+      (type === "person" ? [firstName, lastName].filter(Boolean).join(" ") : orgName) ||
+      "Unknown";
     if (!name) return;
     if (primaryPhone.trim() && !isValidPhoneNumber(primaryPhone)) {
       setPhoneError("Please enter a valid phone number (at least 10 digits)");
@@ -91,14 +99,35 @@ export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHelleni
         display_name: name,
         first_name: type === "person" ? firstName.trim() || null : null,
         last_name: type === "person" ? lastName.trim() || null : null,
-        organization_name: type === "organization" ? orgName.trim() || null : (orgName.trim() || null),
+        organization_name:
+          type === "organization" ? orgName.trim() || null : orgName.trim() || null,
         club_name: clubName.trim() || null,
         role: role.trim() || null,
         hellenic,
         deceased,
         deceased_year: deceased && deceasedYear.trim() ? parseInt(deceasedYear, 10) : null,
-        emails: primaryEmail.trim() ? [{ id: "", contact_id: "", email: primaryEmail.trim(), type: "other" as const, is_primary: true }] : [],
-        phones: normalizePhoneForStorage(primaryPhone) ? [{ id: "", contact_id: "", phone: normalizePhoneForStorage(primaryPhone), type: "other" as const, is_primary: true }] : [],
+        emails: primaryEmail.trim()
+          ? [
+              {
+                id: "",
+                contact_id: "",
+                email: primaryEmail.trim(),
+                type: "other" as const,
+                is_primary: true,
+              },
+            ]
+          : [],
+        phones: normalizePhoneForStorage(primaryPhone)
+          ? [
+              {
+                id: "",
+                contact_id: "",
+                phone: normalizePhoneForStorage(primaryPhone),
+                type: "other" as const,
+                is_primary: true,
+              },
+            ]
+          : [],
         addresses:
           addressLine1.trim() || city.trim() || postalCode.trim()
             ? [
@@ -149,7 +178,11 @@ export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHelleni
             <>
               <div>
                 <Label>Display name *</Label>
-                <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Full name" />
+                <Input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Full name"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -165,20 +198,32 @@ export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHelleni
           ) : (
             <div>
               <Label>Organization name *</Label>
-              <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Company or org name" />
+              <Input
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                placeholder="Company or org name"
+              />
             </div>
           )}
 
           {type === "person" && (
             <div>
               <Label>Organization (optional)</Label>
-              <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Affiliation" />
+              <Input
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                placeholder="Affiliation"
+              />
             </div>
           )}
 
           <div>
             <Label>Primary email</Label>
-            <Input type="email" value={primaryEmail} onChange={(e) => setPrimaryEmail(e.target.value)} />
+            <Input
+              type="email"
+              value={primaryEmail}
+              onChange={(e) => setPrimaryEmail(e.target.value)}
+            />
           </div>
           <div>
             <Label>Primary phone</Label>
@@ -195,12 +240,24 @@ export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHelleni
 
           <div className="space-y-2">
             <Label>Address</Label>
-            <Input value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="Street address" />
-            <Input value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} placeholder="Apt, suite, etc." />
+            <Input
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
+              placeholder="Street address"
+            />
+            <Input
+              value={addressLine2}
+              onChange={(e) => setAddressLine2(e.target.value)}
+              placeholder="Apt, suite, etc."
+            />
             <div className="grid grid-cols-3 gap-2">
               <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
               <Input value={state} onChange={(e) => setState(e.target.value)} placeholder="State" />
-              <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="ZIP" />
+              <Input
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                placeholder="ZIP"
+              />
             </div>
           </div>
 

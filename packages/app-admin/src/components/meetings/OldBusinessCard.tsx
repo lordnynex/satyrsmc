@@ -3,11 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Pencil, Check } from "lucide-react";
-import {
-  useOldBusinessCreate,
-  useOldBusinessUpdate,
-  useOldBusinessDelete,
-} from "@/queries/hooks";
+import { useOldBusinessCreate, useOldBusinessUpdate, useOldBusinessDelete } from "@/queries/hooks";
 import type { OldBusinessItem } from "@satyrsmc/shared/client";
 
 interface OldBusinessCardProps {
@@ -97,7 +93,8 @@ export function OldBusinessCard({ meetingId, oldBusiness }: OldBusinessCardProps
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-xs text-muted-foreground">
-          Open items from prior meetings are carried forward. Add new items or close them when resolved.
+          Open items from prior meetings are carried forward. Add new items or close them when
+          resolved.
         </p>
         <ul className="space-y-2">
           {openItems.map((ob) => (

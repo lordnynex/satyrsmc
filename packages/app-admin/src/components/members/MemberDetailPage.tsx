@@ -122,11 +122,7 @@ function MemberDetailContent({ id }: { id: string }) {
           <ArrowLeft className="size-4" />
         </Button>
         <div className="flex-1" />
-        <Button
-          variant="destructive"
-          onClick={handleDelete}
-          disabled={deleteDeleting}
-        >
+        <Button variant="destructive" onClick={handleDelete} disabled={deleteDeleting}>
           <Trash2 className="size-4" />
           Delete
         </Button>
@@ -137,10 +133,7 @@ function MemberDetailContent({ id }: { id: string }) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <MemberProfileCard
-          member={member}
-          onPhotoClick={() => setPhotoLightboxOpen(true)}
-        />
+        <MemberProfileCard member={member} onPhotoClick={() => setPhotoLightboxOpen(true)} />
         <MemberEmergencyContactCard member={member} />
       </div>
 

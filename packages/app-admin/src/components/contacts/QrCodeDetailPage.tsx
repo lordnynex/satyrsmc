@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,8 +47,8 @@ function QrCodeDetailContent({ id }: { id: string }) {
   const navigate = useNavigate();
   const invalidate = useInvalidateQueries();
   const qr = unwrapSuspenseData(useQrCodeSuspense(id))!;
-  const updateMutation = useUpdateQrCode();
-  const deleteMutation = useDeleteQrCode();
+  const _updateMutation = useUpdateQrCode();
+  const _deleteMutation = useDeleteQrCode();
   const [displaySize, setDisplaySize] = useState(256);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -73,7 +73,12 @@ function QrCodeDetailContent({ id }: { id: string }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/contacts/qr-codes")} aria-label="Back">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/contacts/qr-codes")}
+            aria-label="Back"
+          >
             <ArrowLeft className="size-4" />
           </Button>
           <div>
@@ -343,7 +348,8 @@ function DeleteQrCodeDialog({
           <DialogTitle>Delete QR code</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground">
-          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be undone.
+          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be
+          undone.
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

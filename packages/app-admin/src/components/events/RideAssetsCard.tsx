@@ -19,7 +19,7 @@ interface RideAssetsCardProps {
 }
 
 export function RideAssetsCard({
-  eventId,
+  eventId: _eventId,
   eventName,
   assets,
   onAdd,
@@ -139,11 +139,7 @@ export function RideAssetsCard({
                   }`}
                   onClick={() => setSelectedIndex(idx)}
                 >
-                  <img
-                    src={asset.photo_thumbnail_url}
-                    alt=""
-                    className="size-full object-cover"
-                  />
+                  <img src={asset.photo_thumbnail_url} alt="" className="size-full object-cover" />
                 </div>
               ))}
             </div>

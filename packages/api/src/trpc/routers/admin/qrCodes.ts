@@ -63,6 +63,9 @@ export const qrCodesRouter = t.router({
     .query(async ({ ctx, input }) => {
       const result = await ctx.api.qrCodes.getImage(input.id, input.size);
       if (!result) throw new TRPCError({ code: "NOT_FOUND" });
-      return { base64: Buffer.from(result.buffer).toString("base64"), contentType: result.contentType };
+      return {
+        base64: Buffer.from(result.buffer).toString("base64"),
+        contentType: result.contentType,
+      };
     }),
 });

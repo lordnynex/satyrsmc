@@ -44,7 +44,9 @@
     color: #fff;
     padding: 0.5rem 0.75rem;
     border-radius: var(--radius-sm);
-    transition: background var(--transition-fast), color var(--transition-fast);
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast);
   }
   nav a:hover {
     background: rgba(255, 255, 255, 0.08);

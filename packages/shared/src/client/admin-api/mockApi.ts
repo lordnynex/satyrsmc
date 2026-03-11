@@ -8,7 +8,9 @@ const stubNull = (): Promise<null> => Promise.resolve(null);
  * Creates a stub client object whose methods return empty/neutral values.
  * Used as the base for the mock API so any unused method is safe to call.
  */
-function createStubClient(listDefault = stubList): Record<string, (...args: unknown[]) => Promise<unknown>> {
+function createStubClient(
+  listDefault = stubList,
+): Record<string, (...args: unknown[]) => Promise<unknown>> {
   return new Proxy(
     {},
     {
@@ -17,7 +19,7 @@ function createStubClient(listDefault = stubList): Record<string, (...args: unkn
         if (prop === "get" || String(prop).startsWith("get")) return stubNull;
         return stub;
       },
-    }
+    },
   );
 }
 
@@ -49,7 +51,11 @@ function mergeOverrides(base: Api, overrides: Partial<Api>): Api {
   const result = { ...base };
   for (const key of Object.keys(overrides) as (keyof Api)[]) {
     const overrideVal = overrides[key];
-    if (overrideVal && typeof overrideVal === "object" && typeof (overrideVal as Record<string, unknown>).then !== "function") {
+    if (
+      overrideVal &&
+      typeof overrideVal === "object" &&
+      typeof (overrideVal as Record<string, unknown>).then !== "function"
+    ) {
       const baseClient = base[key] as Record<string, unknown>;
       const overrideClient = overrideVal as Record<string, unknown>;
       result[key] = new Proxy(baseClient, {

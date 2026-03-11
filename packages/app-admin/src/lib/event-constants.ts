@@ -21,7 +21,7 @@ export const EVENT_TYPE_SLUGS: Record<EventType, string> = {
 };
 
 export const EVENT_TYPE_FROM_SLUG: Record<string, EventType> = Object.fromEntries(
-  EVENT_TYPES.map((t) => [EVENT_TYPE_SLUGS[t], t])
+  EVENT_TYPES.map((t) => [EVENT_TYPE_SLUGS[t], t]),
 ) as Record<string, EventType>;
 
 export function isFoodCategory(category: string): boolean {

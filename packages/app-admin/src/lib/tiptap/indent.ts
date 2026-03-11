@@ -143,7 +143,9 @@ export const Indent = Extension.create<IndentOptions>({
       const { $from } = state.selection;
       for (let d = $from.depth; d > 0; d--) {
         const node = $from.node(d);
-        if (["bulletList", "orderedList", "taskList", "listItem", "taskItem"].includes(node.type.name)) {
+        if (
+          ["bulletList", "orderedList", "taskList", "listItem", "taskItem"].includes(node.type.name)
+        ) {
           return true;
         }
       }

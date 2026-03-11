@@ -16,10 +16,7 @@ const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }]
 export class MeetingTemplatesService {
   constructor(private ds: DataSource) {}
 
-  private templateToApi(
-    t: MeetingTemplate,
-    doc: Document | null
-  ): MeetingTemplateGetOutput {
+  private templateToApi(t: MeetingTemplate, doc: Document | null): MeetingTemplateGetOutput {
     return {
       id: t.id,
       name: t.name,
@@ -52,11 +49,17 @@ export class MeetingTemplatesService {
   async get(id: string): Promise<MeetingTemplateGetOutput | null> {
     const template = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });
     if (!template) return null;
-    const doc = await this.ds.getRepository(Document).findOne({ where: { id: template.documentId } });
+    const doc = await this.ds
+      .getRepository(Document)
+      .findOne({ where: { id: template.documentId } });
     return this.templateToApi(template, doc);
   }
 
-  async create(body: { name: string; type: string; content: string }): Promise<MeetingTemplateCreateOutput> {
+  async create(body: {
+    name: string;
+    type: string;
+    content: string;
+  }): Promise<MeetingTemplateCreateOutput> {
     const now = new Date().toISOString();
     const doc = this.ds.getRepository(Document).create({
       id: uuid(),
@@ -77,7 +80,10 @@ export class MeetingTemplatesService {
     return this.templateToApi(template, doc);
   }
 
-  async update(id: string, body: Record<string, unknown>): Promise<MeetingTemplateUpdateOutput | null> {
+  async update(
+    id: string,
+    body: Record<string, unknown>,
+  ): Promise<MeetingTemplateUpdateOutput | null> {
     const template = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });
     if (!template) return null;
     const updates: Partial<MeetingTemplate> = {};
@@ -87,7 +93,9 @@ export class MeetingTemplatesService {
     await this.ds.getRepository(MeetingTemplate).update(id, updates);
     const updated = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });
     if (!updated) return null;
-    const doc = await this.ds.getRepository(Document).findOne({ where: { id: updated.documentId } });
+    const doc = await this.ds
+      .getRepository(Document)
+      .findOne({ where: { id: updated.documentId } });
     return this.templateToApi(updated, doc);
   }
 

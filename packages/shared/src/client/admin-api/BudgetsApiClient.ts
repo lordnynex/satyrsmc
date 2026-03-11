@@ -15,10 +15,7 @@ export class BudgetsApiClient {
     return this.client.admin.budgets.create.mutate(body);
   }
 
-  update(
-    id: string,
-    body: { name?: string; year?: number; description?: string }
-  ) {
+  update(id: string, body: { name?: string; year?: number; description?: string }) {
     return this.client.admin.budgets.update.mutate({ id, ...body } as never);
   }
 

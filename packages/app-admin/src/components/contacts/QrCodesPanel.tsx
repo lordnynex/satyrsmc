@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,11 +83,7 @@ export function QrCodesPanel() {
         </CardContent>
       </Card>
 
-      <CreateQrCodeDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onSuccess={refresh}
-      />
+      <CreateQrCodeDialog open={createOpen} onOpenChange={setCreateOpen} onSuccess={refresh} />
 
       {editing && (
         <EditQrCodeDialog
@@ -186,11 +182,7 @@ function QrCodeCard({
             <Download className="size-4" />
             Download
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
+          <Button variant="outline" size="sm" asChild>
             <a href={qr.url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="size-4" />
               Open URL
@@ -361,9 +353,7 @@ function QrCodeForm({
 }) {
   return (
     <div className="space-y-4">
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <div>
         <Label>Name (optional)</Label>
         <Input
@@ -532,7 +522,8 @@ function DeleteQrCodeDialog({
           <DialogTitle>Delete QR code</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground">
-          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be undone.
+          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be
+          undone.
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

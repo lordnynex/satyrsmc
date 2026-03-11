@@ -2,12 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type {
-  ListPreview,
-  MailingList,
-  MailingListIncludedPage,
-  MailingListStats,
-} from "@satyrsmc/shared/client";
 
 /** Data: MailingList[] */
 export function useMailingListsSuspense() {
@@ -26,30 +20,19 @@ export function useMailingListSuspense(id: string) {
 
 /** Data: ListPreview */
 export function useMailingListPreview(id: string | null) {
-  return trpc.admin.mailingLists.preview.useQuery(
-    { id: id! },
-    { enabled: !!id }
-  );
+  return trpc.admin.mailingLists.preview.useQuery({ id: id! }, { enabled: !!id });
 }
 
 /** Data: MailingListStats */
 export function useMailingListStats(id: string | null) {
-  return trpc.admin.mailingLists.getStats.useQuery(
-    { id: id! },
-    { enabled: !!id }
-  );
+  return trpc.admin.mailingLists.getStats.useQuery({ id: id! }, { enabled: !!id });
 }
 
 /** Data: MailingListIncludedPage */
-export function useMailingListIncluded(
-  id: string | null,
-  page: number,
-  limit: number,
-  q?: string
-) {
+export function useMailingListIncluded(id: string | null, page: number, limit: number, q?: string) {
   return trpc.admin.mailingLists.getIncluded.useQuery(
     { listId: id!, page, limit, q },
-    { enabled: !!id }
+    { enabled: !!id },
   );
 }
 

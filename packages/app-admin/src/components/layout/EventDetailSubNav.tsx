@@ -24,15 +24,13 @@ interface EventDetailSubNavProps {
 }
 
 export function EventDetailSubNav({ className, eventType }: EventDetailSubNavProps) {
-  const sections = eventType === "rides"
-    ? ALL_SECTIONS.filter((s) => s.rides)
-    : ALL_SECTIONS;
+  const sections = eventType === "rides" ? ALL_SECTIONS.filter((s) => s.rides) : ALL_SECTIONS;
 
   return (
     <div
       className={cn(
         "sticky top-14 z-30 flex flex-wrap items-center justify-between gap-4 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        className
+        className,
       )}
     >
       <nav

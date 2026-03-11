@@ -21,7 +21,7 @@ interface ContactPhotoCarouselProps {
 }
 
 export function ContactPhotoCarousel({
-  contactId,
+  contactId: _contactId,
   contactName,
   photos,
   onAddPhoto,
@@ -173,11 +173,7 @@ export function ContactPhotoCarousel({
               }`}
               onClick={() => setSelectedIndex(idx)}
             >
-              <img
-                src={photo.photo_thumbnail_url}
-                alt=""
-                className="size-full object-cover"
-              />
+              <img src={photo.photo_thumbnail_url} alt="" className="size-full object-cover" />
               {photo.type === "profile" && (
                 <div
                   className="absolute bottom-0 left-0 right-0 h-4 bg-black/50 flex items-center justify-center"

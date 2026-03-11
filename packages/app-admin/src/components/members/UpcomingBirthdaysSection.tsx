@@ -15,7 +15,9 @@ export function UpcomingBirthdaysSection({ members }: UpcomingBirthdaysSectionPr
 
   return (
     <section className="rounded-lg border bg-muted/30 px-4 py-3">
-      <h2 className="text-sm font-medium text-muted-foreground mb-2">Upcoming birthdays (next 3 months)</h2>
+      <h2 className="text-sm font-medium text-muted-foreground mb-2">
+        Upcoming birthdays (next 3 months)
+      </h2>
       <ul className="space-y-1 text-sm">
         {upcoming.map(({ member, date }) => (
           <li key={member.id} className="flex items-center gap-2">

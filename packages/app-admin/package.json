@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "bun run build.ts",
-    "dev": "BUILD_DEV=1 bun run build && bun run dev-server.ts"
+    "dev": "BUILD_DEV=1 bun run build && bun run dev-server.ts",
+    "test": "bun test src/",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov src/"
   },
   "dependencies": {
     "@satyrsmc/api": "workspace:*",

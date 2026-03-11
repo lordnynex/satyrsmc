@@ -25,9 +25,7 @@ export function CreateCommitteePage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [formedDate, setFormedDate] = useState(
-    new Date().toISOString().slice(0, 10)
-  );
+  const [formedDate, setFormedDate] = useState(new Date().toISOString().slice(0, 10));
   const [chairpersonMemberId, setChairpersonMemberId] = useState("");
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -108,19 +106,13 @@ export function CreateCommitteePage() {
           </div>
           <div className="space-y-2">
             <Label>Formation date</Label>
-            <DatePicker
-              value={formedDate}
-              onChange={setFormedDate}
-              placeholder="Pick date"
-            />
+            <DatePicker value={formedDate} onChange={setFormedDate} placeholder="Pick date" />
           </div>
           <div className="space-y-2">
             <Label>Chairperson</Label>
             <Select
               value={chairpersonMemberId || "__none__"}
-              onValueChange={(v) =>
-                setChairpersonMemberId(v === "__none__" ? "" : v)
-              }
+              onValueChange={(v) => setChairpersonMemberId(v === "__none__" ? "" : v)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select chairperson (optional)" />

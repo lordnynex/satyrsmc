@@ -40,7 +40,11 @@ export const contactsRouter = t.router({
     .meta({ description: "Create a new contact." })
     .mutation(async ({ ctx, input }) => {
       const c = await ctx.api.contacts.create(input as Partial<Contact> & { display_name: string });
-      if (!c) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Contact create returned null" });
+      if (!c)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Contact create returned null",
+        });
       return c;
     }),
 

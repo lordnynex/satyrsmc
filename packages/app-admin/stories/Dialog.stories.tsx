@@ -38,9 +38,7 @@ export const Default: Story = {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Dialog title</DialogTitle>
-          <DialogDescription>
-            A short description of what this dialog is for.
-          </DialogDescription>
+          <DialogDescription>A short description of what this dialog is for.</DialogDescription>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">Dialog body content.</p>
         <DialogFooter>

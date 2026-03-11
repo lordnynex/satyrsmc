@@ -217,7 +217,7 @@ export const eventsRouter = t.router({
       const out = await ctx.api.events.memberAttendees.update(
         input.eventId,
         input.memberAttendeeId,
-        { waiver_signed: input.waiver_signed }
+        { waiver_signed: input.waiver_signed },
       );
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
@@ -332,7 +332,7 @@ export const eventsRouter = t.router({
       const out = await ctx.api.events.milestones.addMember(
         input.eventId,
         input.mid,
-        input.memberId
+        input.memberId,
       );
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
@@ -342,11 +342,7 @@ export const eventsRouter = t.router({
     .output(EventRemoveMilestoneMemberOutputSchema)
     .meta({ description: "Remove a member from a milestone." })
     .mutation(async ({ ctx, input }) => {
-      await ctx.api.events.milestones.removeMember(
-        input.eventId,
-        input.mid,
-        input.memberId
-      );
+      await ctx.api.events.milestones.removeMember(input.eventId, input.mid, input.memberId);
       return { ok: true as const };
     }),
 
@@ -366,11 +362,9 @@ export const eventsRouter = t.router({
     .output(EventUpdatePackingCategoryOutputSchema)
     .meta({ description: "Update a packing category." })
     .mutation(async ({ ctx, input }) => {
-      const out = await ctx.api.events.packingCategories.update(
-        input.eventId,
-        input.cid,
-        { name: input.name }
-      );
+      const out = await ctx.api.events.packingCategories.update(input.eventId, input.cid, {
+        name: input.name,
+      });
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
     }),
@@ -485,7 +479,7 @@ export const eventsRouter = t.router({
       const out = await ctx.api.events.assignments.addMember(
         input.eventId,
         input.aid,
-        input.memberId
+        input.memberId,
       );
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
@@ -495,11 +489,7 @@ export const eventsRouter = t.router({
     .output(EventRemoveAssignmentMemberOutputSchema)
     .meta({ description: "Remove a member from an assignment." })
     .mutation(async ({ ctx, input }) => {
-      await ctx.api.events.assignments.removeMember(
-        input.eventId,
-        input.aid,
-        input.memberId
-      );
+      await ctx.api.events.assignments.removeMember(input.eventId, input.aid, input.memberId);
       return { ok: true as const };
     }),
 });

@@ -14,7 +14,7 @@ export function CostPerCategoryBarChart({ lineItems }: CostPerCategoryBarChartPr
       acc[li.category] = (acc[li.category] ?? 0) + total;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   const categories = Object.keys(categoryTotals).sort();

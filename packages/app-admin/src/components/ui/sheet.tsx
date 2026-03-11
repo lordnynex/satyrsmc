@@ -3,15 +3,12 @@ import { XIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
 const SheetClose = DialogPrimitive.Close;
 
-function SheetPortal({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+function SheetPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 
@@ -24,7 +21,7 @@ function SheetOverlay({
       data-slot="sheet-overlay"
       className={cn(
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
-        className
+        className,
       )}
       {...props}
     />
@@ -39,8 +36,7 @@ const sheetVariants = {
   },
 };
 
-interface SheetContentProps
-  extends React.ComponentProps<typeof DialogPrimitive.Content> {
+interface SheetContentProps extends React.ComponentProps<typeof DialogPrimitive.Content> {
   side?: "left" | "right";
   showCloseButton?: boolean;
 }
@@ -60,7 +56,7 @@ function SheetContent({
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed z-50 gap-4 border-r shadow-lg duration-200 outline-none",
           sheetVariants.side[side],
-          className
+          className,
         )}
         {...props}
       >
@@ -89,10 +85,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function SheetTitle({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+function SheetTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
       data-slot="sheet-title"

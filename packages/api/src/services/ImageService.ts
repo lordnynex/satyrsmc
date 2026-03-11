@@ -30,15 +30,10 @@ export class ImageService {
    * @param options - Resize dimensions and quality settings
    * @returns Optimized image as Buffer, or null if processing fails
    */
-  static async resize(
-    input: Buffer,
-    options: ResizeOptions
-  ): Promise<Buffer | null> {
+  static async resize(input: Buffer, options: ResizeOptions): Promise<Buffer | null> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
     try {
-      let pipeline = sharp(input)
-        .resize(opts.width, opts.height, { fit: opts.fit })
-        .rotate(); // Auto-rotate based on EXIF
+      let pipeline = sharp(input).resize(opts.width, opts.height, { fit: opts.fit }).rotate(); // Auto-rotate based on EXIF
 
       switch (opts.format) {
         case "png":
@@ -109,7 +104,7 @@ export class ImageService {
     input: Buffer,
     maxWidth = 2560,
     maxHeight = 2560,
-    quality = 90
+    quality = 90,
   ): Promise<Buffer | null> {
     try {
       const metadata = await sharp(input).metadata();
@@ -125,9 +120,7 @@ export class ImageService {
         });
       }
 
-      return await pipeline
-        .jpeg({ quality, mozjpeg: true })
-        .toBuffer();
+      return await pipeline.jpeg({ quality, mozjpeg: true }).toBuffer();
     } catch {
       return null;
     }

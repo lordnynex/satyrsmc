@@ -95,10 +95,12 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setResult("pass");
   };
 
-  const getMember = (id: string | null) => (id ? members.find((x) => x.id === id) ?? null : null);
-  const moverName = (id: string | null) => (id ? members.find((x) => x.id === id)?.name ?? id : "—");
+  const getMember = (id: string | null) => (id ? (members.find((x) => x.id === id) ?? null) : null);
+  const moverName = (id: string | null) =>
+    id ? (members.find((x) => x.id === id)?.name ?? id) : "—";
   const canSaveAdd = moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
-  const canSaveEdit = editingId && moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
+  const canSaveEdit =
+    editingId && moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
 
   return (
     <Card>
@@ -162,10 +164,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
       <CardContent>
         <ul className="space-y-2">
           {motions.map((m) => (
-            <li
-              key={m.id}
-              className="flex items-start justify-between gap-2 rounded-md border p-3"
-            >
+            <li key={m.id} className="flex items-start justify-between gap-2 rounded-md border p-3">
               {editingId === m.id ? (
                 <div className="flex flex-1 flex-wrap gap-2">
                   <Select value={moverMemberId} onValueChange={setMoverMemberId}>

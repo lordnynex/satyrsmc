@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { MailingBatch } from "@satyrsmc/shared/client";
 
 /** Data: MailingBatch */
 export function useMailingBatchSuspense(id: string) {
@@ -23,8 +22,7 @@ export function useUpdateMailingBatchRecipientStatus() {
       recipientId: string;
       status: string;
       reason?: string;
-    }) =>
-      api.mailingBatches.updateRecipientStatus(batchId, recipientId, status, reason),
+    }) => api.mailingBatches.updateRecipientStatus(batchId, recipientId, status, reason),
     onSuccess: (_, { batchId }) =>
       qc.invalidateQueries({ queryKey: queryKeys.mailingBatch(batchId) }),
   });

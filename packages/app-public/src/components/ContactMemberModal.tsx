@@ -48,20 +48,13 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
       >
         <div className="card-body flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h2 className="m-0 text-lg font-semibold">
-              Contact {memberName}
-            </h2>
+            <h2 className="m-0 text-lg font-semibold">Contact {memberName}</h2>
             <button
               onClick={onClose}
               className="p-1 rounded hover:bg-white/10 text-slate-400 hover:text-white"
               aria-label="Close"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -73,10 +66,7 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
           </div>
 
           {submitted ? (
-            <div
-              className="text-center py-6"
-              style={{ color: "var(--color-accent)" }}
-            >
+            <div className="text-center py-6" style={{ color: "var(--color-accent)" }}>
               <p className="text-lg font-semibold m-0 mb-2">Message sent!</p>
               <p className="m-0" style={{ color: "var(--color-muted)" }}>
                 Your message has been forwarded to {memberName}.

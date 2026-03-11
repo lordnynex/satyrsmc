@@ -2,8 +2,5 @@
   "name": "satyrsmc-api-docker",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/api",
-    "packages/shared"
-  ]
+  "workspaces": ["packages/api", "packages/shared"]
 }

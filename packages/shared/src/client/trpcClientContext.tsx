@@ -10,11 +10,7 @@ export function TrpcClientProvider({
   client: TrpcClient;
   children: ReactNode;
 }) {
-  return (
-    <TrpcClientContext.Provider value={client}>
-      {children}
-    </TrpcClientContext.Provider>
-  );
+  return <TrpcClientContext.Provider value={client}>{children}</TrpcClientContext.Provider>;
 }
 
 export function useTrpcClient(): TrpcClient {

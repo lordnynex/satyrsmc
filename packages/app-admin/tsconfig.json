@@ -1,1 +1,24 @@
-{"compilerOptions":{"target":"ESNext","module":"ESNext","moduleResolution":"bundler","jsx":"react-jsx","strict":true,"skipLibCheck":true,"noEmit":true,"baseUrl":".","paths":{"@/*":["./src/*"],"@/components/*":["./src/components/*"],"@/data/*":["./src/data/*"],"@/state/*":["./src/state/*"],"@/hooks/*":["./src/hooks/*"],"@/queries/*":["./src/queries/*"],"@/lib/*":["./src/lib/*"],"@/export/*":["./src/export/*"],"@/trpc":["./src/trpc.ts"]}},"include":["src/**/*","build.ts"]}
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/data/*": ["./src/data/*"],
+      "@/state/*": ["./src/state/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/queries/*": ["./src/queries/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/export/*": ["./src/export/*"],
+      "@/trpc": ["./src/trpc.ts"]
+    }
+  },
+  "include": ["src/**/*", "build.ts"]
+}

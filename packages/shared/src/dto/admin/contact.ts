@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { CONTACT_TYPES, CONTACT_STATUSES, CONTACT_STATUS_FILTERS, CONSENT_STATUSES, SORT_DIRECTIONS } from "../../lib/enums";
+import {
+  CONTACT_TYPES,
+  CONTACT_STATUSES,
+  CONTACT_STATUS_FILTERS,
+  CONSENT_STATUSES,
+  SORT_DIRECTIONS,
+} from "../../lib/enums";
 
 // ----- Input schemas -----
 
@@ -43,8 +49,12 @@ const ContactCreateUpdateFieldsSchema = z.object({
   hellenic: z.boolean().optional(),
   deceased: z.boolean().optional(),
   deceased_year: z.number().nullable().optional(),
-  emails: z.array(z.object({ email: z.string(), type: z.string(), is_primary: z.boolean().optional() })).optional(),
-  phones: z.array(z.object({ phone: z.string(), type: z.string(), is_primary: z.boolean().optional() })).optional(),
+  emails: z
+    .array(z.object({ email: z.string(), type: z.string(), is_primary: z.boolean().optional() }))
+    .optional(),
+  phones: z
+    .array(z.object({ phone: z.string(), type: z.string(), is_primary: z.boolean().optional() }))
+    .optional(),
   addresses: z
     .array(
       z.object({
@@ -56,16 +66,29 @@ const ContactCreateUpdateFieldsSchema = z.object({
         country: z.string().nullable().optional(),
         type: z.string().optional(),
         is_primary_mailing: z.boolean().optional(),
-      })
+      }),
     )
     .optional(),
-  emergency_contacts: z.array(z.object({ name: z.string(), phone: z.string(), email: z.string().nullable().optional(), relationship: z.string().nullable().optional() })).optional(),
+  emergency_contacts: z
+    .array(
+      z.object({
+        name: z.string(),
+        phone: z.string(),
+        email: z.string().nullable().optional(),
+        relationship: z.string().nullable().optional(),
+      }),
+    )
+    .optional(),
   tagIds: z.array(z.string()).optional(),
 });
 
-export const ContactCreateInputSchema = z.object({ display_name: z.string() }).merge(ContactCreateUpdateFieldsSchema);
+export const ContactCreateInputSchema = z
+  .object({ display_name: z.string() })
+  .merge(ContactCreateUpdateFieldsSchema);
 
-export const ContactUpdateInputSchema = z.object({ id: z.string() }).merge(ContactCreateUpdateFieldsSchema);
+export const ContactUpdateInputSchema = z
+  .object({ id: z.string() })
+  .merge(ContactCreateUpdateFieldsSchema);
 
 export const ContactDeleteInputSchema = z.object({ id: z.string() });
 
@@ -96,10 +119,56 @@ const ContactSchema = z.object({
   hellenic: z.boolean().optional(),
   deceased: z.boolean().optional(),
   deceased_year: z.number().nullable().optional(),
-  emails: z.array(z.object({ id: z.string(), contact_id: z.string(), email: z.string(), type: z.string(), is_primary: z.boolean() })).optional(),
-  phones: z.array(z.object({ id: z.string(), contact_id: z.string(), phone: z.string(), type: z.string(), is_primary: z.boolean() })).optional(),
-  addresses: z.array(z.object({ id: z.string(), contact_id: z.string(), address_line1: z.string().nullable(), address_line2: z.string().nullable(), city: z.string().nullable(), state: z.string().nullable(), postal_code: z.string().nullable(), country: z.string().nullable(), type: z.string(), is_primary_mailing: z.boolean() })).optional(),
-  emergency_contacts: z.array(z.object({ id: z.string(), contact_id: z.string(), name: z.string(), phone: z.string(), email: z.string().nullable(), relationship: z.string().nullable() })).optional(),
+  emails: z
+    .array(
+      z.object({
+        id: z.string(),
+        contact_id: z.string(),
+        email: z.string(),
+        type: z.string(),
+        is_primary: z.boolean(),
+      }),
+    )
+    .optional(),
+  phones: z
+    .array(
+      z.object({
+        id: z.string(),
+        contact_id: z.string(),
+        phone: z.string(),
+        type: z.string(),
+        is_primary: z.boolean(),
+      }),
+    )
+    .optional(),
+  addresses: z
+    .array(
+      z.object({
+        id: z.string(),
+        contact_id: z.string(),
+        address_line1: z.string().nullable(),
+        address_line2: z.string().nullable(),
+        city: z.string().nullable(),
+        state: z.string().nullable(),
+        postal_code: z.string().nullable(),
+        country: z.string().nullable(),
+        type: z.string(),
+        is_primary_mailing: z.boolean(),
+      }),
+    )
+    .optional(),
+  emergency_contacts: z
+    .array(
+      z.object({
+        id: z.string(),
+        contact_id: z.string(),
+        name: z.string(),
+        phone: z.string(),
+        email: z.string().nullable(),
+        relationship: z.string().nullable(),
+      }),
+    )
+    .optional(),
   tags: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
   contact_photos: z.array(z.unknown()).optional(),
   contact_notes: z.array(z.unknown()).optional(),
@@ -143,5 +212,10 @@ export type ContactEmail = NonNullable<ContactGetOutput["emails"]>[number];
 export type ContactPhone = NonNullable<ContactGetOutput["phones"]>[number];
 export type ContactAddress = NonNullable<ContactGetOutput["addresses"]>[number];
 export type ContactEmergencyContact = NonNullable<ContactGetOutput["emergency_contacts"]>[number];
-export type ContactNote = { id: string; contact_id: string; content: string; created_at: string | null };
+export type ContactNote = {
+  id: string;
+  contact_id: string;
+  content: string;
+  created_at: string | null;
+};
 export type ContactPhoto = NonNullable<ContactGetOutput["contact_photos"]>[number];

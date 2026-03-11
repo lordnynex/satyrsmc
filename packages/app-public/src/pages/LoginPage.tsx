@@ -8,8 +8,7 @@ const LoginPage: React.FC = () => (
       <div className="card">
         <div className="card-body flex flex-col gap-4 items-center">
           <p style={{ color: "var(--color-muted)" }}>
-            The member area is available through the admin panel. Click below to
-            access it.
+            The member area is available through the admin panel. Click below to access it.
           </p>
           <a href="/admin" className="btn btn-primary">
             Go to Member Area &rarr;

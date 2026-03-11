@@ -56,12 +56,7 @@ import {
   WebsiteContactSubmissionsPanel,
   WebsiteSettingsPanel,
 } from "@/pages";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Printer } from "lucide-react";
 import { useScenarioMetrics } from "@/hooks/useScenarioMetrics";
@@ -95,7 +90,7 @@ function AppContent() {
 
   return (
     <>
-      {(printMode || isPrintRoute) ? (
+      {printMode || isPrintRoute ? (
         <div className="relative min-h-screen bg-white p-4 md:p-8">
           <div className="print:hidden fixed right-4 top-4 z-50 flex gap-2">
             <Button
@@ -111,7 +106,9 @@ function AppContent() {
               variant="outline"
               size="icon"
               className="rounded-full border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => (isPrintRoute ? navigate("/budgeting/projections") : setPrintMode(false))}
+              onClick={() =>
+                isPrintRoute ? navigate("/budgeting/projections") : setPrintMode(false)
+              }
               aria-label="Close print view"
             >
               <X className="size-5" />
@@ -122,7 +119,12 @@ function AppContent() {
             <Button variant="outline" onClick={openPrintInNewTab}>
               Open in new tab
             </Button>
-            <Button variant="outline" onClick={() => (isPrintRoute ? navigate("/budgeting/projections") : setPrintMode(false))}>
+            <Button
+              variant="outline"
+              onClick={() =>
+                isPrintRoute ? navigate("/budgeting/projections") : setPrintMode(false)
+              }
+            >
               Back to Dashboard
             </Button>
           </div>
@@ -378,7 +380,10 @@ function AppContent() {
                 }
               />
             </Route>
-            <Route path="budgeting" element={<BudgetingLayout onPrint={onPrint} onEmail={onEmail} />}>
+            <Route
+              path="budgeting"
+              element={<BudgetingLayout onPrint={onPrint} onEmail={onEmail} />}
+            >
               <Route index element={<Navigate to="projections" replace />} />
               <Route
                 path="projections"
