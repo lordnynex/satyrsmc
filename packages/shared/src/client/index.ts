@@ -12,7 +12,7 @@ export { unwrap, getErrorMessage } from "./helpers";
 export * from "../lib/enums";
 
 // Client-only constants and state types
-export { ALL_MEMBERS_ID, MEMBER_POSITIONS, type MemberPosition } from "./constants";
+export { ALL_MEMBERS_ID } from "./constants";
 export type {
   Inputs,
   LineItem,

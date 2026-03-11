@@ -5,9 +5,9 @@ import { fileToBase64 } from "./utils";
 export class EventsApiClient {
   constructor(private client: TrpcClient) {}
 
-  list(opts?: { type?: string }) {
+  list(opts?: { type?: EventType }) {
     return this.client.admin.events.list.query(
-      opts?.type ? { type: opts.type as EventType } : undefined
+      opts?.type ? { type: opts.type } : undefined
     );
   }
 

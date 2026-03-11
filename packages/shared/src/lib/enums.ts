@@ -57,6 +57,17 @@ export type SortDirection = (typeof SORT_DIRECTIONS)[number];
 
 // --- Member ---
 
+export const MEMBER_POSITIONS = [
+  "President",
+  "Vice President",
+  "Road Captain",
+  "Treasurer",
+  "Recording Secretary",
+  "Correspondence Secretary",
+  "Member",
+] as const;
+export type MemberPosition = (typeof MEMBER_POSITIONS)[number];
+
 export const MEMBER_PHOTO_SIZES = ["thumbnail", "medium", "full"] as const;
 export type MemberPhotoSize = (typeof MEMBER_PHOTO_SIZES)[number];
 

@@ -58,7 +58,7 @@ TypeORM Entity → Service (returns @satyrsmc/shared type) → tRPC Router → A
 
 - **Services MUST annotate return types** with the shared interface (e.g., `entityToContact(e: ContactEntity): Contact`)
 - **Shared types** in `@satyrsmc/shared/client` and `@satyrsmc/shared/dto/*` are the cross-package contract
-- **Zod for tRPC inputs only** — all mutation inputs need Zod schemas, no `.passthrough()`
+- **Zod for tRPC input/output validation** — all mutation inputs need Zod schemas, no `.passthrough()`
 - **Import from canonical paths** — `@satyrsmc/shared/client` for frontend types/constants, or `@satyrsmc/shared/dto/admin/*` for DTOs
 - **Frontend hooks get types automatically** from `createTRPCReact<AppRouter>()` — don't re-annotate
 
@@ -66,13 +66,14 @@ See the "End-to-End Type Safety" section in [CONTRIBUTING.md](CONTRIBUTING.md) f
 
 ## Shared Types
 
-The `@satyrsmc/shared` package contains hand-written TypeScript interfaces. There are no auto-generated Zod schemas. Zod is used only for tRPC input validation in routers.
+The `@satyrsmc/shared` package contains Zod DTO schemas, derived TypeScript types, and shared domain enums. Types are inferred from Zod schemas via `z.infer<>`.
 
 **Exports** (from `packages/shared/package.json`):
 ```
-@satyrsmc/shared/client           — trpc, createTrpcClient, TrpcClientProvider, useTrpcClient; RouterOutputs/RouterInputs; Contact, Member, Event, MeetingSummary, CommitteeSummary, Document, Budget, Scenario, QrCode, etc.; MEMBER_POSITIONS, Inputs, LineItem, ScenarioMetrics; unwrap, getErrorMessage
+@satyrsmc/shared/client           — tRPC client, React providers, type aliases, domain enums, constants, helpers
 @satyrsmc/shared/client/admin-api — buildApi, useApi, ApiProvider, *ApiClient (admin-only)
-@satyrsmc/shared/dto/*            — DTO schemas and inferred types (admin/event, admin/contact, website, …)
+@satyrsmc/shared/dto/*            — Zod DTO schemas and inferred types (admin/event, admin/contact, website, …)
+@satyrsmc/shared/lib/enums        — Domain string enums (const arrays + derived types) — server-safe
 @satyrsmc/shared/lib/constants    — ALL_MEMBERS_ID constant
 ```
 

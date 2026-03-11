@@ -1,4 +1,4 @@
-import { MEMBER_POSITIONS } from "@satyrsmc/shared/client";
+import { MEMBER_POSITIONS } from "@satyrsmc/shared/lib/enums";
 
 export function uuid(): string {
   return crypto.randomUUID();

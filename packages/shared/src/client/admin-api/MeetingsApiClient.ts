@@ -1,5 +1,5 @@
 import type { TrpcClient } from "../trpc";
-import type { MotionResult } from "../../lib/enums";
+import type { MeetingSortField, MotionResult } from "../../lib/enums";
 import type {
   MeetingListOutput,
   MeetingGetOutput,
@@ -22,7 +22,7 @@ export class MeetingsApiClient {
     return this.client.admin.meetings.listMotions.query(params);
   }
 
-  list(options?: { sort?: "date" | "meeting_number" }): Promise<MeetingListOutput> {
+  list(options?: { sort?: MeetingSortField }): Promise<MeetingListOutput> {
     return this.client.admin.meetings.list.query(
       options?.sort ? { sort: options.sort } : undefined
     ) as Promise<MeetingListOutput>;
