@@ -215,22 +215,22 @@ export function AddContactDialog({ open, onOpenChange, onSuccess, defaultHelleni
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="hellenic"
+              id="add-contact-hellenic"
               checked={hellenic}
               onChange={(e) => setHellenic(e.target.checked)}
               className="rounded"
             />
-            <Label htmlFor="hellenic">Hellenic</Label>
+            <Label htmlFor="add-contact-hellenic">Hellenic</Label>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="deceased"
+              id="add-contact-deceased"
               checked={deceased}
               onChange={(e) => setDeceased(e.target.checked)}
               className="rounded"
             />
-            <Label htmlFor="deceased">Deceased</Label>
+            <Label htmlFor="add-contact-deceased">Deceased</Label>
             {deceased && (
               <Input
                 type="number"

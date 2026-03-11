@@ -20,6 +20,8 @@ export interface DatePickerProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  /** Id for the trigger (for label htmlFor / accessibility) */
+  id?: string;
 }
 
 /**
@@ -32,6 +34,7 @@ export function DatePicker({
   placeholder = "Pick a date",
   className,
   disabled,
+  id,
 }: DatePickerProps) {
   const date = value ? new Date(value + "T12:00:00") : undefined;
 
@@ -45,6 +48,8 @@ export function DatePicker({
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          type="button"
+          id={id}
           variant="outline"
           disabled={disabled}
           data-empty={!date}

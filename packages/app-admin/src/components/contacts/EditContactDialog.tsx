@@ -354,32 +354,32 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="doNotContact"
+              id="edit-contact-doNotContact"
               checked={doNotContact}
               onChange={(e) => setDoNotContact(e.target.checked)}
               className="rounded"
             />
-            <Label htmlFor="doNotContact">Do not contact</Label>
+            <Label htmlFor="edit-contact-doNotContact">Do not contact</Label>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="hellenic"
+              id="edit-contact-hellenic"
               checked={hellenic}
               onChange={(e) => setHellenic(e.target.checked)}
               className="rounded"
             />
-            <Label htmlFor="hellenic">Hellenic</Label>
+            <Label htmlFor="edit-contact-hellenic">Hellenic</Label>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="deceased"
+              id="edit-contact-deceased"
               checked={deceased}
               onChange={(e) => setDeceased(e.target.checked)}
               className="rounded"
             />
-            <Label htmlFor="deceased">Deceased</Label>
+            <Label htmlFor="edit-contact-deceased">Deceased</Label>
             {deceased && (
               <Input
                 type="number"
