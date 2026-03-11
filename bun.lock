@@ -158,7 +158,6 @@
       "name": "@satyrsmc/shared",
       "version": "0.1.0",
       "dependencies": {
-        "@satyrsmc/api": "workspace:*",
         "@trpc/client": "^11.0.0-rc.0",
         "@trpc/react-query": "^11.0.0-rc.0",
         "@trpc/server": "^11.0.0-rc.0",
@@ -167,7 +166,11 @@
         "zod": "^3.24.0",
       },
       "devDependencies": {
+        "@satyrsmc/api": "workspace:*",
         "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "@satyrsmc/api": "workspace:*",
       },
     },
   },

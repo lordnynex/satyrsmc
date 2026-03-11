@@ -27,10 +27,13 @@
     "./dto/admin/incident": "./src/dto/admin/incident.ts"
   },
   "devDependencies": {
+    "@satyrsmc/api": "workspace:*",
     "@types/bun": "latest"
   },
+  "peerDependencies": {
+    "@satyrsmc/api": "workspace:*"
+  },
   "dependencies": {
-    "@satyrsmc/api": "workspace:*",
     "@trpc/client": "^11.0.0-rc.0",
     "@trpc/react-query": "^11.0.0-rc.0",
     "@trpc/server": "^11.0.0-rc.0",
