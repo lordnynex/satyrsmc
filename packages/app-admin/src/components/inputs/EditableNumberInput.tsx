@@ -12,7 +12,6 @@ interface EditableNumberInputProps extends Omit<
   onChange: (value: number) => void;
   min?: number;
   max?: number;
-  step?: number;
   className?: string;
   readOnly?: boolean;
 }
@@ -23,7 +22,6 @@ export function EditableNumberInput({
   onChange,
   min,
   max,
-  step: _step = 1,
   className,
   readOnly,
   ...props

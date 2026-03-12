@@ -2,13 +2,14 @@ import { useEventsOptional, useWebsiteEventsFeed, useUpdateEvent } from "@/queri
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { EventType } from "@satyrsmc/shared/client";
 
 interface EventSummary {
   id: string;
   name: string;
   year?: number | null;
   event_date?: string | null;
-  event_type?: string;
+  event_type?: EventType;
   show_on_website?: boolean;
 }
 
@@ -46,7 +47,7 @@ export function WebsiteEventsFeedPanel() {
                     {event.year != null && (
                       <span className="ml-2 text-muted-foreground text-sm">{event.year}</span>
                     )}
-                    {event.event_type && event.event_type !== "badger" && (
+                    {event.event_type && event.event_type !== EventType.Badger && (
                       <span className="ml-2 text-muted-foreground text-sm">
                         ({event.event_type})
                       </span>

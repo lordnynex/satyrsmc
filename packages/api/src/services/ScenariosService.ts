@@ -11,6 +11,14 @@ import type {
   ScenarioUpdateOutput,
 } from "@satyrsmc/shared/dto/admin/scenario";
 
+function safeParseInputs(raw: string): Record<string, unknown> {
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
 export class ScenariosService {
   constructor(
     private db: DbLike,
@@ -24,7 +32,7 @@ export class ScenariosService {
       id: e.id,
       name: e.name,
       description: e.description,
-      inputs: JSON.parse(e.inputs) as Record<string, unknown>,
+      inputs: safeParseInputs(e.inputs),
       created_at: toISOString(e.createdAt) ?? "",
     }));
   }
@@ -37,7 +45,7 @@ export class ScenariosService {
       id: entity.id,
       name: entity.name,
       description: entity.description,
-      inputs: JSON.parse(entity.inputs),
+      inputs: safeParseInputs(entity.inputs),
       created_at: toISOString(entity.createdAt) ?? "",
     };
   }
@@ -67,7 +75,7 @@ export class ScenariosService {
     if (!existing) return null;
     const name = body.name ?? existing.name;
     const description = body.description !== undefined ? body.description : existing.description;
-    const inputs = body.inputs ?? JSON.parse(existing.inputs);
+    const inputs = body.inputs ?? safeParseInputs(existing.inputs);
     await this.db.run("UPDATE scenarios SET name = ?, description = ?, inputs = ? WHERE id = ?", [
       name,
       description,

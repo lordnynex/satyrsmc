@@ -92,7 +92,7 @@ export function useWebsiteUpdateSettings() {
 
 export function useWebsiteUpdateMenu() {
   const api = useApi();
-  const _qc = useQueryClient();
+  const utils = trpc.useUtils();
   return useMutation({
     mutationFn: ({
       key,
@@ -106,6 +106,8 @@ export function useWebsiteUpdateMenu() {
         sort_order?: number;
       }[];
     }) => api.website.updateMenu(key, items),
-    onSuccess: () => {},
+    onSuccess: () => {
+      void utils.admin.website.getMenus.invalidate();
+    },
   });
 }

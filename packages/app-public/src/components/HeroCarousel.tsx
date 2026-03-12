@@ -22,7 +22,8 @@ export const HeroCarousel: React.FC<Props> = ({ slides, intervalMs = 5000 }) => 
     >
       {slides.map((s, i) => (
         <img
-          key={s.src}
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          key={`${s.src}-${i}`}
           src={s.src}
           alt={s.alt || ""}
           style={{
@@ -40,7 +41,8 @@ export const HeroCarousel: React.FC<Props> = ({ slides, intervalMs = 5000 }) => 
       <div style={{ position: "absolute", bottom: 8, right: 12, display: "flex", gap: 6 }}>
         {slides.map((s, i) => (
           <span
-            key={s.src}
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            key={`${s.src}-${i}`}
             style={{
               width: 8,
               height: 8,
