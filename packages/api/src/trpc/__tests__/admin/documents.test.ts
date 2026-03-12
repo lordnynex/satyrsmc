@@ -3,7 +3,7 @@
  * Covers get, update, getVersions, restore, exportPdf (no create in router).
  */
 
-import { TRPCError } from "@trpc/server";
+import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
@@ -83,7 +83,9 @@ describe("admin.documents", () => {
 
   describe("exportPdf", () => {
     test("returns base64 pdf when document exists", async () => {
-      const doc = await harness.api.documents.create('{"type":"doc","content":[{"type":"paragraph"}]}');
+      const doc = await harness.api.documents.create(
+        '{"type":"doc","content":[{"type":"paragraph"}]}',
+      );
       const result = await harness.caller.admin.documents.exportPdf({ id: doc.id });
       expect(result.base64).toBeDefined();
       expect(typeof result.base64).toBe("string");

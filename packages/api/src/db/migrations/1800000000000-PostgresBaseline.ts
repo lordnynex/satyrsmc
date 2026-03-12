@@ -500,9 +500,15 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
       )
     `);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meetings_date ON meetings(date)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meetings_previous_meeting_id ON meetings(previous_meeting_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meetings_agenda_document_id ON meetings(agenda_document_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meetings_minutes_document_id ON meetings(minutes_document_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meetings_previous_meeting_id ON meetings(previous_meeting_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meetings_agenda_document_id ON meetings(agenda_document_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meetings_minutes_document_id ON meetings(minutes_document_id)`,
+    );
 
     // ── meeting_motions ──
     await queryRunner.query(`
@@ -517,9 +523,15 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meeting_motions_meeting_id ON meeting_motions(meeting_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meeting_motions_mover_member_id ON meeting_motions(mover_member_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meeting_motions_seconder_member_id ON meeting_motions(seconder_member_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meeting_motions_meeting_id ON meeting_motions(meeting_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meeting_motions_mover_member_id ON meeting_motions(mover_member_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meeting_motions_seconder_member_id ON meeting_motions(seconder_member_id)`,
+    );
 
     // ── meeting_action_items ──
     await queryRunner.query(`
@@ -535,7 +547,9 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meeting_action_items_meeting_id ON meeting_action_items(meeting_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meeting_action_items_meeting_id ON meeting_action_items(meeting_id)`,
+    );
 
     // ── old_business_items ──
     await queryRunner.query(`
@@ -550,7 +564,9 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_old_business_items_meeting_id ON old_business_items(meeting_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_old_business_items_meeting_id ON old_business_items(meeting_id)`,
+    );
 
     // ── meeting_templates ──
     await queryRunner.query(`
@@ -563,8 +579,12 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meeting_templates_type ON meeting_templates(type)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_meeting_templates_document_id ON meeting_templates(document_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meeting_templates_type ON meeting_templates(type)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_meeting_templates_document_id ON meeting_templates(document_id)`,
+    );
 
     // ── committees ──
     await queryRunner.query(`
@@ -581,9 +601,15 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committees_formed_date ON committees(formed_date)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committees_status ON committees(status)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committees_chairperson_member_id ON committees(chairperson_member_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committees_formed_date ON committees(formed_date)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committees_status ON committees(status)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committees_chairperson_member_id ON committees(chairperson_member_id)`,
+    );
 
     // ── committee_members ──
     await queryRunner.query(`
@@ -595,7 +621,9 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         UNIQUE(committee_id, member_id)
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committee_members_committee_id ON committee_members(committee_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committee_members_committee_id ON committee_members(committee_id)`,
+    );
 
     // ── committee_meetings ──
     await queryRunner.query(`
@@ -615,9 +643,15 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committee_meetings_committee_id ON committee_meetings(committee_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committee_meetings_date ON committee_meetings(date)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_committee_meetings_previous_meeting_id ON committee_meetings(previous_meeting_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committee_meetings_committee_id ON committee_meetings(committee_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committee_meetings_date ON committee_meetings(date)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_committee_meetings_previous_meeting_id ON committee_meetings(previous_meeting_id)`,
+    );
 
     // ── site_pages ──
     await queryRunner.query(`
@@ -658,7 +692,9 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         sort_order INTEGER NOT NULL DEFAULT 0
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_site_menu_items_menu_key ON site_menu_items(menu_key)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_site_menu_items_menu_key ON site_menu_items(menu_key)`,
+    );
 
     // ── blog_posts ──
     await queryRunner.query(`
@@ -676,7 +712,9 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
       )
     `);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON blog_posts(published_at)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON blog_posts(published_at)`,
+    );
 
     // ── contact_submissions ──
     await queryRunner.query(`
@@ -719,17 +757,23 @@ export class PostgresBaseline1800000000000 implements MigrationInterface {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_incidents_event_id ON incidents(event_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_incidents_contact_id ON incidents(contact_id)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_incidents_member_id ON incidents(member_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_incidents_event_id ON incidents(event_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_incidents_contact_id ON incidents(contact_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_incidents_member_id ON incidents(member_id)`,
+    );
 
     // ── seed data ──
     await queryRunner.query(
       `INSERT INTO members (id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [ALL_MEMBERS_ID, "All Members"]
+      [ALL_MEMBERS_ID, "All Members"],
     );
     await queryRunner.query(
-      `INSERT INTO site_settings (id, title, updated_at) VALUES ('default', '', NOW()) ON CONFLICT DO NOTHING`
+      `INSERT INTO site_settings (id, title, updated_at) VALUES ('default', '', NOW()) ON CONFLICT DO NOTHING`,
     );
   }
 

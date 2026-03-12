@@ -41,10 +41,7 @@ export function LineItemsTable() {
     );
   }
 
-  const total = lineItems.reduce(
-    (sum, li) => sum + li.unitCost * li.quantity,
-    0
-  );
+  const total = lineItems.reduce((sum, li) => sum + li.unitCost * li.quantity, 0);
 
   return (
     <Card>

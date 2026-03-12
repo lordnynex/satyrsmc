@@ -3,31 +3,18 @@
  * Not part of DTO layer; shapes match current usage and align with DTO LineItem/Budget where applicable.
  */
 
-export interface Inputs {
-  profitTarget: number;
-  staffCount: number;
-  maxOccupancy: number;
-  complimentaryTickets: number;
-  dayPassPrice: number;
-  dayPassesSold: number;
-  ticketPrices: {
-    proposedPrice1: number;
-    proposedPrice2: number;
-    proposedPrice3: number;
-    staffPrice1: number;
-    staffPrice2: number;
-    staffPrice3: number;
-  };
-}
+import type { ScenarioInputs as Inputs } from "../dto/admin/scenario";
+
+export type { Inputs };
 
 export interface LineItem {
   id: string;
   name: string;
   category: string;
-  comments?: string;
+  comments?: string | null;
   unitCost: number;
   quantity: number;
-  historicalCosts?: Record<string, number>;
+  historicalCosts?: Record<string, number> | null;
 }
 
 export interface AttendanceScenarios {

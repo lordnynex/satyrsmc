@@ -84,7 +84,7 @@ export function ActionItemsCard({ meetingId, actionItems }: ActionItemsCardProps
 
   const startEdit = (a: MeetingActionItem) => {
     setEditingId(a.id);
-    setDescription(a.description);
+    setDescription(a.description ?? "");
     setAssigneeMemberId(a.assignee_member_id ?? "");
     setDueDate(toDateOnly(a.due_date) || "");
   };
@@ -188,9 +188,7 @@ export function ActionItemsCard({ meetingId, actionItems }: ActionItemsCardProps
                     </p>
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       {a.assignee_name && <span>→ {a.assignee_name}</span>}
-                      {a.due_date && (
-                        <span>Due {formatDateOnly(a.due_date)}</span>
-                      )}
+                      {a.due_date && <span>Due {formatDateOnly(a.due_date)}</span>}
                     </div>
                   </div>
                   <div className="flex gap-1">

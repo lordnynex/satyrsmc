@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   useCommitteeMeetingSuspense,
@@ -18,11 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 import {
   ArrowLeft,
@@ -45,9 +41,7 @@ export function CommitteeMeetingDetailPage() {
   }>();
   const navigate = useNavigate();
   const committee = unwrapSuspenseData(useCommitteeSuspense(committeeId!))!;
-  const meeting = unwrapSuspenseData(
-    useCommitteeMeetingSuspense(committeeId!, meetingId!)
-  )!;
+  const meeting = unwrapSuspenseData(useCommitteeMeetingSuspense(committeeId!, meetingId!))!;
   const updateMeetingMutation = useUpdateCommitteeMeeting();
   const exportPdfMutation = useExportDocumentPdf();
   const deleteMeetingMutation = useDeleteCommitteeMeeting();
@@ -56,8 +50,8 @@ export function CommitteeMeetingDetailPage() {
   const [metadataSaving, setMetadataSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [meetingNumber, setMeetingNumber] = useState(meeting.meeting_number);
-  const [date, setDate] = useState(meeting.date);
+  const [meetingNumber, setMeetingNumber] = useState<number | "">(meeting.meeting_number ?? "");
+  const [date, setDate] = useState(meeting.date?.toString() ?? "");
   const [location, setLocation] = useState(meeting.location ?? "");
   const [startTime, setStartTime] = useState(meeting.start_time ?? "");
   const [endTime, setEndTime] = useState(meeting.end_time ?? "");
@@ -69,7 +63,7 @@ export function CommitteeMeetingDetailPage() {
   const handleMetadataSave = async () => {
     const num = Number(meetingNumber);
     if (Number.isNaN(num) || num < 1) {
-      setMeetingNumber(meeting.meeting_number);
+      setMeetingNumber(meeting.meeting_number ?? "");
       setEditingMetadata(false);
       return;
     }
@@ -94,8 +88,8 @@ export function CommitteeMeetingDetailPage() {
   };
 
   const handleMetadataCancel = () => {
-    setMeetingNumber(meeting.meeting_number);
-    setDate(meeting.date);
+    setMeetingNumber(meeting.meeting_number ?? "");
+    setDate(meeting.date?.toString() ?? "");
     setLocation(meeting.location ?? "");
     setStartTime(meeting.start_time ?? "");
     setEndTime(meeting.end_time ?? "");
@@ -152,8 +146,7 @@ export function CommitteeMeetingDetailPage() {
     }
   };
 
-  const minutesExportDisabled =
-    !meeting.minutes_document_id || isMinutesEmpty();
+  const minutesExportDisabled = !meeting.minutes_document_id || isMinutesEmpty();
 
   return (
     <div className="flex flex-col gap-6">
@@ -173,9 +166,7 @@ export function CommitteeMeetingDetailPage() {
                   value={meetingNumber === "" ? "" : meetingNumber}
                   onChange={(e) =>
                     setMeetingNumber(
-                      e.target.value === ""
-                        ? ""
-                        : parseInt(e.target.value, 10) || ""
+                      e.target.value === "" ? "" : parseInt(e.target.value, 10) || "",
                     )
                   }
                   className="h-9 w-20"
@@ -213,18 +204,10 @@ export function CommitteeMeetingDetailPage() {
                   onChange={(e) => setVideoConferenceUrl(e.target.value)}
                   className="h-9 w-48"
                 />
-                <Button
-                  size="sm"
-                  onClick={handleMetadataSave}
-                  disabled={metadataSaving}
-                >
+                <Button size="sm" onClick={handleMetadataSave} disabled={metadataSaving}>
                   {metadataSaving ? "Saving..." : "Save"}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMetadataCancel}
-                >
+                <Button variant="ghost" size="sm" onClick={handleMetadataCancel}>
                   Cancel
                 </Button>
                 <Button
@@ -243,12 +226,10 @@ export function CommitteeMeetingDetailPage() {
                   {committee.name} – Meeting #{meeting.meeting_number}
                 </h1>
                 <span className="text-muted-foreground">
-                  {formatDateOnly(meeting.date)}
+                  {formatDateOnly(meeting.date?.toString() ?? "")}
                 </span>
                 {meeting.location && (
-                  <span className="text-muted-foreground">
-                    • {meeting.location}
-                  </span>
+                  <span className="text-muted-foreground">• {meeting.location}</span>
                 )}
                 {(meeting.start_time || meeting.end_time) && (
                   <span className="text-muted-foreground">
@@ -286,7 +267,7 @@ export function CommitteeMeetingDetailPage() {
           <span className="flex items-center gap-2 text-sm">
             <Calendar className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Date</span>
-            <span className="font-medium">{formatDateOnly(meeting.date)}</span>
+            <span className="font-medium">{formatDateOnly(meeting.date?.toString() ?? "")}</span>
           </span>
           {(meeting.start_time || meeting.end_time) && (
             <span className="flex items-center gap-2 text-sm">
@@ -323,8 +304,8 @@ export function CommitteeMeetingDetailPage() {
           <DialogHeader>
             <DialogTitle>Delete committee meeting?</DialogTitle>
             <DialogDescription>
-              This will permanently delete this meeting and its agenda and
-              minutes documents. This cannot be undone.
+              This will permanently delete this meeting and its agenda and minutes documents. This
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter showCloseButton={false}>
@@ -335,11 +316,7 @@ export function CommitteeMeetingDetailPage() {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
               {deleting ? "Deleting…" : "Delete meeting"}
             </Button>
           </DialogFooter>
@@ -350,10 +327,7 @@ export function CommitteeMeetingDetailPage() {
         <div className="rounded-lg border">
           <div className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2">
             <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-left hover:opacity-80"
-              >
+              <button type="button" className="flex items-center gap-2 text-left hover:opacity-80">
                 {agendaOpen ? (
                   <ChevronDown className="size-4 text-muted-foreground" />
                 ) : (
@@ -373,9 +347,7 @@ export function CommitteeMeetingDetailPage() {
                 Export
               </Button>
               <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                <Link
-                  to={`/meetings/committees/${committeeId}/meetings/${meetingId}/agenda/edit`}
-                >
+                <Link to={`/meetings/committees/${committeeId}/meetings/${meetingId}/agenda/edit`}>
                   <Pencil className="size-3.5" />
                   Edit
                 </Link>
@@ -385,7 +357,7 @@ export function CommitteeMeetingDetailPage() {
           <CollapsibleContent>
             <div className="border-t px-3 py-2">
               <RichDocumentEditor
-                value={meeting.agenda_content}
+                value={meeting.agenda_content ?? ""}
                 onChange={() => {}}
                 placeholder="No agenda yet."
                 editable={false}
@@ -400,10 +372,7 @@ export function CommitteeMeetingDetailPage() {
         <div className="rounded-lg border">
           <div className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2">
             <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-left hover:opacity-80"
-              >
+              <button type="button" className="flex items-center gap-2 text-left hover:opacity-80">
                 {minutesOpen ? (
                   <ChevronDown className="size-4 text-muted-foreground" />
                 ) : (
@@ -425,12 +394,7 @@ export function CommitteeMeetingDetailPage() {
                     <FileDown className="size-3.5" />
                     Export
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2"
-                    asChild
-                  >
+                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
                     <Link
                       to={`/meetings/committees/${committeeId}/meetings/${meetingId}/minutes/edit`}
                     >

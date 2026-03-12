@@ -1,12 +1,16 @@
 import type { TrpcClient } from "../trpc";
-import type { MeetingTemplateListOutput, MeetingTemplateGetOutput } from "@satyrsmc/shared/dto/admin/meeting";
+import type { MeetingTemplateType } from "../../lib/enums";
+import type {
+  MeetingTemplateListOutput,
+  MeetingTemplateGetOutput,
+} from "@satyrsmc/shared/dto/admin/meeting";
 
 export class MeetingTemplatesApiClient {
   constructor(private client: TrpcClient) {}
 
-  list(options?: { type?: "agenda" | "minutes" }): Promise<MeetingTemplateListOutput> {
+  list(options?: { type?: MeetingTemplateType }): Promise<MeetingTemplateListOutput> {
     return this.client.admin.meetingTemplates.list.query(
-      options?.type ? { type: options.type } : undefined
+      options?.type ? { type: options.type } : undefined,
     ) as Promise<MeetingTemplateListOutput>;
   }
 
@@ -16,11 +20,7 @@ export class MeetingTemplatesApiClient {
       .catch(() => null) as Promise<MeetingTemplateGetOutput | null>;
   }
 
-  create(body: {
-    name: string;
-    type: "agenda" | "minutes";
-    content: string;
-  }) {
+  create(body: { name: string; type: MeetingTemplateType; content: string }) {
     return this.client.admin.meetingTemplates.create.mutate(body);
   }
 

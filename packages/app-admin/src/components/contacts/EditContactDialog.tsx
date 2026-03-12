@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useUpdateContact } from "@/queries/hooks";
 import { isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
+import { ConsentStatus } from "@satyrsmc/shared/client";
 import type { Contact } from "@satyrsmc/shared/client";
 
 interface EditContactDialogProps {
@@ -28,7 +28,12 @@ interface EditContactDialogProps {
   onSuccess: () => void;
 }
 
-export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: EditContactDialogProps) {
+export function EditContactDialog({
+  open,
+  onOpenChange,
+  contact,
+  onSuccess,
+}: EditContactDialogProps) {
   const updateContactMutation = useUpdateContact();
   const [displayName, setDisplayName] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -37,15 +42,19 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
   const [howWeKnow, setHowWeKnow] = useState("");
   const [clubName, setClubName] = useState("");
   const [role, setRole] = useState("");
-  const [okToEmail, setOkToEmail] = useState<Contact["ok_to_email"]>("unknown");
-  const [okToMail, setOkToMail] = useState<Contact["ok_to_mail"]>("unknown");
-  const [okToSms, setOkToSms] = useState<Contact["ok_to_sms"]>("unknown");
+  const [okToEmail, setOkToEmail] = useState<Contact["ok_to_email"]>(ConsentStatus.Unknown);
+  const [okToMail, setOkToMail] = useState<Contact["ok_to_mail"]>(ConsentStatus.Unknown);
+  const [okToSms, setOkToSms] = useState<Contact["ok_to_sms"]>(ConsentStatus.Unknown);
   const [doNotContact, setDoNotContact] = useState(false);
   const [hellenic, setHellenic] = useState(false);
   const [deceased, setDeceased] = useState(false);
   const [deceasedYear, setDeceasedYear] = useState<string>("");
-  const [emails, setEmails] = useState<Array<{ email: string; type: string; is_primary: boolean }>>([]);
-  const [phones, setPhones] = useState<Array<{ phone: string; type: string; is_primary: boolean }>>([]);
+  const [emails, setEmails] = useState<Array<{ email: string; type: string; is_primary: boolean }>>(
+    [],
+  );
+  const [phones, setPhones] = useState<Array<{ phone: string; type: string; is_primary: boolean }>>(
+    [],
+  );
   const [addresses, setAddresses] = useState<
     Array<{
       address_line1: string;
@@ -74,7 +83,7 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
       setRole(contact.role ?? "");
       setOkToEmail(contact.ok_to_email);
       setOkToMail(contact.ok_to_mail);
-      setOkToSms(contact.ok_to_sms ?? "unknown");
+      setOkToSms(contact.ok_to_sms ?? ConsentStatus.Unknown);
       setDoNotContact(contact.do_not_contact);
       setHellenic(contact.hellenic ?? false);
       setDeceased(contact.deceased ?? false);
@@ -84,14 +93,14 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
           email: e.email,
           type: e.type,
           is_primary: e.is_primary,
-        }))
+        })),
       );
       setPhones(
         (contact.phones ?? []).map((p) => ({
           phone: p.phone,
           type: p.type,
           is_primary: p.is_primary,
-        }))
+        })),
       );
       setAddresses(
         (contact.addresses ?? []).length > 0
@@ -105,7 +114,18 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
               type: a.type,
               is_primary_mailing: a.is_primary_mailing,
             }))
-          : [{ address_line1: "", address_line2: "", city: "", state: "", postal_code: "", country: "US", type: "home", is_primary_mailing: true }]
+          : [
+              {
+                address_line1: "",
+                address_line2: "",
+                city: "",
+                state: "",
+                postal_code: "",
+                country: "US",
+                type: "home",
+                is_primary_mailing: true,
+              },
+            ],
       );
       setTagNames((contact.tags ?? []).map((t) => t.name));
     }
@@ -140,34 +160,41 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
           hellenic,
           deceased,
           deceased_year: deceased && deceasedYear.trim() ? parseInt(deceasedYear, 10) : null,
-          emails: emails.filter((e) => e.email.trim()).map((e) => ({
-          id: "",
-          contact_id: contact.id,
-          email: e.email.trim(),
-          type: (e.type as Contact["emails"] extends (infer E)[] ? E extends { type: infer T } ? T : never : never) ?? "other",
-          is_primary: e.is_primary,
-        })),
-        phones: phonesWithDigits.map((p) => ({
-          id: "",
-          contact_id: contact.id,
-          phone: normalizePhoneForStorage(p.phone),
-          type: (p.type as "work" | "home" | "cell" | "other") ?? "other",
-          is_primary: p.is_primary,
-        })),
-        addresses: addresses
-          .filter((a) => a.address_line1.trim() || a.city.trim() || a.postal_code.trim())
-          .map((a) => ({
+          emails: emails
+            .filter((e) => e.email.trim())
+            .map((e) => ({
+              id: "",
+              contact_id: contact.id,
+              email: e.email.trim(),
+              type:
+                (e.type as Contact["emails"] extends (infer E)[]
+                  ? E extends { type: infer T }
+                    ? T
+                    : never
+                  : never) ?? "other",
+              is_primary: e.is_primary,
+            })),
+          phones: phonesWithDigits.map((p) => ({
             id: "",
             contact_id: contact.id,
-            address_line1: a.address_line1.trim() || null,
-            address_line2: a.address_line2.trim() || null,
-            city: a.city.trim() || null,
-            state: a.state.trim() || null,
-            postal_code: a.postal_code.trim() || null,
-            country: a.country || "US",
-            type: (a.type as "home" | "work" | "postal" | "other") ?? "home",
-            is_primary_mailing: a.is_primary_mailing,
+            phone: normalizePhoneForStorage(p.phone),
+            type: (p.type as "work" | "home" | "cell" | "other") ?? "other",
+            is_primary: p.is_primary,
           })),
+          addresses: addresses
+            .filter((a) => a.address_line1.trim() || a.city.trim() || a.postal_code.trim())
+            .map((a) => ({
+              id: "",
+              contact_id: contact.id,
+              address_line1: a.address_line1.trim() || null,
+              address_line2: a.address_line2.trim() || null,
+              city: a.city.trim() || null,
+              state: a.state.trim() || null,
+              postal_code: a.postal_code.trim() || null,
+              country: a.country || "US",
+              type: (a.type as "home" | "work" | "postal" | "other") ?? "home",
+              is_primary_mailing: a.is_primary_mailing,
+            })),
           tags: tagNames.filter(Boolean).map((name) => ({ id: "", name })),
         },
       });
@@ -247,8 +274,8 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
                     const next = [...prev];
                     next[0] = { ...next[0]!, address_line1: e.target.value };
                     return next;
-                  }
-                )}
+                  })
+                }
                 placeholder="Street"
               />
               <Input
@@ -258,8 +285,8 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
                     const next = [...prev];
                     next[0] = { ...next[0]!, address_line2: e.target.value };
                     return next;
-                  }
-                )}
+                  })
+                }
                 placeholder="Apt, suite"
               />
               <div className="grid grid-cols-3 gap-2">
@@ -312,7 +339,10 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
             <div className="space-y-2">
               <div>
                 <Label className="text-muted-foreground text-sm">OK to email</Label>
-                <Select value={okToEmail} onValueChange={(v) => setOkToEmail(v as Contact["ok_to_email"])}>
+                <Select
+                  value={okToEmail}
+                  onValueChange={(v) => setOkToEmail(v as Contact["ok_to_email"])}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -325,7 +355,10 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
               </div>
               <div>
                 <Label className="text-muted-foreground text-sm">OK to mail</Label>
-                <Select value={okToMail} onValueChange={(v) => setOkToMail(v as Contact["ok_to_mail"])}>
+                <Select
+                  value={okToMail}
+                  onValueChange={(v) => setOkToMail(v as Contact["ok_to_mail"])}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -338,7 +371,10 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
               </div>
               <div>
                 <Label className="text-muted-foreground text-sm">OK to SMS</Label>
-                <Select value={okToSms} onValueChange={(v) => setOkToSms(v as Contact["ok_to_sms"])}>
+                <Select
+                  value={okToSms}
+                  onValueChange={(v) => setOkToSms(v as Contact["ok_to_sms"])}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -396,7 +432,14 @@ export function EditContactDialog({ open, onOpenChange, contact, onSuccess }: Ed
             <Label>Tags (comma-separated)</Label>
             <Input
               value={tagNames.join(", ")}
-              onChange={(e) => setTagNames(e.target.value.split(",").map((s) => s.trim()).filter(Boolean) as string[])}
+              onChange={(e) =>
+                setTagNames(
+                  e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean) as string[],
+                )
+              }
               placeholder="Vendor, Club, VIP"
             />
           </div>

@@ -28,31 +28,18 @@ const MembersPage: React.FC = () => {
         style={{ width: 160, height: 160 }}
       >
         {person.image ? (
-          <img
-            src={person.image}
-            alt={person.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
         ) : null}
       </div>
       <h3 className="m-0 font-semibold text-lg">{person.name}</h3>
-      {person.title && (
-        <p className="m-0 opacity-90 text-sm text-satyrs-gold">
-          {person.title}
-        </p>
-      )}
-      {person.joinedYear && (
-        <span className="badge text-xs">Joined {person.joinedYear}</span>
-      )}
+      {person.title && <p className="m-0 opacity-90 text-sm text-satyrs-gold">{person.title}</p>}
+      {person.joinedYear && <span className="badge text-xs">Joined {person.joinedYear}</span>}
     </button>
   );
 
   return (
     <div className="flex flex-col gap-8 md:gap-10 max-w-5xl mx-auto">
-      <Hero
-        title="Club Members"
-        subtitle="Officers and members of the Satyrs M/C"
-      />
+      <Hero title="Club Members" subtitle="Officers and members of the Satyrs M/C" />
 
       {/* Officers */}
       <section className="flex flex-col gap-4">

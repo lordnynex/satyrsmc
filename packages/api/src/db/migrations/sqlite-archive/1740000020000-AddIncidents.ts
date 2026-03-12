@@ -39,4 +39,3 @@ export class AddIncidents1740000020000 implements MigrationInterface {
     await queryRunner.query("DROP TABLE IF EXISTS incidents");
   }
 }
-

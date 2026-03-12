@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Pencil, Plus } from "lucide-react";
 import { useAppState } from "@/state/AppState";
-import {
-  useCreateBudget,
-  useDeleteBudget,
-  useUpdateBudget,
-} from "@/queries/hooks";
+import { useCreateBudget, useDeleteBudget, useUpdateBudget } from "@/queries/hooks";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +20,7 @@ import { LineItemsTable } from "./LineItemsTable";
 export function BudgetsPanel() {
   const { id: budgetId } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const {
-    budgets,
-    currentBudget,
-    refreshBudgets,
-    refreshBudget,
-  } = useAppState();
+  const { budgets, currentBudget, refreshBudgets, refreshBudget } = useAppState();
   const createBudgetMutation = useCreateBudget();
   const deleteBudgetMutation = useDeleteBudget();
   const updateBudgetMutation = useUpdateBudget();
@@ -38,7 +29,12 @@ export function BudgetsPanel() {
   const [newYear, setNewYear] = useState(new Date().getFullYear());
   const [newDescription, setNewDescription] = useState("");
   const [editOpen, setEditOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<{ id: string; name: string; year: number; description: string | null } | null>(null);
+  const [editingBudget, setEditingBudget] = useState<{
+    id: string;
+    name: string;
+    year: number;
+    description: string | null;
+  } | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
 
@@ -91,20 +87,20 @@ export function BudgetsPanel() {
   if (budgetId) {
     return (
       <BudgetDetail
-          budgetId={budgetId}
-          onBack={() => navigate("/budgeting/budget")}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-          onSaveEdit={handleSaveEdit}
-          editOpen={editOpen}
-          setEditOpen={setEditOpen}
-          editingBudget={editingBudget}
-          setEditingBudget={setEditingBudget}
-          editName={editName}
-          setEditName={setEditName}
-          editDescription={editDescription}
-          setEditDescription={setEditDescription}
-        />
+        budgetId={budgetId}
+        onBack={() => navigate("/budgeting/budget")}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+        onSaveEdit={handleSaveEdit}
+        editOpen={editOpen}
+        setEditOpen={setEditOpen}
+        editingBudget={editingBudget}
+        setEditingBudget={setEditingBudget}
+        editName={editName}
+        setEditName={setEditName}
+        editDescription={editDescription}
+        setEditDescription={setEditDescription}
+      />
     );
   }
 
@@ -139,11 +135,11 @@ export function BudgetsPanel() {
                     onClick={() => navigate(`/budgeting/budget/${b.id}`)}
                   >
                     <div>
-                      <p className="font-medium">{b.name} ({b.year})</p>
+                      <p className="font-medium">
+                        {b.name} ({b.year})
+                      </p>
                       {b.description && (
-                        <p className="text-muted-foreground text-sm mt-1">
-                          {b.description}
-                        </p>
+                        <p className="text-muted-foreground text-sm mt-1">{b.description}</p>
                       )}
                     </div>
                     <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -224,7 +220,9 @@ export function BudgetsPanel() {
               <Input
                 type="number"
                 value={newYear}
-                onChange={(e) => setNewYear(parseInt(e.target.value, 10) || new Date().getFullYear())}
+                onChange={(e) =>
+                  setNewYear(parseInt(e.target.value, 10) || new Date().getFullYear())
+                }
                 min={2000}
                 max={2100}
               />
@@ -259,7 +257,7 @@ function BudgetDetail({
   onSaveEdit,
   editOpen,
   setEditOpen,
-  editingBudget,
+  editingBudget: _editingBudget,
   setEditingBudget,
   editName,
   setEditName,
@@ -267,18 +265,20 @@ function BudgetDetail({
   setEditDescription,
 }: {
   budgetId: string;
-  onBack: () => void;
+  onBack: () => void | Promise<void>;
   onEdit: (b: { id: string; name: string; year: number; description: string | null }) => void;
-  onDelete: (id: string) => void;
-  onSaveEdit: () => void;
+  onDelete: (id: string) => void | Promise<void>;
+  onSaveEdit: () => void | Promise<void>;
   editOpen: boolean;
   setEditOpen: (open: boolean) => void;
   editingBudget: { id: string; name: string; year: number; description: string | null } | null;
-  setEditingBudget: (b: { id: string; name: string; year: number; description: string | null } | null) => void;
+  setEditingBudget: (
+    b: { id: string; name: string; year: number; description: string | null } | null,
+  ) => void;
   editName: string;
-  setEditName: (s: string) => void;
+  setEditName: Dispatch<SetStateAction<string>>;
   editDescription: string;
-  setEditDescription: (s: string) => void;
+  setEditDescription: Dispatch<SetStateAction<string>>;
 }) {
   const { currentBudget } = useAppState();
   const handleEditDialogChange = (open: boolean) => {
@@ -295,10 +295,7 @@ function BudgetDetail({
   }
 
   const lineItems = currentBudget.lineItems ?? [];
-  const total = lineItems.reduce(
-    (sum, li) => sum + li.unitCost * li.quantity,
-    0
-  );
+  const total = lineItems.reduce((sum, li) => sum + li.unitCost * li.quantity, 0);
   const categoryTotals = lineItems.reduce(
     (acc, li) => {
       const itemTotal = li.unitCost * li.quantity;
@@ -306,12 +303,11 @@ function BudgetDetail({
       acc[cat] = (acc[cat] ?? 0) + itemTotal;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
   const categories = Object.keys(categoryTotals).sort();
 
-  const formatCurrency = (n: number) =>
-    n.toLocaleString("en-US", { minimumFractionDigits: 2 });
+  const formatCurrency = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2 });
 
   return (
     <div className="space-y-6">
@@ -323,7 +319,14 @@ function BudgetDetail({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => onEdit(currentBudget)}
+            onClick={() =>
+              onEdit({
+                id: currentBudget.id,
+                name: currentBudget.name,
+                year: currentBudget.year,
+                description: currentBudget.description ?? null,
+              })
+            }
           >
             <Pencil className="size-4" />
             Edit
@@ -340,7 +343,9 @@ function BudgetDetail({
 
       <Card>
         <CardHeader>
-          <CardTitle>{currentBudget.name} ({currentBudget.year})</CardTitle>
+          <CardTitle>
+            {currentBudget.name} ({currentBudget.year})
+          </CardTitle>
           {currentBudget.description && (
             <CardDescription>{currentBudget.description}</CardDescription>
           )}
@@ -350,9 +355,7 @@ function BudgetDetail({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Summary</CardTitle>
-          <CardDescription>
-            Total cost and breakdown by category
-          </CardDescription>
+          <CardDescription>Total cost and breakdown by category</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -377,7 +380,9 @@ function BudgetDetail({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No line items yet. Add items below to see the breakdown.</p>
+              <p className="text-sm text-muted-foreground">
+                No line items yet. Add items below to see the breakdown.
+              </p>
             )}
           </div>
         </CardContent>

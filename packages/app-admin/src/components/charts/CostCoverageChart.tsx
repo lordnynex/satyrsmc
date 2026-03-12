@@ -76,12 +76,7 @@ export function CostCoverageChart({ metrics }: CostCoverageChartProps) {
       description="Revenue ÷ costs. At 1× you break even; above 1× you're profitable."
       calculationNote="Gross Revenue ÷ Total Costs"
     >
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <Chart options={options} series={series} type="bar" height={280} />
     </ChartCard>
   );
 }

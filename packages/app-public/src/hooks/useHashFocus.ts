@@ -15,7 +15,7 @@ export const useHashFocus = () => {
 
       if (element) {
         // Small delay to ensure DOM is ready
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           element.scrollIntoView({ behavior: "smooth", block: "start" });
 
           // Make element focusable if it isn't already
@@ -25,6 +25,7 @@ export const useHashFocus = () => {
 
           element.focus({ preventScroll: true });
         }, 100);
+        return () => clearTimeout(timer);
       }
     }
   }, [location.hash]);

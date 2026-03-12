@@ -13,7 +13,9 @@
     "dev": "bun --watch run src/index.ts",
     "start": "NODE_ENV=production bun run src/index.ts",
     "start:api-only": "NODE_ENV=production bun run src/api-only.ts",
-    "migrate": "bun run scripts/migrate.ts"
+    "migrate": "bun run scripts/migrate.ts",
+    "test": "bun test src/",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov src/"
   },
   "dependencies": {
     "@satyrsmc/shared": "workspace:*",

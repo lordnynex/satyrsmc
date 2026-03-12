@@ -11,6 +11,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 ### What's Built
 
 **API (`@satyrsmc/api`)**
+
 - Bun.serve() + tRPC 11 server on port 3000
 - TypeORM entities (~50) with Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
 - 20+ TypeORM migrations
@@ -20,6 +21,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - Photo/asset serving via sharp (BYTEA in Postgres)
 
 **Admin App (`@satyrsmc/app-admin`)**
+
 - Full club management SPA: members, contacts, events, meetings, budgets, committees, mailing lists, QR codes, documents, incidents
 - Website CMS: pages, blog posts, menus, contact submissions, settings, event feeds, member profiles, galleries
 - shadcn/ui components (button, card, dialog, input, label, select, textarea, tabs, sheet, calendar, date-picker, dropdown-menu, collapsible, popover)
@@ -28,6 +30,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - ApexCharts for budget visualizations
 
 **Public App (`@satyrsmc/app-public`)** — unauthenticated marketing site only
+
 - 5 public pages: Home, About, Events, Badger, Gallery
 - tRPC client wired up (`createTRPCReact<AppRouter>()`) but **no pages consume tRPC yet** — all use static data files
 - Static data: `content/events.ts`, `data/members.json`, `data/timeline.json`
@@ -36,6 +39,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - Members and Member Profile pages will move to `app-admin` (see Phase 3)
 
 **Shared (`@satyrsmc/shared`)**
+
 - Hand-written TypeScript interfaces for all domains — holdover from the original REST client DTOs
 - No Zod schemas yet (Zod only used in tRPC router input validation)
 - `lib/constants` and `lib/pst` utilities
@@ -108,6 +112,7 @@ TypeORM entity-first is the current approach (decorators define schema, hand-wri
 **Goal:** Migrate from SQLite to Postgres as the single database.
 
 **What was done:**
+
 - Replaced SQLite (sql.js / `data/badger.db`) with Postgres via TypeORM + pg
 - Single `dataSource.ts` with `type: "postgres"`, connection via `DATABASE_URL`
 - All entities and migrations consolidated into one Postgres DataSource
@@ -123,17 +128,20 @@ TypeORM entity-first is the current approach (decorators define schema, hand-wri
 **Goal:** JWT-based auth with registration flow, shared across both frontend apps.
 
 **Database:**
+
 - `users` table: id, contactId FK, username, passwordHash, userType (enum), userStatus (enum), lastLogin, failedLoginAttempts, lockedUntil, resetTokenHash, resetTokenExpiresAt, passwordChangedAt, iceName, icePhone, adminNote
 - `registrations` table: id, email, firstName, lastName, tokenHash, expiresAt
 - Enums: `user_type` (user/admin/webmaster), `user_status` (active/locked/rejected/suspended/inactive/deactivated)
 
 **Shared Types (`@satyrsmc/shared/types/auth`):**
+
 - User, Registration, AuthUser interfaces
 - Zod schemas for password, username, signup, login (Zod becomes a dependency of shared)
 
 **Server (`@satyrsmc/api`):**
 
 Auth service with:
+
 - `register` — verify reCAPTCHA → check duplicate email (generic response) → create registration with hashed token + 14-day expiry → send email
 - `validateToken` — hash input, look up registration → return validity
 - `signup` — validate token → check username uniqueness → hash password → create user (status: "locked") → delete registration → notify admin
@@ -145,6 +153,7 @@ Auth service with:
 - `resetPassword` — validate token + expiry → update password, clear token/lockout
 
 tRPC middleware in `trpc.ts`:
+
 ```typescript
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.session) throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -165,10 +174,12 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 ```
 
 **Supporting Services:**
+
 - `EmailService` interface + `ConsoleEmailService` stub (logs to console in dev)
 - `RecaptchaService` for server-side reCAPTCHA v2 verification
 
 **JWT & Cookies:**
+
 - `jose` library, HS256 symmetric signing
 - `satyrs_access`: httpOnly, 15min expiry, path `/trpc`
 - `satyrs_refresh`: httpOnly, 7 days, path `/trpc/auth.refresh`
@@ -177,6 +188,7 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 - Tokens: SHA-256 hashes stored in DB, raw tokens in emails
 
 **Frontend (app-admin, at `members.satyrsmc.org`):**
+
 - `AuthContext` using React 19 `use()` pattern
 - `useAuth()` hook: `user`, `isAuthenticated`, `isAdmin`, `isMember`, `isLoading`, `login()`, `logout()`, `refresh()`
 - Route guards: `ProtectedRoute`, `AdminRoute`, `MemberRoute`
@@ -184,12 +196,14 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 - `app-public` has no auth — it links to `members.satyrsmc.org/login` for member login
 
 **Auth Schemas (in `@satyrsmc/shared`):**
+
 - `passwordSchema`: 8-128 chars, requires uppercase + lowercase + number + special character (4 separate regex checks)
 - `usernameSchema`: 3-30 chars, starts with letter, alphanumeric with dots/hyphens, no consecutive specials
 - `signupInputSchema`: token, username, password, confirm, birthday (18+ validation), ICE fields
 - `loginInputSchema`: username, password, reCAPTCHA token
 
 **Environment Variables:**
+
 - `JWT_SECRET` (min 32 chars)
 - `RECAPTCHA_SECRET_KEY`
 - `APP_URL` (for email links)
@@ -202,16 +216,19 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 **Goal:** Authenticated member area within `app-admin` (to be renamed), served at `members.satyrsmc.org/`. The members section lives at the root; the existing admin features move under `/admin`.
 
 **Why app-admin, not app-public:**
+
 - Keeps all authenticated concerns in one app — members and admin share auth context, route guards, and tRPC client setup
 - The public site (`app-public`) stays purely unauthenticated with no auth dependencies
 - `app-admin` already has the auth infrastructure (tRPC client, query hooks, UI components) needed for member routes
 
 **App Restructure:**
+
 - `app-admin` is renamed (e.g. `app-members` or `app-internal`) and deployed to `members.satyrsmc.org`
 - Existing admin routes move from `/` to `/admin/*`
 - Members section takes over the root `/`
 
 **Routes (in app-admin, at root, auth-gated):**
+
 - `/` — members landing / dashboard
 - `/roster` — sortable member roster (name, position, joined year, phone)
 - `/profile` — edit own profile
@@ -219,16 +236,19 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 - `/meetings` — meeting minutes access
 
 **Routes (existing admin, moved under `/admin`):**
+
 - `/admin/` — admin dashboard
 - `/admin/contacts`, `/admin/events`, `/admin/budgets`, etc. — all existing admin routes
 
 **tRPC Routes (memberProcedure):**
+
 - `members.roster` — full roster with contact info
 - `members.profile` — get/update own profile
 - `members.events` — events with attendee details
 - `members.meetings` — meeting summaries and minutes
 
 **Data Flow:**
+
 - Members with `show_on_website = true` feed into the public Members page on `app-public` via `website.getMembersFeed`
 - The members section in `app-admin` provides richer data for authenticated users via `memberProcedure` routes
 - Admin features remain behind `adminProcedure` at `/admin/*`
@@ -241,18 +261,19 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 **Pages to migrate:**
 
-| Page | Static Source | tRPC Endpoint |
-|---|---|---|
-| Home | `content/events.ts` | `website.getEventsFeed` |
-| About | `data/timeline.json` | `website.getPages` (about page) |
-| Events | `content/events.ts` | `website.getEventsFeed` |
-| Members | `data/members.json` | `website.getMembersFeed` (list only, no profile click-through) |
-| Gallery | `content/gallery.ts` | TBD (may stay static or move to CMS) |
-| Badger | hardcoded HTML | `website.getPageBySlug("badger")` |
+| Page    | Static Source        | tRPC Endpoint                                                  |
+| ------- | -------------------- | -------------------------------------------------------------- |
+| Home    | `content/events.ts`  | `website.getEventsFeed`                                        |
+| About   | `data/timeline.json` | `website.getPages` (about page)                                |
+| Events  | `content/events.ts`  | `website.getEventsFeed`                                        |
+| Members | `data/members.json`  | `website.getMembersFeed` (list only, no profile click-through) |
+| Gallery | `content/gallery.ts` | TBD (may stay static or move to CMS)                           |
+| Badger  | hardcoded HTML       | `website.getPageBySlug("badger")`                              |
 
 Note: Member Profile pages move to the authenticated members app (Phase 3). The public Members page shows the list but does not link to individual profiles.
 
 **For each page:**
+
 1. Replace static import with `trpc.website.*` hook
 2. Wrap in Suspense boundary
 3. Add loading skeleton (requires shadcn `Skeleton` component)
@@ -260,6 +281,7 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 5. Handle empty state
 
 **Cleanup:**
+
 - Remove `src/content/events.ts`, `src/data/members.json`, `src/data/timeline.json` once all pages are migrated
 
 ---
@@ -269,6 +291,7 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 **Goal:** Public contact form with validation and spam protection.
 
 **Frontend (app-public):**
+
 - New `/contact` route and `ContactPage.tsx`
 - `react-hook-form` + `@hookform/resolvers` + `zodResolver`
 - Contact form Zod schema in `@satyrsmc/shared` (shared with server validation)
@@ -276,11 +299,13 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 - Success/error states
 
 **Backend:**
+
 - `website.submitContact` already exists and saves to `contact_submissions` table
 - Add reCAPTCHA server-side verification before accepting submission
 - Admin views submissions in app-admin (`WebsiteContactSubmissionsPanel` already built)
 
 **Environment:**
+
 - `VITE_RECAPTCHA_SITE_KEY` (client)
 - `RECAPTCHA_SECRET_KEY` (server — same as auth)
 
@@ -291,12 +316,14 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 **Goal:** CMS-driven content pages in the public app.
 
 **Blog:**
+
 - `/blog` — listing page consuming `trpc.website.getBlogPublished`
 - `/blog/:slug` — detail page consuming `trpc.website.getBlogBySlug`
 - Blog content authored in app-admin via TipTap editor (already built)
 - Render HTML content via `SafeHtml` component (DOMPurify)
 
 **Dynamic Pages:**
+
 - `/:slug` — catch-all for CMS pages consuming `trpc.website.getPageBySlug`
 - Pages created/edited in app-admin website CMS (already built)
 
@@ -307,12 +334,14 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 **Goal:** Protect admin routes and add user management. Since members and admin now share one app, auth context is set up once and covers both sections.
 
 **Auth Protection:**
+
 - Replace all bare `t.procedure` in admin routers with `adminProcedure`
 - App-wide auth context (already needed for members section) handles login redirect
 - `/admin/*` routes use `AdminRoute` guard requiring admin/webmaster role
 - `/` member routes use `MemberRoute` guard requiring member or admin role
 
 **New Admin Features (at `/admin/*`):**
+
 - User management page: list users, update status/type, add admin notes
 - Registration approval queue: list pending registrations, approve/reject
 - tRPC routes: `admin.users.list`, `admin.users.updateStatus`, `admin.users.updateType`, `admin.registrations.list`, `admin.registrations.approve`, `admin.registrations.reject`
@@ -324,19 +353,23 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 **Goal:** Comprehensive test coverage with enforcement.
 
 **Setup:**
+
 - `bun:test` for all tests (per Bun-first convention)
 - Test utilities: `createTestContext()` for tRPC router testing, service mocking helpers
 
 **Coverage:**
+
 - 90% thresholds for statements, branches, functions, lines
 - Pre-push git hook blocks push on failure
 
 **Test Layers:**
+
 1. **Unit tests**: Mock services, test router logic and auth middleware
 2. **Integration tests**: PGlite embedded Postgres for service-level testing
 3. **Component tests**: React Testing Library for key UI components
 
 **Test Data:**
+
 - Shared fixtures in `@satyrsmc/shared` using typed interfaces
 - Fixtures match shared type contracts
 
@@ -347,16 +380,19 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 **Goal:** Automated quality checks and deployment.
 
 **Linting:**
+
 - ESLint flat config with `@eslint-react/eslint-plugin`
 - Prettier: double quotes, semicolons, trailing commas, 100 char width
 - Pre-commit hook: lint-staged (ESLint fix + Prettier on `*.{ts,tsx}`)
 
 **CI (per PR):**
+
 - Parallel jobs per package: lint, typecheck, format check, tests
 - Coverage enforcement
 - Deploy previews (Postgres uses Neon staging branch)
 
 **Deploy (on merge to `main`):**
+
 - Build + deploy static sites
 - Run Postgres migrations against production Neon branch
 - Deploy API (Docker image or direct)

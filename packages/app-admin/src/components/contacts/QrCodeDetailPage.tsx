@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { QrErrorCorrectionLevel, QrFormat } from "@satyrsmc/shared/client";
 import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/client";
 
 const SIZE_PRESETS = [
@@ -30,11 +31,11 @@ const SIZE_PRESETS = [
 ];
 
 const DEFAULT_CONFIG: QrCodeConfig = {
-  errorCorrectionLevel: "M",
+  errorCorrectionLevel: QrErrorCorrectionLevel.M,
   width: 256,
   margin: 4,
   color: { dark: "#000000", light: "#ffffff" },
-  format: "png",
+  format: QrFormat.Png,
 };
 
 export function QrCodeDetailPage() {
@@ -47,8 +48,8 @@ function QrCodeDetailContent({ id }: { id: string }) {
   const navigate = useNavigate();
   const invalidate = useInvalidateQueries();
   const qr = unwrapSuspenseData(useQrCodeSuspense(id))!;
-  const updateMutation = useUpdateQrCode();
-  const deleteMutation = useDeleteQrCode();
+  const _updateMutation = useUpdateQrCode();
+  const _deleteMutation = useDeleteQrCode();
   const [displaySize, setDisplaySize] = useState(256);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -73,7 +74,12 @@ function QrCodeDetailContent({ id }: { id: string }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/contacts/qr-codes")} aria-label="Back">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/contacts/qr-codes")}
+            aria-label="Back"
+          >
             <ArrowLeft className="size-4" />
           </Button>
           <div>
@@ -187,7 +193,9 @@ function EditQrCodeDialog({
   const updateMutation = useUpdateQrCode();
   const [name, setName] = useState(qr.name ?? "");
   const [url, setUrl] = useState(qr.url);
-  const [config, setConfig] = useState<QrCodeConfig>(qr.config ?? { ...DEFAULT_CONFIG });
+  const [config, setConfig] = useState<NonNullable<QrCodeConfig>>(
+    qr.config ?? { ...DEFAULT_CONFIG },
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -257,8 +265,8 @@ function QrCodeForm({
   setName: (v: string) => void;
   url: string;
   setUrl: (v: string) => void;
-  config: QrCodeConfig;
-  setConfig: (c: QrCodeConfig) => void;
+  config: NonNullable<QrCodeConfig>;
+  setConfig: (c: NonNullable<QrCodeConfig>) => void;
   error: string | null;
 }) {
   return (
@@ -343,7 +351,8 @@ function DeleteQrCodeDialog({
           <DialogTitle>Delete QR code</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground">
-          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be undone.
+          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be
+          undone.
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

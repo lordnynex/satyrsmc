@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { ContactPhoneType } from "@satyrsmc/shared/lib/enums";
 
 @Entity("contact_phones")
 export class ContactPhone {
@@ -11,8 +12,13 @@ export class ContactPhone {
   @Column({ type: "text" })
   phone!: string;
 
-  @Column({ type: "text", default: "other" })
-  type!: string;
+  @Column({
+    type: "enum",
+    enum: ContactPhoneType,
+    enumName: "contact_phone_type_enum",
+    default: ContactPhoneType.Other,
+  })
+  type!: ContactPhoneType;
 
   @Column({ name: "is_primary", type: "boolean", default: false })
   isPrimary!: boolean;

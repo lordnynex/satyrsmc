@@ -6,12 +6,12 @@ import { createMember } from "./helpers";
 
 describe("ContactSubmissionsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("createContact", () => {

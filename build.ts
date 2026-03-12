@@ -34,16 +34,16 @@ Example:
   process.exit(0);
 }
 
-const toCamelCase = (str: string): string => str.replace(/-([a-z])/g, g => g[1].toUpperCase());
+const toCamelCase = (str: string): string => str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 
-const parseValue = (value: string): any => {
+const parseValue = (value: string): string | boolean | number | string[] => {
   if (value === "true") return true;
   if (value === "false") return false;
 
   if (/^\d+$/.test(value)) return parseInt(value, 10);
   if (/^\d*\.\d+$/.test(value)) return parseFloat(value);
 
-  if (value.includes(",")) return value.split(",").map(v => v.trim());
+  if (value.includes(",")) return value.split(",").map((v) => v.trim());
 
   return value;
 };
@@ -119,9 +119,12 @@ if (existsSync(outdir)) {
 const start = performance.now();
 
 const entrypoints = [...new Bun.Glob("**/*.html").scanSync("src")]
-  .map(a => path.resolve(process.cwd(), "src", a))
-  .filter(dir => !dir.includes("node_modules"));
-logger.info({ count: entrypoints.length }, `Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process`);
+  .map((a) => path.resolve(process.cwd(), "src", a))
+  .filter((dir) => !dir.includes("node_modules"));
+logger.info(
+  { count: entrypoints.length },
+  `Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process`,
+);
 
 const result = await Bun.build({
   entrypoints,
@@ -139,7 +142,7 @@ const result = await Bun.build({
 
 const end = performance.now();
 
-const outputTable = result.outputs.map(output => ({
+const outputTable = result.outputs.map((output) => ({
   File: path.relative(process.cwd(), output.path),
   Type: output.kind,
   Size: formatFileSize(output.size),

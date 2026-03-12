@@ -1,11 +1,12 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { QrErrorCorrectionLevel, QrFormat } from "@satyrsmc/shared/lib/enums";
 
 export interface QrCodeConfig {
-  errorCorrectionLevel?: "L" | "M" | "Q" | "H";
+  errorCorrectionLevel?: QrErrorCorrectionLevel;
   width?: number;
   margin?: number;
   color?: { dark?: string; light?: string };
-  format?: "png" | "svg";
+  format?: QrFormat;
 }
 
 @Entity("qr_codes")

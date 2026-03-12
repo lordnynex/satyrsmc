@@ -6,7 +6,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   PanelLeftClose,
   PanelLeftOpen,
-  Menu,
   FileText,
   BookOpen,
   Calendar,
@@ -24,7 +23,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) 
     collapsed ? "justify-center" : "gap-2",
     isActive
       ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
   );
 
 const sidebarLinks = [
@@ -48,14 +47,11 @@ export function WebsiteLayout() {
       <aside
         className={cn(
           "hidden md:block sticky top-16 self-start shrink-0 border-r pr-4 transition-[width] duration-200 ease-in-out",
-          collapsed ? "w-14" : "w-56"
+          collapsed ? "w-14" : "w-56",
         )}
       >
         <div
-          className={cn(
-            "flex items-center py-4",
-            collapsed ? "justify-center" : "justify-between"
-          )}
+          className={cn("flex items-center py-4", collapsed ? "justify-center" : "justify-between")}
         >
           {!collapsed && (
             <span className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -98,12 +94,7 @@ export function WebsiteLayout() {
         <div className="md:hidden mb-4">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                aria-label="Open Website menu"
-              >
+              <Button variant="outline" size="sm" className="gap-2" aria-label="Open Website menu">
                 <Globe className="size-4" />
                 Website
               </Button>

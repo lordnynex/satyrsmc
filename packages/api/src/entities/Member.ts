@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { MemberPosition } from "@satyrsmc/shared/lib/enums";
 
 @Entity("members")
 export class Member {
@@ -26,8 +27,8 @@ export class Member {
   @Column({ name: "is_baby", type: "boolean", default: false })
   isBaby!: boolean;
 
-  @Column({ type: "text", nullable: true })
-  position!: string | null;
+  @Column({ type: "enum", enum: MemberPosition, enumName: "member_position_enum", nullable: true })
+  position!: MemberPosition | null;
 
   @Column({ name: "emergency_contact_name", type: "text", nullable: true })
   emergencyContactName!: string | null;

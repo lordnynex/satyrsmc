@@ -9,6 +9,12 @@ import {
   MeetingTemplate,
   Member,
 } from "../entities";
+import {
+  ActionItemStatus,
+  MeetingTemplateType,
+  OldBusinessStatus,
+} from "@satyrsmc/shared/lib/enums";
+import type { MotionResult } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
@@ -29,9 +35,7 @@ export class MeetingsService {
   async list(sort?: "date" | "meeting_number"): Promise<MeetingListOutput> {
     const repo = this.ds.getRepository(Meeting);
     const order: Record<string, "ASC" | "DESC"> =
-      sort === "meeting_number"
-        ? { meetingNumber: "DESC" }
-        : { date: "DESC" };
+      sort === "meeting_number" ? { meetingNumber: "DESC" } : { date: "DESC" };
     const entities = await repo.find({ order });
     const docMap = await this.fetchDocumentsForMeetings(entities);
     const meetingIds = entities.map((m) => m.id);
@@ -57,7 +61,7 @@ export class MeetingsService {
     let agendaContent = body.agenda_content ?? EMPTY_DOC;
     if (body.agenda_template_id) {
       const template = await this.ds.getRepository(MeetingTemplate).findOne({
-        where: { id: body.agenda_template_id, type: "agenda" },
+        where: { id: body.agenda_template_id, type: MeetingTemplateType.Agenda },
       });
       if (template) {
         const agendaDoc = await this.ds.getRepository(Document).findOne({
@@ -114,28 +118,29 @@ export class MeetingsService {
       where: { meetingId: id },
       order: { orderIndex: "ASC", createdAt: "ASC" },
     });
-    const meetingDate = meeting.date;
     const allMeetingsBefore = await this.ds.getRepository(Meeting).find({
       where: {},
       order: { date: "ASC" },
     });
     const meetingOrder = allMeetingsBefore.findIndex((m) => m.id === id);
-    const priorMeetingIds = new Set(
-      allMeetingsBefore.slice(0, meetingOrder).map((m) => m.id)
-    );
+    const priorMeetingIds = new Set(allMeetingsBefore.slice(0, meetingOrder).map((m) => m.id));
     const oldBusiness = await this.ds.getRepository(OldBusinessItem).find({
       where: {},
       order: { orderIndex: "ASC", createdAt: "ASC" },
     });
     const oldBusinessForMeeting = oldBusiness.filter(
-      (ob) => ob.status === "open" && priorMeetingIds.has(ob.meetingId)
+      (ob) => ob.status === "open" && priorMeetingIds.has(ob.meetingId),
     );
     const newOldBusiness = oldBusiness.filter((ob) => ob.meetingId === id);
-    const assigneeIds = [...new Set(actionItems.map((a) => a.assigneeMemberId).filter(Boolean) as string[])];
-    const motionMemberIds = [...new Set([
-      ...motions.map((m) => m.moverMemberId).filter(Boolean),
-      ...motions.map((m) => m.seconderMemberId).filter(Boolean),
-    ] as string[])];
+    const assigneeIds = [
+      ...new Set(actionItems.map((a) => a.assigneeMemberId).filter(Boolean) as string[]),
+    ];
+    const motionMemberIds = [
+      ...new Set([
+        ...motions.map((m) => m.moverMemberId).filter(Boolean),
+        ...motions.map((m) => m.seconderMemberId).filter(Boolean),
+      ] as string[]),
+    ];
     const allMemberIds = [...new Set([...assigneeIds, ...motionMemberIds])];
     const membersMap = new Map<string, { id: string; name: string }>();
     if (allMemberIds.length) {
@@ -156,8 +161,10 @@ export class MeetingsService {
         order_index: m.orderIndex,
         mover_member_id: m.moverMemberId ?? null,
         seconder_member_id: m.seconderMemberId ?? null,
-        mover_name: m.moverMemberId ? membersMap.get(m.moverMemberId)?.name ?? null : null,
-        seconder_name: m.seconderMemberId ? membersMap.get(m.seconderMemberId)?.name ?? null : null,
+        mover_name: m.moverMemberId ? (membersMap.get(m.moverMemberId)?.name ?? null) : null,
+        seconder_name: m.seconderMemberId
+          ? (membersMap.get(m.seconderMemberId)?.name ?? null)
+          : null,
         created_at: toISOString(m.createdAt),
       })),
       action_items: actionItems.map((a) => ({
@@ -165,7 +172,9 @@ export class MeetingsService {
         meeting_id: a.meetingId,
         description: a.description,
         assignee_member_id: a.assigneeMemberId ?? null,
-        assignee_name: a.assigneeMemberId ? membersMap.get(a.assigneeMemberId)?.name ?? null : null,
+        assignee_name: a.assigneeMemberId
+          ? (membersMap.get(a.assigneeMemberId)?.name ?? null)
+          : null,
         due_date: toISOStringOrNull(a.dueDate),
         status: a.status,
         completed_at: toISOStringOrNull(a.completedAt),
@@ -177,7 +186,7 @@ export class MeetingsService {
           id: ob.id,
           meeting_id: ob.meetingId,
           description: ob.description,
-          status: ob.status as "open" | "closed",
+          status: ob.status as OldBusinessStatus,
           closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
@@ -188,7 +197,7 @@ export class MeetingsService {
           id: ob.id,
           meeting_id: ob.meetingId,
           description: ob.description,
-          status: ob.status as "open" | "closed",
+          status: ob.status as OldBusinessStatus,
           closed_at: toISOStringOrNull(ob.closedAt),
           closed_in_meeting_id: ob.closedInMeetingId ?? null,
           order_index: ob.orderIndex,
@@ -206,10 +215,16 @@ export class MeetingsService {
     if (body.date !== undefined) updates.date = new Date(body.date as string);
     if (body.meeting_number !== undefined) updates.meetingNumber = body.meeting_number as number;
     if (body.location !== undefined) updates.location = body.location as string | null;
-    if (body.start_time !== undefined) updates.startTime = (body.start_time as string | null) != null ? new Date(body.start_time as string) : null;
-    if (body.end_time !== undefined) updates.endTime = (body.end_time as string | null) != null ? new Date(body.end_time as string) : null;
-    if (body.video_conference_url !== undefined) updates.videoConferenceUrl = body.video_conference_url as string | null;
-    if (body.previous_meeting_id !== undefined) updates.previousMeetingId = body.previous_meeting_id as string | null;
+    if (body.start_time !== undefined)
+      updates.startTime =
+        (body.start_time as string | null) != null ? new Date(body.start_time as string) : null;
+    if (body.end_time !== undefined)
+      updates.endTime =
+        (body.end_time as string | null) != null ? new Date(body.end_time as string) : null;
+    if (body.video_conference_url !== undefined)
+      updates.videoConferenceUrl = body.video_conference_url as string | null;
+    if (body.previous_meeting_id !== undefined)
+      updates.previousMeetingId = body.previous_meeting_id as string | null;
     updates.updatedAt = new Date();
     await this.ds.getRepository(Meeting).update(id, updates);
     const updated = await this.ds.getRepository(Meeting).findOne({ where: { id } });
@@ -220,7 +235,7 @@ export class MeetingsService {
 
   async delete(
     id: string,
-    options?: { delete_agenda?: boolean; delete_minutes?: boolean }
+    options?: { delete_agenda?: boolean; delete_minutes?: boolean },
   ): Promise<MeetingDeleteOutput> {
     const meeting = await this.ds.getRepository(Meeting).findOne({ where: { id } });
     if (!meeting) return;
@@ -228,32 +243,35 @@ export class MeetingsService {
     const deleteMinutes = options?.delete_minutes !== false;
     const docIds: string[] = [];
     if (deleteAgenda) docIds.push(meeting.agendaDocumentId);
-    if (deleteMinutes && meeting.minutesDocumentId)
-      docIds.push(meeting.minutesDocumentId);
+    if (deleteMinutes && meeting.minutesDocumentId) docIds.push(meeting.minutesDocumentId);
     if (docIds.length) {
       await this.ds.getRepository(Document).delete(docIds);
     }
     await this.ds.getRepository(Meeting).delete(id);
   }
 
-  async createMotion(meetingId: string, body: {
-    description?: string | null;
-    result: string;
-    order_index?: number;
-    mover_member_id: string;
-    seconder_member_id: string;
-  }) {
-    const maxOrder = await this.ds.getRepository(MeetingMotion)
+  async createMotion(
+    meetingId: string,
+    body: {
+      description?: string | null;
+      result: string;
+      order_index?: number;
+      mover_member_id: string;
+      seconder_member_id: string;
+    },
+  ) {
+    const maxOrder = await this.ds
+      .getRepository(MeetingMotion)
       .createQueryBuilder("m")
       .select("MAX(m.order_index)", "max")
       .where("m.meeting_id = :meetingId", { meetingId })
       .getRawOne();
-    const orderIndex = body.order_index ?? ((maxOrder?.max ?? -1) + 1);
+    const orderIndex = body.order_index ?? (maxOrder?.max ?? -1) + 1;
     const motion = this.ds.getRepository(MeetingMotion).create({
       id: uuid(),
       meetingId,
       description: body.description ?? null,
-      result: body.result as "pass" | "fail",
+      result: body.result as MotionResult,
       orderIndex,
       moverMemberId: body.mover_member_id,
       seconderMemberId: body.seconder_member_id,
@@ -273,14 +291,18 @@ export class MeetingsService {
   }
 
   async updateMotion(meetingId: string, mid: string, body: Record<string, unknown>) {
-    const motion = await this.ds.getRepository(MeetingMotion).findOne({ where: { id: mid, meetingId } });
+    const motion = await this.ds
+      .getRepository(MeetingMotion)
+      .findOne({ where: { id: mid, meetingId } });
     if (!motion) return null;
     const updates: Partial<MeetingMotion> = {};
     if (body.description !== undefined) updates.description = body.description as string | null;
-    if (body.result !== undefined) updates.result = body.result as "pass" | "fail";
+    if (body.result !== undefined) updates.result = body.result as MotionResult;
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
-    if (body.mover_member_id !== undefined) updates.moverMemberId = body.mover_member_id as string | null;
-    if (body.seconder_member_id !== undefined) updates.seconderMemberId = body.seconder_member_id as string | null;
+    if (body.mover_member_id !== undefined)
+      updates.moverMemberId = body.mover_member_id as string | null;
+    if (body.seconder_member_id !== undefined)
+      updates.seconderMemberId = body.seconder_member_id as string | null;
     await this.ds.getRepository(MeetingMotion).update(mid, updates);
     const updated = await this.ds.getRepository(MeetingMotion).findOne({ where: { id: mid } });
     if (!updated) return null;
@@ -301,20 +323,29 @@ export class MeetingsService {
     return result.affected !== 0;
   }
 
-  async createActionItem(meetingId: string, body: { description: string; assignee_member_id?: string | null; due_date?: string | null; order_index?: number }) {
-    const maxOrder = await this.ds.getRepository(MeetingActionItem)
+  async createActionItem(
+    meetingId: string,
+    body: {
+      description: string;
+      assignee_member_id?: string | null;
+      due_date?: string | null;
+      order_index?: number;
+    },
+  ) {
+    const maxOrder = await this.ds
+      .getRepository(MeetingActionItem)
       .createQueryBuilder("a")
       .select("MAX(a.order_index)", "max")
       .where("a.meeting_id = :meetingId", { meetingId })
       .getRawOne();
-    const orderIndex = body.order_index ?? ((maxOrder?.max ?? -1) + 1);
+    const orderIndex = body.order_index ?? (maxOrder?.max ?? -1) + 1;
     const item = this.ds.getRepository(MeetingActionItem).create({
       id: uuid(),
       meetingId,
       description: body.description,
       assigneeMemberId: body.assignee_member_id ?? null,
       dueDate: body.due_date ?? null,
-      status: "open",
+      status: ActionItemStatus.Open,
       orderIndex,
       createdAt: new Date().toISOString(),
     });
@@ -332,15 +363,20 @@ export class MeetingsService {
   }
 
   async updateActionItem(meetingId: string, aid: string, body: Record<string, unknown>) {
-    const item = await this.ds.getRepository(MeetingActionItem).findOne({ where: { id: aid, meetingId } });
+    const item = await this.ds
+      .getRepository(MeetingActionItem)
+      .findOne({ where: { id: aid, meetingId } });
     if (!item) return null;
     const updates: Partial<MeetingActionItem> = {};
     if (body.description !== undefined) updates.description = body.description as string;
-    if (body.assignee_member_id !== undefined) updates.assigneeMemberId = body.assignee_member_id as string | null;
-    if (body.due_date !== undefined) updates.dueDate = (body.due_date as string | null) != null ? new Date(body.due_date as string) : null;
+    if (body.assignee_member_id !== undefined)
+      updates.assigneeMemberId = body.assignee_member_id as string | null;
+    if (body.due_date !== undefined)
+      updates.dueDate =
+        (body.due_date as string | null) != null ? new Date(body.due_date as string) : null;
     if (body.status !== undefined) {
-      updates.status = body.status as "open" | "completed";
-      if (body.status === "completed") updates.completedAt = new Date();
+      updates.status = body.status as ActionItemStatus;
+      if (body.status === ActionItemStatus.Completed) updates.completedAt = new Date();
     }
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(MeetingActionItem).update(aid, updates);
@@ -367,19 +403,20 @@ export class MeetingsService {
 
   async createOldBusiness(
     meetingId: string,
-    body: { description: string; order_index?: number }
+    body: { description: string; order_index?: number },
   ): Promise<MeetingCreateOldBusinessOutput> {
-    const maxOrder = await this.ds.getRepository(OldBusinessItem)
+    const maxOrder = await this.ds
+      .getRepository(OldBusinessItem)
       .createQueryBuilder("o")
       .select("MAX(o.order_index)", "max")
       .where("o.meeting_id = :meetingId", { meetingId })
       .getRawOne();
-    const orderIndex = body.order_index ?? ((maxOrder?.max ?? -1) + 1);
+    const orderIndex = body.order_index ?? (maxOrder?.max ?? -1) + 1;
     const item = this.ds.getRepository(OldBusinessItem).create({
       id: uuid(),
       meetingId,
       description: body.description,
-      status: "open",
+      status: OldBusinessStatus.Open,
       orderIndex,
       createdAt: new Date().toISOString(),
     });
@@ -388,7 +425,7 @@ export class MeetingsService {
       id: item.id,
       meeting_id: item.meetingId,
       description: item.description,
-      status: item.status as "open" | "closed",
+      status: item.status as OldBusinessStatus,
       order_index: item.orderIndex,
       created_at: toISOString(item.createdAt),
     };
@@ -397,20 +434,23 @@ export class MeetingsService {
   async updateOldBusiness(
     meetingId: string,
     oid: string,
-    body: Record<string, unknown>
+    body: Record<string, unknown>,
   ): Promise<MeetingUpdateOldBusinessOutput | null> {
-    const item = await this.ds.getRepository(OldBusinessItem).findOne({ where: { id: oid, meetingId } });
+    const item = await this.ds
+      .getRepository(OldBusinessItem)
+      .findOne({ where: { id: oid, meetingId } });
     if (!item) return null;
     const updates: Partial<OldBusinessItem> = {};
     if (body.description !== undefined) updates.description = body.description as string;
     if (body.status !== undefined) {
-      updates.status = body.status as string;
+      updates.status = body.status as OldBusinessStatus;
       if (body.status === "closed") {
         updates.closedAt = new Date();
         updates.closedInMeetingId = (body.closed_in_meeting_id as string) ?? meetingId;
       }
     }
-    if (body.closed_in_meeting_id !== undefined) updates.closedInMeetingId = body.closed_in_meeting_id as string | null;
+    if (body.closed_in_meeting_id !== undefined)
+      updates.closedInMeetingId = body.closed_in_meeting_id as string | null;
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(OldBusinessItem).update(oid, updates);
     const updated = await this.ds.getRepository(OldBusinessItem).findOne({ where: { id: oid } });
@@ -419,7 +459,7 @@ export class MeetingsService {
           id: updated.id,
           meeting_id: updated.meetingId,
           description: updated.description,
-          status: updated.status as "open" | "closed",
+          status: updated.status as OldBusinessStatus,
           closed_at: toISOStringOrNull(updated.closedAt),
           closed_in_meeting_id: updated.closedInMeetingId ?? null,
           order_index: updated.orderIndex,
@@ -453,7 +493,7 @@ export class MeetingsService {
           .leftJoin(Member, "seconder", "seconder.id = m.seconder_member_id")
           .andWhere(
             "(m.description ILIKE :searchPattern OR mover.name ILIKE :searchPattern OR seconder.name ILIKE :searchPattern OR CAST(mt.meeting_number AS TEXT) ILIKE :searchPattern)",
-            { searchPattern }
+            { searchPattern },
           );
       }
       return qb;
@@ -487,10 +527,12 @@ export class MeetingsService {
         meeting_number: number;
       }>();
 
-    const motionMemberIds = [...new Set([
-      ...rawRows.map((r) => r.m_mover_member_id).filter(Boolean),
-      ...rawRows.map((r) => r.m_seconder_member_id).filter(Boolean),
-    ] as string[])];
+    const motionMemberIds = [
+      ...new Set([
+        ...rawRows.map((r) => r.m_mover_member_id).filter(Boolean),
+        ...rawRows.map((r) => r.m_seconder_member_id).filter(Boolean),
+      ] as string[]),
+    ];
     const membersMap = new Map<string, string>();
     if (motionMemberIds.length > 0) {
       const members = await this.ds.getRepository(Member).find({
@@ -512,12 +554,14 @@ export class MeetingsService {
         id: r.m_id,
         meeting_id: r.m_meeting_id,
         description: r.m_description ?? null,
-        result: r.m_result as "pass" | "fail",
+        result: r.m_result as MotionResult,
         order_index: r.m_order_index,
         mover_member_id: r.m_mover_member_id ?? null,
         seconder_member_id: r.m_seconder_member_id ?? null,
-        mover_name: r.m_mover_member_id ? membersMap.get(r.m_mover_member_id) ?? null : null,
-        seconder_name: r.m_seconder_member_id ? membersMap.get(r.m_seconder_member_id) ?? null : null,
+        mover_name: r.m_mover_member_id ? (membersMap.get(r.m_mover_member_id) ?? null) : null,
+        seconder_name: r.m_seconder_member_id
+          ? (membersMap.get(r.m_seconder_member_id) ?? null)
+          : null,
         created_at: toISOString(r.m_created_at),
         meeting_date: meetingDateStr,
         meeting_number: r.meeting_number,
@@ -544,7 +588,7 @@ export class MeetingsService {
         id: ob.id,
         meeting_id: ob.meetingId,
         description: ob.description,
-        status: ob.status as "open" | "closed",
+        status: ob.status as OldBusinessStatus,
         closed_at: toISOStringOrNull(ob.closedAt),
         closed_in_meeting_id: ob.closedInMeetingId ?? null,
         order_index: ob.orderIndex,
@@ -567,7 +611,8 @@ export class MeetingsService {
 
   private async getMotionCountsByMeetingId(meetingIds: string[]): Promise<Map<string, number>> {
     if (meetingIds.length === 0) return new Map();
-    const rows = await this.ds.getRepository(MeetingMotion)
+    const rows = await this.ds
+      .getRepository(MeetingMotion)
       .createQueryBuilder("m")
       .select("m.meeting_id", "meeting_id")
       .addSelect("COUNT(*)", "count")
@@ -580,8 +625,7 @@ export class MeetingsService {
   private meetingToApi(m: Meeting, docMap: Map<string, Document>) {
     const agendaDoc = docMap.get(m.agendaDocumentId);
     const minutesDoc = m.minutesDocumentId ? docMap.get(m.minutesDocumentId) : null;
-    const dateStr =
-      m.date instanceof Date ? m.date.toISOString().slice(0, 10) : (m.date as string);
+    const dateStr = m.date instanceof Date ? m.date.toISOString().slice(0, 10) : (m.date as string);
     return {
       id: m.id,
       date: dateStr,

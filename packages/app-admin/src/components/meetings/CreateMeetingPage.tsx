@@ -17,12 +17,13 @@ import {
   useCreateMeeting,
 } from "@/queries/hooks";
 import { ArrowLeft } from "lucide-react";
+import { MeetingTemplateType } from "@satyrsmc/shared/client";
 
 export function CreateMeetingPage() {
   const createMeetingMutation = useCreateMeeting();
   const navigate = useNavigate();
   const { data: meetings = [] } = useMeetingsOptional();
-  const { data: templates = [] } = useMeetingTemplatesOptional("agenda");
+  const { data: templates = [] } = useMeetingTemplatesOptional(MeetingTemplateType.Agenda);
 
   const [date, setDate] = useState("");
   const [meetingNumber, setMeetingNumber] = useState<number | "">("");
@@ -37,9 +38,7 @@ export function CreateMeetingPage() {
     const today = new Date().toISOString().slice(0, 10);
     setDate(today);
     const nextNum =
-      meetings.length > 0
-        ? Math.max(...meetings.map((m) => m.meeting_number), 0) + 1
-        : 1;
+      meetings.length > 0 ? Math.max(...meetings.map((m) => m.meeting_number), 0) + 1 : 1;
     setMeetingNumber(nextNum);
   }, [meetings]);
 
@@ -53,8 +52,7 @@ export function CreateMeetingPage() {
         date,
         meeting_number: Number(meetingNumber),
         location: location.trim() || null,
-        agenda_template_id:
-          agendaTemplateId === "__none__" ? undefined : agendaTemplateId,
+        agenda_template_id: agendaTemplateId === "__none__" ? undefined : agendaTemplateId,
       });
       navigate(`/meetings/${(meeting as { id: string }).id}`);
     } finally {
@@ -92,9 +90,7 @@ export function CreateMeetingPage() {
               min={1}
               value={meetingNumber}
               onChange={(e) =>
-                setMeetingNumber(
-                  e.target.value === "" ? "" : parseInt(e.target.value, 10)
-                )
+                setMeetingNumber(e.target.value === "" ? "" : parseInt(e.target.value, 10))
               }
             />
           </div>

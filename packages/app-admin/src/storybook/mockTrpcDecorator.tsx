@@ -19,7 +19,7 @@ export const withMockTrpc: Decorator = (Story) => {
           mutations: { retry: false },
         },
       }),
-    []
+    [],
   );
 
   const client = useMemo(
@@ -27,7 +27,7 @@ export const withMockTrpc: Decorator = (Story) => {
       trpc.createClient({
         links: [createMockTrpcLink()],
       }),
-    []
+    [],
   );
 
   return (

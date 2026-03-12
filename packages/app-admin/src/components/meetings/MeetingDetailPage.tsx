@@ -18,11 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { RichDocumentEditor } from "@/components/ui/rich-document-editor";
 import { MotionsCard } from "./MotionsCard";
 import { ActionItemsCard } from "./ActionItemsCard";
@@ -55,8 +51,8 @@ export function MeetingDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteAgenda, setDeleteAgenda] = useState(true);
   const [deleteMinutes, setDeleteMinutes] = useState(true);
-  const [deleteMotions, setDeleteMotions] = useState(true);
-  const [deleteActionItems, setDeleteActionItems] = useState(true);
+  const deleteMotions = true;
+  const deleteActionItems = true;
   const [deleting, setDeleting] = useState(false);
   const [meetingNumber, setMeetingNumber] = useState<number | "">(meeting.meeting_number);
   const [date, setDate] = useState(meeting.date);
@@ -136,8 +132,7 @@ export function MeetingDetailPage() {
     }
   };
 
-  const hasMinutes =
-    Boolean(meeting.minutes_document_id) || !isMinutesEmpty();
+  const hasMinutes = Boolean(meeting.minutes_document_id) || !isMinutesEmpty();
 
   const isMeetingInPast = (): boolean => {
     const meetingDate = new Date(meeting.date);
@@ -156,8 +151,7 @@ export function MeetingDetailPage() {
     setAgendaOpen(!shouldCollapseAgenda);
   }, [shouldCollapseAgenda]);
 
-  const minutesExportDisabled =
-    !meeting.minutes_document_id || isMinutesEmpty();
+  const minutesExportDisabled = !meeting.minutes_document_id || isMinutesEmpty();
 
   const handleDeleteMeeting = async () => {
     setDeleting(true);
@@ -196,9 +190,7 @@ export function MeetingDetailPage() {
                     value={meetingNumber === "" ? "" : meetingNumber}
                     onChange={(e) =>
                       setMeetingNumber(
-                        e.target.value === ""
-                          ? ""
-                          : parseInt(e.target.value, 10) || ""
+                        e.target.value === "" ? "" : parseInt(e.target.value, 10) || "",
                       )
                     }
                     className="h-9 w-20"
@@ -237,11 +229,7 @@ export function MeetingDetailPage() {
                   onChange={(e) => setVideoConferenceUrl(e.target.value)}
                   className="h-9 w-48"
                 />
-                <Button
-                  size="sm"
-                  onClick={handleMetadataSave}
-                  disabled={metadataSaving}
-                >
+                <Button size="sm" onClick={handleMetadataSave} disabled={metadataSaving}>
                   {metadataSaving ? "Saving..." : "Save"}
                 </Button>
                 <Button
@@ -270,16 +258,10 @@ export function MeetingDetailPage() {
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                <h1 className="text-2xl font-semibold">
-                  Meeting #{meeting.meeting_number}
-                </h1>
-                <span className="text-muted-foreground">
-                  {formatDateOnly(meeting.date)}
-                </span>
+                <h1 className="text-2xl font-semibold">Meeting #{meeting.meeting_number}</h1>
+                <span className="text-muted-foreground">{formatDateOnly(meeting.date)}</span>
                 {meeting.location && (
-                  <span className="text-muted-foreground">
-                    • {meeting.location}
-                  </span>
+                  <span className="text-muted-foreground">• {meeting.location}</span>
                 )}
                 {(meeting.start_time || meeting.end_time) && (
                   <span className="text-muted-foreground">
@@ -415,11 +397,7 @@ export function MeetingDetailPage() {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteMeeting}
-              disabled={deleting}
-            >
+            <Button variant="destructive" onClick={handleDeleteMeeting} disabled={deleting}>
               {deleting ? "Deleting…" : "Delete meeting"}
             </Button>
           </DialogFooter>
@@ -442,10 +420,7 @@ export function MeetingDetailPage() {
         <div className="rounded-lg border">
           <div className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2">
             <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-left hover:opacity-80"
-              >
+              <button type="button" className="flex items-center gap-2 text-left hover:opacity-80">
                 {agendaOpen ? (
                   <ChevronDown className="size-4 text-muted-foreground" />
                 ) : (
@@ -475,7 +450,7 @@ export function MeetingDetailPage() {
           <CollapsibleContent>
             <div className="border-t px-3 py-2">
               <RichDocumentEditor
-                value={meeting.agenda_content}
+                value={meeting.agenda_content ?? ""}
                 onChange={() => {}}
                 placeholder="No agenda yet."
                 editable={false}
@@ -491,10 +466,7 @@ export function MeetingDetailPage() {
         <div className="rounded-lg border">
           <div className="flex w-full items-center justify-between gap-2 rounded-t-lg px-3 py-2">
             <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-left hover:opacity-80"
-              >
+              <button type="button" className="flex items-center gap-2 text-left hover:opacity-80">
                 {minutesOpen ? (
                   <ChevronDown className="size-4 text-muted-foreground" />
                 ) : (

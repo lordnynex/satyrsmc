@@ -28,7 +28,10 @@ export function MembersPanel() {
           <p className="text-muted-foreground mt-1">
             Club member profiles. Click a member to view and edit their details.
             {members.length > 0 && (
-              <> {members.length} member{members.length === 1 ? "" : "s"} total.</>
+              <>
+                {" "}
+                {members.length} member{members.length === 1 ? "" : "s"} total.
+              </>
             )}
           </p>
         </div>
@@ -61,9 +64,7 @@ export function MembersPanel() {
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Members</h2>
-        <p className="text-sm text-muted-foreground">
-          General members (position: Member or None)
-        </p>
+        <p className="text-sm text-muted-foreground">General members (position: Member or None)</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {regularMembers.map((m) => (
             <MemberCard key={m.id} member={m} onNavigate={(id) => navigate(`/members/${id}`)} />

@@ -2,16 +2,20 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
+import type { DbLike } from "../../db/dbAdapter";
 import { BAD_ID, createScenario } from "./helpers";
+import { DEFAULT_SCENARIO_INPUTS } from "../utils";
 
 describe("ScenariosService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
+  let db: DbLike;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
+    db = result.db;
   });
 
   describe("list", () => {
@@ -42,10 +46,26 @@ describe("ScenariosService", () => {
 
   describe("create", () => {
     test("creates with inputs", async () => {
-      const s = await createScenario(api, { name: "With Inputs", inputs: { foo: 1 } });
+      const customInputs = {
+        profitTarget: 5000,
+        staffCount: 10,
+        maxOccupancy: 100,
+        complimentaryTickets: 5,
+        dayPassPrice: 75,
+        dayPassesSold: 10,
+        ticketPrices: {
+          proposedPrice1: 250,
+          proposedPrice2: 300,
+          proposedPrice3: 350,
+          staffPrice1: 175,
+          staffPrice2: 150,
+          staffPrice3: 125,
+        },
+      };
+      const s = await createScenario(api, { name: "With Inputs", inputs: customInputs });
       if (!s) throw new Error("createScenario failed");
       expect(s.id).toBeDefined();
-      expect(s.inputs).toEqual({ foo: 1 });
+      expect(s.inputs).toEqual(customInputs);
     });
 
     test("creates without inputs (default)", async () => {
@@ -78,6 +98,32 @@ describe("ScenariosService", () => {
       await api.scenarios.delete(s.id);
       const got = await api.scenarios.get(s.id);
       expect(got).toBeNull();
+    });
+  });
+
+  describe("safeParseInputs fallback", () => {
+    test("returns defaults for invalid JSON in inputs column", async () => {
+      const id = crypto.randomUUID();
+      await db.run("INSERT INTO scenarios (id, name, inputs) VALUES (?, ?, ?)", [
+        id,
+        "Bad JSON",
+        "not-valid-json{{{",
+      ]);
+      const got = await api.scenarios.get(id);
+      expect(got).not.toBeNull();
+      expect(got!.inputs).toEqual(DEFAULT_SCENARIO_INPUTS);
+    });
+
+    test("returns defaults for JSON that fails schema validation", async () => {
+      const id = crypto.randomUUID();
+      await db.run("INSERT INTO scenarios (id, name, inputs) VALUES (?, ?, ?)", [
+        id,
+        "Bad Schema",
+        JSON.stringify({ foo: 1 }),
+      ]);
+      const got = await api.scenarios.get(id);
+      expect(got).not.toBeNull();
+      expect(got!.inputs).toEqual(DEFAULT_SCENARIO_INPUTS);
     });
   });
 });

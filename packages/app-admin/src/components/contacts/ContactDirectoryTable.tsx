@@ -58,27 +58,15 @@ export function ContactDirectoryTable({
                 )}
               </th>
             )}
-            {hasColumn("name") && (
-              <th className="px-2 py-2 text-left font-medium">Name</th>
-            )}
-            {hasColumn("phone") && (
-              <th className="px-2 py-2 text-left font-medium">Phone</th>
-            )}
+            {hasColumn("name") && <th className="px-2 py-2 text-left font-medium">Name</th>}
+            {hasColumn("phone") && <th className="px-2 py-2 text-left font-medium">Phone</th>}
             {hasColumn("address") && (
               <th className="px-2 py-2 text-left font-medium w-[200px]">Address</th>
             )}
-            {hasColumn("email") && (
-              <th className="px-2 py-2 text-left font-medium">Email</th>
-            )}
-            {hasColumn("tags") && (
-              <th className="px-2 py-2 text-left font-medium">Tags</th>
-            )}
-            {hasColumn("status") && (
-              <th className="px-2 py-2 text-left font-medium">Status</th>
-            )}
-            {hasColumn("actions") && (
-              <th className="w-12 px-2 py-2 text-left font-medium" />
-            )}
+            {hasColumn("email") && <th className="px-2 py-2 text-left font-medium">Email</th>}
+            {hasColumn("tags") && <th className="px-2 py-2 text-left font-medium">Tags</th>}
+            {hasColumn("status") && <th className="px-2 py-2 text-left font-medium">Status</th>}
+            {hasColumn("actions") && <th className="w-12 px-2 py-2 text-left font-medium" />}
           </tr>
         </thead>
         <tbody>
@@ -102,13 +90,11 @@ export function ContactDirectoryTable({
                     )}
                   </td>
                 )}
-                {hasColumn("name") && (
-                  <td className="px-2 py-2 font-medium">{c.display_name}</td>
-                )}
+                {hasColumn("name") && <td className="px-2 py-2 font-medium">{c.display_name}</td>}
                 {hasColumn("phone") && (
                   <td className="px-2 py-2 text-muted-foreground">
                     {formatPhoneNumber(
-                      c.phones?.find((p) => p.is_primary)?.phone ?? c.phones?.[0]?.phone ?? ""
+                      c.phones?.find((p) => p.is_primary)?.phone ?? c.phones?.[0]?.phone ?? "",
                     ) || "—"}
                   </td>
                 )}
@@ -123,9 +109,7 @@ export function ContactDirectoryTable({
                   </td>
                 )}
                 {hasColumn("email") && (
-                  <td className="px-2 py-2 text-muted-foreground">
-                    {c.emails?.[0]?.email ?? "—"}
-                  </td>
+                  <td className="px-2 py-2 text-muted-foreground">{c.emails?.[0]?.email ?? "—"}</td>
                 )}
                 {hasColumn("tags") && (
                   <td className="px-2 py-2">

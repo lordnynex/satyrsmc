@@ -12,11 +12,7 @@ import { ArrowLeft, Save, FileDown } from "lucide-react";
 
 type DocumentType = "agenda" | "minutes";
 
-export function MeetingDocumentEditPage({
-  documentType,
-}: {
-  documentType: DocumentType;
-}) {
+export function MeetingDocumentEditPage({ documentType }: { documentType: DocumentType }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const meeting = unwrapSuspenseData(useMeetingSuspense(id!))!;
@@ -24,18 +20,12 @@ export function MeetingDocumentEditPage({
   const exportPdfMutation = useExportDocumentPdf();
 
   const documentId =
-    documentType === "agenda"
-      ? meeting.agenda_document_id
-      : meeting.minutes_document_id;
+    documentType === "agenda" ? meeting.agenda_document_id : meeting.minutes_document_id;
   const content =
-    documentType === "agenda"
-      ? meeting.agenda_content
-      : meeting.minutes_content ?? "";
+    documentType === "agenda" ? (meeting.agenda_content ?? "") : (meeting.minutes_content ?? "");
   const title = documentType === "agenda" ? "Agenda" : "Minutes";
   const placeholder =
-    documentType === "agenda"
-      ? "Enter meeting agenda..."
-      : "Transcribe meeting minutes...";
+    documentType === "agenda" ? "Enter meeting agenda..." : "Transcribe meeting minutes...";
 
   const [editContent, setEditContent] = useState(content);
   const [dirty, setDirty] = useState(false);
@@ -106,22 +96,14 @@ export function MeetingDocumentEditPage({
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportPdf}
-          >
+          <Button variant="outline" size="sm" onClick={handleExportPdf}>
             <FileDown className="size-4" />
             Export PDF
           </Button>
           <Button variant="outline" size="sm" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button
-            size="sm"
-            onClick={handleSave}
-            disabled={saving || !dirty}
-          >
+          <Button size="sm" onClick={handleSave} disabled={saving || !dirty}>
             <Save className="size-4" />
             {saving ? "Saving..." : "Save"}
           </Button>

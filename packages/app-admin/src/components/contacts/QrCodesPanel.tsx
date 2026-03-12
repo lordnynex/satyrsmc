@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { QrErrorCorrectionLevel, QrFormat } from "@satyrsmc/shared/client";
 import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/client";
 import {
   useQrCodesSuspense,
@@ -31,11 +32,11 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Pencil, Trash2, Download, ExternalLink } from "lucide-react";
 
 const DEFAULT_CONFIG: QrCodeConfig = {
-  errorCorrectionLevel: "M",
+  errorCorrectionLevel: QrErrorCorrectionLevel.M,
   width: 256,
   margin: 4,
   color: { dark: "#000000", light: "#ffffff" },
-  format: "png",
+  format: QrFormat.Png,
 };
 
 export function QrCodesPanel() {
@@ -83,11 +84,7 @@ export function QrCodesPanel() {
         </CardContent>
       </Card>
 
-      <CreateQrCodeDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onSuccess={refresh}
-      />
+      <CreateQrCodeDialog open={createOpen} onOpenChange={setCreateOpen} onSuccess={refresh} />
 
       {editing && (
         <EditQrCodeDialog
@@ -186,11 +183,7 @@ function QrCodeCard({
             <Download className="size-4" />
             Download
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
+          <Button variant="outline" size="sm" asChild>
             <a href={qr.url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="size-4" />
               Open URL
@@ -214,7 +207,7 @@ function CreateQrCodeDialog({
   const createMutation = useCreateQrCode();
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const [config, setConfig] = useState<QrCodeConfig>({ ...DEFAULT_CONFIG });
+  const [config, setConfig] = useState<NonNullable<QrCodeConfig>>({ ...DEFAULT_CONFIG });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -285,7 +278,9 @@ function EditQrCodeDialog({
   const updateMutation = useUpdateQrCode();
   const [name, setName] = useState(qr.name ?? "");
   const [url, setUrl] = useState(qr.url);
-  const [config, setConfig] = useState<QrCodeConfig>(qr.config ?? { ...DEFAULT_CONFIG });
+  const [config, setConfig] = useState<NonNullable<QrCodeConfig>>(
+    qr.config ?? { ...DEFAULT_CONFIG },
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -355,15 +350,13 @@ function QrCodeForm({
   setName: (v: string) => void;
   url: string;
   setUrl: (v: string) => void;
-  config: QrCodeConfig;
-  setConfig: (c: QrCodeConfig) => void;
+  config: NonNullable<QrCodeConfig>;
+  setConfig: (c: NonNullable<QrCodeConfig>) => void;
   error: string | null;
 }) {
   return (
     <div className="space-y-4">
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <div>
         <Label>Name (optional)</Label>
         <Input
@@ -386,7 +379,7 @@ function QrCodeForm({
           <Select
             value={config.errorCorrectionLevel ?? "M"}
             onValueChange={(v) =>
-              setConfig({ ...config, errorCorrectionLevel: v as "L" | "M" | "Q" | "H" })
+              setConfig({ ...config, errorCorrectionLevel: v as QrErrorCorrectionLevel })
             }
           >
             <SelectTrigger>
@@ -404,7 +397,7 @@ function QrCodeForm({
           <Label>Format</Label>
           <Select
             value={config.format ?? "png"}
-            onValueChange={(v) => setConfig({ ...config, format: v as "png" | "svg" })}
+            onValueChange={(v) => setConfig({ ...config, format: v as QrFormat })}
           >
             <SelectTrigger>
               <SelectValue />
@@ -532,7 +525,8 @@ function DeleteQrCodeDialog({
           <DialogTitle>Delete QR code</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground">
-          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be undone.
+          Are you sure you want to delete &quot;{qr.name || "Untitled"}&quot;? This cannot be
+          undone.
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

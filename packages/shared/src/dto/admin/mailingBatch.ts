@@ -43,7 +43,7 @@ const MailingBatchSchema = z.object({
   created_by: z.string().nullable(),
   created_at: z.string(),
   recipient_count: z.number(),
-  list: z.unknown().optional(),
+  list: z.object({ id: z.string(), name: z.string() }).optional(),
   event: z.object({ id: z.string(), name: z.string() }).optional(),
   recipients: z.array(MailingBatchRecipientSchema).optional(),
 });
@@ -60,7 +60,9 @@ export const MailingBatchUpdateRecipientStatusOutputSchema = z.object({ ok: z.li
 export type MailingBatchListOutput = z.infer<typeof MailingBatchListOutputSchema>;
 export type MailingBatchGetOutput = z.infer<typeof MailingBatchGetOutputSchema>;
 export type MailingBatchCreateOutput = z.infer<typeof MailingBatchCreateOutputSchema>;
-export type MailingBatchUpdateRecipientStatusOutput = z.infer<typeof MailingBatchUpdateRecipientStatusOutputSchema>;
+export type MailingBatchUpdateRecipientStatusOutput = z.infer<
+  typeof MailingBatchUpdateRecipientStatusOutputSchema
+>;
 
 // Aliases for API
 export type MailingBatch = MailingBatchGetOutput;

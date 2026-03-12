@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { useMembersOptional } from "@/queries/hooks";
 import type { Event, EventPlanningMilestone } from "@satyrsmc/shared/client";
-import type { Member } from "@satyrsmc/shared/client";
 
 interface EventMilestonesCardProps {
   event: Event;
@@ -40,7 +39,7 @@ interface EventMilestonesCardProps {
   }) => Promise<void>;
   onEdit: (
     mid: string,
-    payload: { month: number; year: number; description: string; due_date: string }
+    payload: { month: number; year: number; description: string; due_date: string },
   ) => Promise<void>;
   onAddMember: (mid: string, memberId: string) => Promise<void>;
   onRemoveMember: (mid: string, memberId: string) => Promise<void>;
@@ -48,7 +47,7 @@ interface EventMilestonesCardProps {
 
 export function EventMilestonesCard({
   event,
-  onRefresh,
+  onRefresh: _onRefresh,
   onToggleComplete,
   onDelete,
   onAdd,
@@ -78,10 +77,12 @@ export function EventMilestonesCard({
 
   const openEdit = (m: EventPlanningMilestone) => {
     setEditingId(m.id);
-    setMilestoneMonth(m.month);
-    setMilestoneYear(m.year);
-    setMilestoneDesc(m.description);
-    setMilestoneDueDate(toDateOnly(m.due_date) || getLastDayOfMonth(m.year, m.month));
+    setMilestoneMonth(m.month ?? 1);
+    setMilestoneYear(m.year ?? new Date().getFullYear());
+    setMilestoneDesc(m.description ?? "");
+    setMilestoneDueDate(
+      toDateOnly(m.due_date) || getLastDayOfMonth(m.year ?? new Date().getFullYear(), m.month ?? 1),
+    );
     setOpen(true);
   };
 
@@ -111,7 +112,8 @@ export function EventMilestonesCard({
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   const today = new Date().toISOString().slice(0, 10);
   const overdue = milestones.filter(
-    (m) => !m.completed && m.due_date && (toDateOnly(m.due_date) || m.due_date.slice(0, 10)) < today
+    (m) =>
+      !m.completed && m.due_date && (toDateOnly(m.due_date) || m.due_date.slice(0, 10)) < today,
   );
 
   const byMonth = milestones.reduce(
@@ -120,7 +122,7 @@ export function EventMilestonesCard({
       (acc[key] ??= []).push(m);
       return acc;
     },
-    {} as Record<string, EventPlanningMilestone[]>
+    {} as Record<string, EventPlanningMilestone[]>,
   );
   const sortedMonths = Object.keys(byMonth).sort();
 
@@ -174,8 +176,8 @@ export function EventMilestonesCard({
                       const [y, m] = key.split("-").map(Number);
                       const year = y ?? new Date().getFullYear();
                       const month = m ?? 1;
-                      const items = [...(byMonth[key] ?? [])].sort(
-                        (a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? "")
+                      const items = [...(byMonth[key] ?? [])].sort((a, b) =>
+                        (a.due_date ?? "").localeCompare(b.due_date ?? ""),
                       );
                       return (
                         <div key={key}>
@@ -184,9 +186,9 @@ export function EventMilestonesCard({
                           </h4>
                           <ul className="space-y-0.5 pl-3 border-l-2 border-muted">
                             {items.map((m) => {
-                              const dueDateOnly = toDateOnly(m.due_date) || (m.due_date?.slice(0, 10) ?? "");
-                              const isOverdue =
-                                !m.completed && dueDateOnly && dueDateOnly < today;
+                              const dueDateOnly =
+                                toDateOnly(m.due_date) || (m.due_date?.slice(0, 10) ?? "");
+                              const isOverdue = !m.completed && dueDateOnly && dueDateOnly < today;
                               return (
                                 <li
                                   key={m.id}
@@ -201,9 +203,7 @@ export function EventMilestonesCard({
                                   <div className="flex items-center gap-2 min-w-0 flex-1">
                                     <button
                                       type="button"
-                                      onClick={() =>
-                                        onToggleComplete(m.id, !m.completed)
-                                      }
+                                      onClick={() => onToggleComplete(m.id, !m.completed)}
                                       className="shrink-0 flex size-4 items-center justify-center rounded border border-muted-foreground/50 transition-colors hover:border-muted-foreground"
                                       aria-label={m.completed ? "Mark incomplete" : "Mark complete"}
                                     >
@@ -218,7 +218,9 @@ export function EventMilestonesCard({
                                     </span>
                                     <span
                                       className={`text-xs shrink-0 ${
-                                        isOverdue ? "font-medium text-red-600 dark:text-red-400" : "text-muted-foreground"
+                                        isOverdue
+                                          ? "font-medium text-red-600 dark:text-red-400"
+                                          : "text-muted-foreground"
                                       }`}
                                     >
                                       {m.due_date ? formatDueDate(m.due_date) : ""}
@@ -233,11 +235,15 @@ export function EventMilestonesCard({
                                             key={mm.id}
                                             memberId={mm.member.id}
                                             name={mm.member.name}
-                                            photo={mm.member.photo_thumbnail_url ?? mm.member.photo_url}
+                                            photo={
+                                              mm.member.photo_thumbnail_url ??
+                                              mm.member.photo_url ??
+                                              null
+                                            }
                                             onRemove={() => onRemoveMember(m.id, mm.member_id)}
                                             removeContextLabel="milestone"
                                           />
-                                        ) : null
+                                        ) : null,
                                       )}
                                     </div>
                                     <Button
@@ -286,7 +292,10 @@ export function EventMilestonesCard({
         </Collapsible>
       </Card>
 
-      <Dialog open={addMemberMilestoneId != null} onOpenChange={(o) => !o && setAddMemberMilestoneId(null)}>
+      <Dialog
+        open={addMemberMilestoneId != null}
+        onOpenChange={(o) => !o && setAddMemberMilestoneId(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Responsible Member</DialogTitle>
@@ -296,9 +305,14 @@ export function EventMilestonesCard({
             <div className="py-4">
               <MemberSelectCombobox
                 members={members}
-                excludedIds={new Set(
-                  (event.milestones?.find((mil) => mil.id === addMemberMilestoneId)?.members ?? []).map((mm) => mm.member_id)
-                )}
+                excludedIds={
+                  new Set(
+                    (
+                      event.milestones?.find((mil) => mil.id === addMemberMilestoneId)?.members ??
+                      []
+                    ).map((mm) => mm.member_id),
+                  )
+                }
                 placeholder="Search or select a member"
                 label="Member"
                 onSelect={async (memberId) => {
@@ -316,10 +330,18 @@ export function EventMilestonesCard({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditingId(null); }}>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setEditingId(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Planning Milestone" : "Add Planning Milestone"}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? "Edit Planning Milestone" : "Add Planning Milestone"}
+            </DialogTitle>
             <CardDescription>e.g. February: Decide ticket costs</CardDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -339,7 +361,9 @@ export function EventMilestonesCard({
                   </SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((m, i) => (
-                      <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
+                      <SelectItem key={m} value={String(i + 1)}>
+                        {m}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -402,7 +426,7 @@ export function EventMilestonesCard({
                                   <Trash2 className="size-3" />
                                 </Button>
                               </li>
-                            ) : null
+                            ) : null,
                           )}
                         </ul>
                       )}
@@ -419,7 +443,9 @@ export function EventMilestonesCard({
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleSubmit}>{isEditing ? "Save" : "Add"}</Button>
           </DialogFooter>
         </DialogContent>

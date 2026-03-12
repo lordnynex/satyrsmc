@@ -5,7 +5,12 @@ export function RobertsRulesPage() {
 
       <div className="space-y-4">
         <p className="text-muted-foreground">
-          <em>Robert&apos;s Rules of Order</em> is a manual of parliamentary procedure by U.S. Army officer Henry Martyn Robert (1837–1923). It is the most widely used manual of parliamentary procedure in the United States and governs the meetings of a diverse range of organizations—including church groups, county commissions, homeowners&apos; associations, nonprofit associations, professional societies, school boards, trade unions, and college fraternities and sororities.
+          <em>Robert&apos;s Rules of Order</em> is a manual of parliamentary procedure by U.S. Army
+          officer Henry Martyn Robert (1837–1923). It is the most widely used manual of
+          parliamentary procedure in the United States and governs the meetings of a diverse range
+          of organizations—including church groups, county commissions, homeowners&apos;
+          associations, nonprofit associations, professional societies, school boards, trade unions,
+          and college fraternities and sororities.
         </p>
 
         <div className="aspect-video w-full max-w-2xl rounded-lg overflow-hidden bg-muted">
@@ -32,7 +37,8 @@ export function RobertsRulesPage() {
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Learn More</h2>
           <p className="text-muted-foreground text-sm">
-            For a comprehensive overview, history, and detailed explanations of Robert&apos;s Rules of Order, see:
+            For a comprehensive overview, history, and detailed explanations of Robert&apos;s Rules
+            of Order, see:
           </p>
           <a
             href="https://en.wikipedia.org/wiki/Robert%27s_Rules_of_Order"

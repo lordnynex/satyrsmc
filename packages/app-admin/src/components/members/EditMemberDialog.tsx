@@ -115,46 +115,80 @@ export function EditMemberDialog({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Name *</Label>
-            <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name" />
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Full name"
+            />
           </div>
           <div className="space-y-2">
             <Label>Phone Number</Label>
-            <Input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="(555) 123-4567" />
+            <Input
+              value={editPhone}
+              onChange={(e) => setEditPhone(e.target.value)}
+              placeholder="(555) 123-4567"
+            />
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
-            <Input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="member@example.com" />
+            <Input
+              type="email"
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              placeholder="member@example.com"
+            />
           </div>
           <div className="space-y-2">
             <Label>Address</Label>
-            <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="Street, city, state, zip" />
+            <Input
+              value={editAddress}
+              onChange={(e) => setEditAddress(e.target.value)}
+              placeholder="Street, city, state, zip"
+            />
           </div>
           <div className="space-y-2">
             <Label>Birthday</Label>
-            <Input type="date" value={editBirthday} onChange={(e) => setEditBirthday(e.target.value)} />
+            <Input
+              type="date"
+              value={editBirthday}
+              onChange={(e) => setEditBirthday(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label>Member Since</Label>
             <div className="flex gap-2">
-              <Select value={editMemberSinceMonth || "none"} onValueChange={(v) => setEditMemberSinceMonth(v === "none" ? "" : v)}>
+              <Select
+                value={editMemberSinceMonth || "none"}
+                onValueChange={(v) => setEditMemberSinceMonth(v === "none" ? "" : v)}
+              >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Month</SelectItem>
                   {MONTHS.map((mo, i) => (
-                    <SelectItem key={mo} value={String(i + 1)}>{mo}</SelectItem>
+                    <SelectItem key={mo} value={String(i + 1)}>
+                      {mo}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={editMemberSinceYear || "none"} onValueChange={(v) => setEditMemberSinceYear(v === "none" ? "" : v)}>
+              <Select
+                value={editMemberSinceYear || "none"}
+                onValueChange={(v) => setEditMemberSinceYear(v === "none" ? "" : v)}
+              >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Year</SelectItem>
-                  {Array.from({ length: new Date().getFullYear() - 1985 + 1 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                  {Array.from(
+                    { length: new Date().getFullYear() - 1985 + 1 },
+                    (_, i) => new Date().getFullYear() - i,
+                  ).map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -168,29 +202,44 @@ export function EditMemberDialog({
               onChange={(e) => setEditIsBaby(e.target.checked)}
               className="size-4 rounded border-input"
             />
-            <Label htmlFor="edit-is-baby" className="cursor-pointer font-normal">Baby</Label>
+            <Label htmlFor="edit-is-baby" className="cursor-pointer font-normal">
+              Baby
+            </Label>
           </div>
           <div className="space-y-2">
             <Label>Position</Label>
-            <Select value={editPosition || "none"} onValueChange={(v) => setEditPosition(v === "none" ? "" : v)}>
+            <Select
+              value={editPosition || "none"}
+              onValueChange={(v) => setEditPosition(v === "none" ? "" : v)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
                 {MEMBER_POSITIONS.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Emergency Contact Name</Label>
-            <Input value={editEmergencyName} onChange={(e) => setEditEmergencyName(e.target.value)} placeholder="Contact name" />
+            <Input
+              value={editEmergencyName}
+              onChange={(e) => setEditEmergencyName(e.target.value)}
+              placeholder="Contact name"
+            />
           </div>
           <div className="space-y-2">
             <Label>Emergency Contact Phone</Label>
-            <Input value={editEmergencyPhone} onChange={(e) => setEditEmergencyPhone(e.target.value)} placeholder="(555) 987-6543" />
+            <Input
+              value={editEmergencyPhone}
+              onChange={(e) => setEditEmergencyPhone(e.target.value)}
+              placeholder="(555) 987-6543"
+            />
           </div>
           <div className="space-y-2">
             <Label>Photo</Label>
@@ -203,8 +252,17 @@ export function EditMemberDialog({
             />
             {editPhoto ? (
               <div className="mt-2 flex items-center gap-2">
-                <img src={editPhoto} alt="Preview" className="size-20 rounded-lg object-cover border" />
-                <Button variant="outline" size="sm" onClick={clearPhoto} className="text-destructive hover:text-destructive">
+                <img
+                  src={editPhoto}
+                  alt="Preview"
+                  className="size-20 rounded-lg object-cover border"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearPhoto}
+                  className="text-destructive hover:text-destructive"
+                >
                   Remove Photo
                 </Button>
               </div>
@@ -212,7 +270,9 @@ export function EditMemberDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleSave} disabled={!editName.trim() || editSaving}>
             {editSaving ? "Saving..." : "Save"}
           </Button>

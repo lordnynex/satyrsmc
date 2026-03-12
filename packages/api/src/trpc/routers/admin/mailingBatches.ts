@@ -41,7 +41,12 @@ export const mailingBatchesRouter = t.router({
     .output(MailingBatchUpdateRecipientStatusOutputSchema)
     .meta({ description: "Update recipient status on a batch." })
     .mutation(({ ctx, input }) => {
-      ctx.api.mailingBatches.updateRecipientStatus(input.batchId, input.recipientId, input.status, input.reason);
+      ctx.api.mailingBatches.updateRecipientStatus(
+        input.batchId,
+        input.recipientId,
+        input.status,
+        input.reason,
+      );
       return { ok: true as const };
     }),
 });

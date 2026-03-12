@@ -40,7 +40,11 @@ export const budgetsRouter = t.router({
     .meta({ description: "Create a new budget." })
     .mutation(async ({ ctx, input }) => {
       const b = await ctx.api.budgets.create(input);
-      if (!b) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Budget create returned null" });
+      if (!b)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Budget create returned null",
+        });
       return b;
     }),
 

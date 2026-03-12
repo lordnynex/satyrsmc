@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  useIncidentsList,
-  useEventIncidentUpdate,
-  useEventIncidentDelete,
-} from "@/queries/hooks";
+import { useIncidentsList, useEventIncidentUpdate, useEventIncidentDelete } from "@/queries/hooks";
 import type { Incident } from "@satyrsmc/shared/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,11 +133,7 @@ export function IncidentsPanel() {
                   >
                     <div className="md:w-[220px]">
                       {incident.event_id ? (
-                        <Button
-                          asChild
-                          variant="link"
-                          className="h-auto p-0 text-sm font-medium"
-                        >
+                        <Button asChild variant="link" className="h-auto p-0 text-sm font-medium">
                           <Link to={`/events/${incident.event_id}#incidents`}>
                             {incident.event_name ?? incident.event_id}
                           </Link>
@@ -149,9 +141,7 @@ export function IncidentsPanel() {
                       ) : (
                         <span className="text-sm text-muted-foreground">Unknown event</span>
                       )}
-                      <div className="text-xs text-muted-foreground">
-                        {incident.event_type}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{incident.event_type}</div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate" title={incident.summary}>
@@ -163,8 +153,13 @@ export function IncidentsPanel() {
                     </div>
                     <div className="flex items-center justify-between gap-3 md:justify-end md:w-[260px]">
                       <div className="text-xs text-muted-foreground md:text-right">
-                        <div>Occurred: {incident.occurred_at ? formatDateTime(incident.occurred_at) : "—"}</div>
-                        <div>Logged: {incident.created_at ? formatDateTime(incident.created_at) : "—"}</div>
+                        <div>
+                          Occurred:{" "}
+                          {incident.occurred_at ? formatDateTime(incident.occurred_at) : "—"}
+                        </div>
+                        <div>
+                          Logged: {incident.created_at ? formatDateTime(incident.created_at) : "—"}
+                        </div>
                       </div>
                       <div className="flex gap-1 shrink-0">
                         <Button
@@ -193,7 +188,8 @@ export function IncidentsPanel() {
               <div className="mt-4 flex items-center justify-between gap-2">
                 <p className="text-xs text-muted-foreground">
                   Showing {(dataAsResponse.page - 1) * dataAsResponse.per_page + 1}–
-                  {Math.min(dataAsResponse.page * dataAsResponse.per_page, dataAsResponse.total)} of {dataAsResponse.total}
+                  {Math.min(dataAsResponse.page * dataAsResponse.per_page, dataAsResponse.total)} of{" "}
+                  {dataAsResponse.total}
                 </p>
                 <div className="flex items-center gap-2 text-xs">
                   <Button
@@ -257,10 +253,7 @@ export function IncidentsPanel() {
             </div>
             <div className="space-y-2">
               <Label>Details (optional)</Label>
-              <Textarea
-                value={details}
-                onChange={(e) => setDetails(e.target.value)}
-              />
+              <Textarea value={details} onChange={(e) => setDetails(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
@@ -284,4 +277,3 @@ export function IncidentsPanel() {
     </div>
   );
 }
-

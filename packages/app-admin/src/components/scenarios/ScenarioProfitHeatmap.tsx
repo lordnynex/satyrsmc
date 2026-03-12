@@ -20,7 +20,7 @@ export function ScenarioProfitHeatmap({ metrics, profitTarget = 0 }: ScenarioPro
   }
 
   const attendanceLevels = [...new Set(metrics.map((m) => m.attendancePercent))].sort(
-    (a, b) => a - b
+    (a, b) => a - b,
   );
   const ticketPrices = [...new Set(metrics.map((m) => m.ticketPrice))].sort((a, b) => a - b);
   const staffPrices = [...new Set(metrics.map((m) => m.staffPrice))].sort((a, b) => a - b);
@@ -81,10 +81,24 @@ export function ScenarioProfitHeatmap({ metrics, profitTarget = 0 }: ScenarioPro
               ? [{ from: minProfit, to: -0.01, color: "#ef4444", name: "Loss" }]
               : []),
             ...(maxProfit >= 0 && profitTarget > 0
-              ? [{ from: 0, to: profitTarget - 0.01, color: "#f97316", name: "Profit (below target)" }]
+              ? [
+                  {
+                    from: 0,
+                    to: profitTarget - 0.01,
+                    color: "#f97316",
+                    name: "Profit (below target)",
+                  },
+                ]
               : []),
             ...(maxProfit >= 0
-              ? [{ from: Math.max(0, profitTarget), to: Math.max(maxProfit, profitTarget + 1), color: "#22c55e", name: "Meets target" }]
+              ? [
+                  {
+                    from: Math.max(0, profitTarget),
+                    to: Math.max(maxProfit, profitTarget + 1),
+                    color: "#22c55e",
+                    name: "Meets target",
+                  },
+                ]
               : []),
           ],
         },
@@ -106,11 +120,17 @@ export function ScenarioProfitHeatmap({ metrics, profitTarget = 0 }: ScenarioPro
       <CardHeader>
         <CardTitle>Profit by Scenario</CardTitle>
         <CardDescription>
-          Net revenue (Gross − costs) by scenario. Green = meets target; orange = profitable but below target; red = loss.
+          Net revenue (Gross − costs) by scenario. Green = meets target; orange = profitable but
+          below target; red = loss.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Chart options={options} series={series} type="heatmap" height={Math.max(400, attendanceLevels.length * 36)} />
+        <Chart
+          options={options}
+          series={series}
+          type="heatmap"
+          height={Math.max(400, attendanceLevels.length * 36)}
+        />
       </CardContent>
     </Card>
   );

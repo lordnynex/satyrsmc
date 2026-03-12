@@ -115,15 +115,28 @@ export function AddMemberDialog({ open, onOpenChange, onSuccess }: AddMemberDial
           </div>
           <div className="space-y-2">
             <Label>Phone Number</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 123-4567" />
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(555) 123-4567"
+            />
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="member@example.com" />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="member@example.com"
+            />
           </div>
           <div className="space-y-2">
             <Label>Address</Label>
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, city, state, zip" />
+            <Input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Street, city, state, zip"
+            />
           </div>
           <div className="space-y-2">
             <Label>Birthday</Label>
@@ -132,25 +145,38 @@ export function AddMemberDialog({ open, onOpenChange, onSuccess }: AddMemberDial
           <div className="space-y-2">
             <Label>Member Since</Label>
             <div className="flex gap-2">
-              <Select value={memberSinceMonth || "none"} onValueChange={(v) => setMemberSinceMonth(v === "none" ? "" : v)}>
+              <Select
+                value={memberSinceMonth || "none"}
+                onValueChange={(v) => setMemberSinceMonth(v === "none" ? "" : v)}
+              >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Month</SelectItem>
                   {MONTHS.map((mo, i) => (
-                    <SelectItem key={mo} value={String(i + 1)}>{mo}</SelectItem>
+                    <SelectItem key={mo} value={String(i + 1)}>
+                      {mo}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={memberSinceYear || "none"} onValueChange={(v) => setMemberSinceYear(v === "none" ? "" : v)}>
+              <Select
+                value={memberSinceYear || "none"}
+                onValueChange={(v) => setMemberSinceYear(v === "none" ? "" : v)}
+              >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Year</SelectItem>
-                  {Array.from({ length: new Date().getFullYear() - 1985 + 1 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                  {Array.from(
+                    { length: new Date().getFullYear() - 1985 + 1 },
+                    (_, i) => new Date().getFullYear() - i,
+                  ).map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -164,29 +190,44 @@ export function AddMemberDialog({ open, onOpenChange, onSuccess }: AddMemberDial
               onChange={(e) => setIsBaby(e.target.checked)}
               className="size-4 rounded border-input"
             />
-            <Label htmlFor="add-is-baby" className="cursor-pointer font-normal">Baby</Label>
+            <Label htmlFor="add-is-baby" className="cursor-pointer font-normal">
+              Baby
+            </Label>
           </div>
           <div className="space-y-2">
             <Label>Position</Label>
-            <Select value={position || "none"} onValueChange={(v) => setPosition(v === "none" ? "" : v)}>
+            <Select
+              value={position || "none"}
+              onValueChange={(v) => setPosition(v === "none" ? "" : v)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
                 {MEMBER_POSITIONS.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Emergency Contact Name</Label>
-            <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="Contact name" />
+            <Input
+              value={emergencyName}
+              onChange={(e) => setEmergencyName(e.target.value)}
+              placeholder="Contact name"
+            />
           </div>
           <div className="space-y-2">
             <Label>Emergency Contact Phone</Label>
-            <Input value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="(555) 987-6543" />
+            <Input
+              value={emergencyPhone}
+              onChange={(e) => setEmergencyPhone(e.target.value)}
+              placeholder="(555) 987-6543"
+            />
           </div>
           <div className="space-y-2">
             <Label>Photo</Label>
@@ -205,7 +246,9 @@ export function AddMemberDialog({ open, onOpenChange, onSuccess }: AddMemberDial
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleAdd} disabled={!name.trim() || saving}>
             {saving ? "Adding..." : "Add Member"}
           </Button>

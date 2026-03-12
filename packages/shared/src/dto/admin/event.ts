@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { EventType, EventAssignmentCategory } from "../../lib/enums";
 
 const dateLike = z.union([z.string(), z.date().transform((d) => d.toISOString())]);
 
-const eventTypeSchema = z.enum(["badger", "anniversary", "pioneer_run", "rides"]);
+const eventTypeSchema = z.nativeEnum(EventType);
 
 // ----- Input schemas -----
 
@@ -71,7 +72,10 @@ export const EventUpdateAttendeeInputSchema = z.object({
   attendeeId: z.string(),
   waiver_signed: z.boolean().optional(),
 });
-export const EventDeleteAttendeeInputSchema = z.object({ eventId: z.string(), attendeeId: z.string() });
+export const EventDeleteAttendeeInputSchema = z.object({
+  eventId: z.string(),
+  attendeeId: z.string(),
+});
 
 export const EventAddMemberAttendeeInputSchema = z.object({
   eventId: z.string(),
@@ -83,7 +87,10 @@ export const EventUpdateMemberAttendeeInputSchema = z.object({
   memberAttendeeId: z.string(),
   waiver_signed: z.boolean().optional(),
 });
-export const EventDeleteMemberAttendeeInputSchema = z.object({ eventId: z.string(), memberAttendeeId: z.string() });
+export const EventDeleteMemberAttendeeInputSchema = z.object({
+  eventId: z.string(),
+  memberAttendeeId: z.string(),
+});
 
 export const EventCreateIncidentInputSchema = z.object({
   eventId: z.string(),
@@ -106,7 +113,10 @@ export const EventUpdateIncidentInputSchema = z.object({
   contact_id: z.string().nullable().optional(),
   member_id: z.string().nullable().optional(),
 });
-export const EventDeleteIncidentInputSchema = z.object({ eventId: z.string(), incidentId: z.string() });
+export const EventDeleteIncidentInputSchema = z.object({
+  eventId: z.string(),
+  incidentId: z.string(),
+});
 
 export const EventCreateScheduleItemInputSchema = z.object({
   eventId: z.string(),
@@ -121,7 +131,10 @@ export const EventUpdateScheduleItemInputSchema = z.object({
   label: z.string().optional(),
   location: z.string().nullable().optional(),
 });
-export const EventDeleteScheduleItemInputSchema = z.object({ eventId: z.string(), scheduleId: z.string() });
+export const EventDeleteScheduleItemInputSchema = z.object({
+  eventId: z.string(),
+  scheduleId: z.string(),
+});
 
 export const EventCreateMilestoneInputSchema = z.object({
   eventId: z.string(),
@@ -140,16 +153,30 @@ export const EventUpdateMilestoneInputSchema = z.object({
   due_date: z.string().optional(),
 });
 export const EventDeleteMilestoneInputSchema = z.object({ eventId: z.string(), mid: z.string() });
-export const EventAddMilestoneMemberInputSchema = z.object({ eventId: z.string(), mid: z.string(), memberId: z.string() });
-export const EventRemoveMilestoneMemberInputSchema = z.object({ eventId: z.string(), mid: z.string(), memberId: z.string() });
+export const EventAddMilestoneMemberInputSchema = z.object({
+  eventId: z.string(),
+  mid: z.string(),
+  memberId: z.string(),
+});
+export const EventRemoveMilestoneMemberInputSchema = z.object({
+  eventId: z.string(),
+  mid: z.string(),
+  memberId: z.string(),
+});
 
-export const EventCreatePackingCategoryInputSchema = z.object({ eventId: z.string(), name: z.string() });
+export const EventCreatePackingCategoryInputSchema = z.object({
+  eventId: z.string(),
+  name: z.string(),
+});
 export const EventUpdatePackingCategoryInputSchema = z.object({
   eventId: z.string(),
   cid: z.string(),
   name: z.string().optional(),
 });
-export const EventDeletePackingCategoryInputSchema = z.object({ eventId: z.string(), cid: z.string() });
+export const EventDeletePackingCategoryInputSchema = z.object({
+  eventId: z.string(),
+  cid: z.string(),
+});
 
 export const EventCreatePackingItemInputSchema = z.object({
   eventId: z.string(),
@@ -185,55 +212,54 @@ export const EventDeleteVolunteerInputSchema = z.object({ eventId: z.string(), v
 export const EventCreateAssignmentInputSchema = z.object({
   eventId: z.string(),
   name: z.string(),
-  category: z.enum(["planning", "during"]),
+  category: z.nativeEnum(EventAssignmentCategory),
 });
 export const EventUpdateAssignmentInputSchema = z.object({
   eventId: z.string(),
   aid: z.string(),
   name: z.string().optional(),
-  category: z.enum(["planning", "during"]).optional(),
+  category: z.nativeEnum(EventAssignmentCategory).optional(),
 });
 export const EventDeleteAssignmentInputSchema = z.object({ eventId: z.string(), aid: z.string() });
-export const EventAddAssignmentMemberInputSchema = z.object({ eventId: z.string(), aid: z.string(), memberId: z.string() });
-export const EventRemoveAssignmentMemberInputSchema = z.object({ eventId: z.string(), aid: z.string(), memberId: z.string() });
+export const EventAddAssignmentMemberInputSchema = z.object({
+  eventId: z.string(),
+  aid: z.string(),
+  memberId: z.string(),
+});
+export const EventRemoveAssignmentMemberInputSchema = z.object({
+  eventId: z.string(),
+  aid: z.string(),
+  memberId: z.string(),
+});
 
 // ----- Output entity schemas -----
 
-const EventSchema = z.object({
+const MemberRefSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string().nullable(),
-  year: z.number().nullable(),
-  event_date: z.string().nullable(),
-  event_url: z.string().nullable(),
-  event_location: z.string().nullable(),
-  event_location_embed: z.string().nullable(),
-  ga_ticket_cost: z.number().nullable(),
-  day_pass_cost: z.number().nullable(),
-  ga_tickets_sold: z.number().nullable(),
-  day_passes_sold: z.number().nullable(),
-  budget_id: z.string().nullable(),
-  scenario_id: z.string().nullable(),
-  planning_notes: z.string().nullable(),
-  event_type: z.string(),
-  show_on_website: z.boolean().optional(),
-  start_location: z.string().nullable().optional(),
-  end_location: z.string().nullable().optional(),
-  facebook_event_url: z.string().nullable().optional(),
-  pre_ride_event_id: z.string().nullable().optional(),
-  ride_cost: z.number().nullable().optional(),
-  created_at: z.string().optional(),
-  milestones: z.array(z.unknown()).optional(),
-  event_attendees: z.array(z.unknown()).optional(),
-  ride_member_attendees: z.array(z.unknown()).optional(),
-  event_assets: z.array(z.unknown()).optional(),
-  ride_schedule_items: z.array(z.unknown()).optional(),
-  incidents: z.array(z.unknown()).optional(),
-  packingCategories: z.array(z.unknown()).optional(),
-  packingItems: z.array(z.unknown()).optional(),
-  volunteers: z.array(z.unknown()).optional(),
-  assignments: z.array(z.unknown()).optional(),
-  event_photos: z.array(z.unknown()).optional(),
+  photo_url: z.string().nullable().optional(),
+  photo_thumbnail_url: z.string().nullable().optional(),
+});
+
+const ContactRefSchema = z.object({
+  id: z.string(),
+  display_name: z.string(),
+});
+
+const MilestoneMemberSchema = z.object({
+  id: z.string(),
+  milestone_id: z.string(),
+  member_id: z.string(),
+  sort_order: z.number(),
+  member: MemberRefSchema.optional(),
+});
+
+const AssignmentMemberSchema = z.object({
+  id: z.string(),
+  assignment_id: z.string(),
+  member_id: z.string(),
+  sort_order: z.number(),
+  member: MemberRefSchema.optional(),
 });
 
 const EventPhotoSchema = z.object({
@@ -262,7 +288,7 @@ const EventAttendeeSchema = z.object({
   contact_id: z.string(),
   sort_order: z.number(),
   waiver_signed: z.boolean(),
-  contact: z.unknown().optional(),
+  contact: ContactRefSchema.optional(),
 });
 
 const RideMemberAttendeeSchema = z.object({
@@ -271,7 +297,13 @@ const RideMemberAttendeeSchema = z.object({
   member_id: z.string(),
   sort_order: z.number(),
   waiver_signed: z.boolean(),
-  member: z.unknown().optional(),
+  member: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      photo_thumbnail_url: z.string().nullable(),
+    })
+    .optional(),
 });
 
 const IncidentSchema = z.object({
@@ -285,8 +317,8 @@ const IncidentSchema = z.object({
   details: z.string().nullable(),
   occurred_at: z.string().nullable(),
   created_at: z.string().optional(),
-  contact: z.unknown().optional(),
-  member: z.unknown().optional(),
+  contact: ContactRefSchema.optional(),
+  member: z.object({ id: z.string(), name: z.string() }).optional(),
   event_name: z.string().optional(),
   event_type: z.string().optional(),
 });
@@ -309,7 +341,7 @@ const EventPlanningMilestoneSchema = z.object({
   sort_order: z.number().optional(),
   completed: z.boolean().optional(),
   due_date: dateLike.optional().nullable(),
-  members: z.array(z.unknown()).optional(),
+  members: z.array(MilestoneMemberSchema).optional(),
 });
 
 const EventPackingCategorySchema = z.object({
@@ -342,9 +374,46 @@ const EventAssignmentSchema = z.object({
   id: z.string(),
   event_id: z.string(),
   name: z.string(),
-  category: z.enum(["planning", "during"]),
+  category: z.nativeEnum(EventAssignmentCategory),
   sort_order: z.number(),
-  members: z.array(z.unknown()).optional(),
+  members: z.array(AssignmentMemberSchema).optional(),
+});
+
+const EventSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  year: z.number().nullable(),
+  event_date: z.string().nullable(),
+  event_url: z.string().nullable(),
+  event_location: z.string().nullable(),
+  event_location_embed: z.string().nullable(),
+  ga_ticket_cost: z.number().nullable(),
+  day_pass_cost: z.number().nullable(),
+  ga_tickets_sold: z.number().nullable(),
+  day_passes_sold: z.number().nullable(),
+  budget_id: z.string().nullable(),
+  scenario_id: z.string().nullable(),
+  planning_notes: z.string().nullable(),
+  event_type: z.nativeEnum(EventType),
+  show_on_website: z.boolean().optional(),
+  start_location: z.string().nullable().optional(),
+  end_location: z.string().nullable().optional(),
+  facebook_event_url: z.string().nullable().optional(),
+  pre_ride_event_id: z.string().nullable().optional(),
+  ride_cost: z.number().nullable().optional(),
+  created_at: z.string().optional(),
+  milestones: z.array(EventPlanningMilestoneSchema).optional(),
+  event_attendees: z.array(EventAttendeeSchema).optional(),
+  ride_member_attendees: z.array(RideMemberAttendeeSchema).optional(),
+  event_assets: z.array(EventAssetSchema).optional(),
+  ride_schedule_items: z.array(RideScheduleItemSchema).optional(),
+  incidents: z.array(IncidentSchema).optional(),
+  packingCategories: z.array(EventPackingCategorySchema).optional(),
+  packingItems: z.array(EventPackingItemSchema).optional(),
+  volunteers: z.array(EventVolunteerSchema).optional(),
+  assignments: z.array(EventAssignmentSchema).optional(),
+  event_photos: z.array(EventPhotoSchema).optional(),
 });
 
 // ----- Procedure output schemas -----
@@ -417,10 +486,18 @@ export type EventCreateMilestoneOutput = z.infer<typeof EventCreateMilestoneOutp
 export type EventUpdateMilestoneOutput = z.infer<typeof EventUpdateMilestoneOutputSchema>;
 export type EventDeleteMilestoneOutput = z.infer<typeof EventDeleteMilestoneOutputSchema>;
 export type EventAddMilestoneMemberOutput = z.infer<typeof EventAddMilestoneMemberOutputSchema>;
-export type EventRemoveMilestoneMemberOutput = z.infer<typeof EventRemoveMilestoneMemberOutputSchema>;
-export type EventCreatePackingCategoryOutput = z.infer<typeof EventCreatePackingCategoryOutputSchema>;
-export type EventUpdatePackingCategoryOutput = z.infer<typeof EventUpdatePackingCategoryOutputSchema>;
-export type EventDeletePackingCategoryOutput = z.infer<typeof EventDeletePackingCategoryOutputSchema>;
+export type EventRemoveMilestoneMemberOutput = z.infer<
+  typeof EventRemoveMilestoneMemberOutputSchema
+>;
+export type EventCreatePackingCategoryOutput = z.infer<
+  typeof EventCreatePackingCategoryOutputSchema
+>;
+export type EventUpdatePackingCategoryOutput = z.infer<
+  typeof EventUpdatePackingCategoryOutputSchema
+>;
+export type EventDeletePackingCategoryOutput = z.infer<
+  typeof EventDeletePackingCategoryOutputSchema
+>;
 export type EventCreatePackingItemOutput = z.infer<typeof EventCreatePackingItemOutputSchema>;
 export type EventUpdatePackingItemOutput = z.infer<typeof EventUpdatePackingItemOutputSchema>;
 export type EventDeletePackingItemOutput = z.infer<typeof EventDeletePackingItemOutputSchema>;
@@ -431,7 +508,9 @@ export type EventCreateAssignmentOutput = z.infer<typeof EventCreateAssignmentOu
 export type EventUpdateAssignmentOutput = z.infer<typeof EventUpdateAssignmentOutputSchema>;
 export type EventDeleteAssignmentOutput = z.infer<typeof EventDeleteAssignmentOutputSchema>;
 export type EventAddAssignmentMemberOutput = z.infer<typeof EventAddAssignmentMemberOutputSchema>;
-export type EventRemoveAssignmentMemberOutput = z.infer<typeof EventRemoveAssignmentMemberOutputSchema>;
+export type EventRemoveAssignmentMemberOutput = z.infer<
+  typeof EventRemoveAssignmentMemberOutputSchema
+>;
 
 // Alias for API
 export type Event = EventGetOutput;

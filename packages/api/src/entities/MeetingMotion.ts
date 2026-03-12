@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { MotionResult } from "@satyrsmc/shared/lib/enums";
 
 @Entity("meeting_motions")
 export class MeetingMotion {
@@ -11,8 +12,8 @@ export class MeetingMotion {
   @Column({ type: "text", nullable: true })
   description!: string | null;
 
-  @Column({ type: "text" })
-  result!: "pass" | "fail";
+  @Column({ type: "enum", enum: MotionResult, enumName: "motion_result_enum" })
+  result!: MotionResult;
 
   @Column({ name: "mover_member_id", type: "text", nullable: true })
   moverMemberId!: string | null;

@@ -143,7 +143,11 @@ export function EditEventDialog({
           <div className="grid gap-4 sm:grid-cols-2 min-w-0">
             <div className="space-y-2 min-w-0">
               <Label>Name</Label>
-              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Event name" />
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Event name"
+              />
             </div>
             <div className="space-y-2 min-w-0">
               <Label>Event type</Label>
@@ -166,7 +170,9 @@ export function EditEventDialog({
               <Input
                 type="number"
                 value={editYear}
-                onChange={(e) => setEditYear(e.target.value === "" ? "" : parseInt(e.target.value, 10))}
+                onChange={(e) =>
+                  setEditYear(e.target.value === "" ? "" : parseInt(e.target.value, 10))
+                }
                 placeholder="2025"
               />
             </div>
@@ -181,11 +187,19 @@ export function EditEventDialog({
           </div>
           <div className="space-y-2">
             <Label>Description</Label>
-            <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={2} />
+            <Textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              rows={2}
+            />
           </div>
           <div className="space-y-2 min-w-0">
             <Label>Event URL</Label>
-            <Input value={editEventUrl} onChange={(e) => setEditEventUrl(e.target.value)} placeholder="https://..." />
+            <Input
+              value={editEventUrl}
+              onChange={(e) => setEditEventUrl(e.target.value)}
+              placeholder="https://..."
+            />
           </div>
           <div className="space-y-2 min-w-0">
             <Label>Event Location (Google Maps link)</Label>
@@ -248,7 +262,10 @@ export function EditEventDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Budget</Label>
-              <Select value={editBudgetId || "none"} onValueChange={(v) => setEditBudgetId(v === "none" ? "" : v)}>
+              <Select
+                value={editBudgetId || "none"}
+                onValueChange={(v) => setEditBudgetId(v === "none" ? "" : v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select budget" />
                 </SelectTrigger>
@@ -264,7 +281,10 @@ export function EditEventDialog({
             </div>
             <div className="space-y-2">
               <Label>Scenario</Label>
-              <Select value={editScenarioId || "none"} onValueChange={(v) => setEditScenarioId(v === "none" ? "" : v)}>
+              <Select
+                value={editScenarioId || "none"}
+                onValueChange={(v) => setEditScenarioId(v === "none" ? "" : v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select scenario" />
                 </SelectTrigger>
@@ -279,7 +299,11 @@ export function EditEventDialog({
               </Select>
             </div>
           </div>
-          {(editEventType === "rides" || editStartLocation || editEndLocation || editFacebookEventUrl || editRideCost) && (
+          {(editEventType === "rides" ||
+            editStartLocation ||
+            editEndLocation ||
+            editFacebookEventUrl ||
+            editRideCost) && (
             <div className="space-y-4 rounded-lg border p-4">
               <p className="text-sm font-medium">Ride details</p>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -348,7 +372,9 @@ export function EditEventDialog({
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleSave}>Save</Button>
         </DialogFooter>
       </DialogContent>

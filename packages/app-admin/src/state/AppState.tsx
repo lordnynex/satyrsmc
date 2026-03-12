@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useReducer,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, use, useReducer, type ReactNode } from "react";
 import { trpc } from "@/trpc";
 import {
   useUpdateScenario,
@@ -82,7 +76,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const budget = action.payload;
       if (!budget?.lineItems?.length) return { ...state, currentBudget: budget };
       // Merge categories from line items so custom categories display correctly after reload
-      const lineItemCategories = [...new Set(budget.lineItems.map((li) => li.category).filter(Boolean))];
+      const lineItemCategories = [
+        ...new Set(budget.lineItems.map((li) => li.category).filter(Boolean)),
+      ];
       const mergedCategories = [...DEFAULT_CATEGORIES];
       for (const cat of lineItemCategories) {
         if (!mergedCategories.includes(cat)) mergedCategories.push(cat);
@@ -95,7 +91,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         currentScenario: state.currentScenario
-          ? { ...state.currentScenario, inputs: { ...state.currentScenario.inputs, ...action.payload } }
+          ? {
+              ...state.currentScenario,
+              inputs: { ...state.currentScenario.inputs, ...action.payload },
+            }
           : null,
       };
     case "ADD_LINE_ITEM_LOCAL":
@@ -116,7 +115,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           ? {
               ...state.currentBudget,
               lineItems: state.currentBudget.lineItems.map((li) =>
-                li.id === id ? { ...li, ...updates } : li
+                li.id === id ? { ...li, ...updates } : li,
               ),
             }
           : null,
@@ -202,7 +201,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "SET_CURRENT_BUDGET", payload: budget as Budget });
       }
     },
-    [state.selectedBudgetId, utils]
+    [state.selectedBudgetId, utils],
   );
 
   const refreshScenario = useCallback(
@@ -212,17 +211,32 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "SET_CURRENT_SCENARIO", payload: scenario as Scenario });
       }
     },
-    [state.selectedScenarioId, utils]
+    [state.selectedScenarioId, utils],
   );
 
   const refreshBudgets = useCallback(async () => {
     const list = await utils.admin.budgets.list.fetch();
-    dispatch({ type: "SET_BUDGETS", payload: list });
+    dispatch({
+      type: "SET_BUDGETS",
+      payload: list.map((b) => ({
+        id: b.id,
+        name: b.name,
+        year: b.year,
+        description: b.description ?? null,
+      })),
+    });
   }, [utils]);
 
   const refreshScenarios = useCallback(async () => {
     const list = await utils.admin.scenarios.list.fetch();
-    dispatch({ type: "SET_SCENARIOS", payload: list });
+    dispatch({
+      type: "SET_SCENARIOS",
+      payload: list.map((s) => ({
+        id: s.id,
+        name: s.name,
+        description: s.description ?? null,
+      })),
+    });
   }, [utils]);
 
   const updateScenarioInputs = useCallback(
@@ -235,7 +249,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       });
       dispatch({ type: "UPDATE_SCENARIO_INPUTS_LOCAL", payload: inputs });
     },
-    [state.currentScenario, updateScenarioInputsMutation]
+    [state.currentScenario, updateScenarioInputsMutation],
   );
 
   const addLineItem = useCallback(
@@ -255,7 +269,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       });
       dispatch({ type: "ADD_LINE_ITEM_LOCAL", payload: created as LineItem });
     },
-    [state.currentBudget, state.categories, addLineItemMutation]
+    [state.currentBudget, state.categories, addLineItemMutation],
   );
 
   const updateLineItem = useCallback(
@@ -263,7 +277,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       await updateLineItemMutation.mutateAsync({ budgetId, itemId: id, body: updates });
       dispatch({ type: "UPDATE_LINE_ITEM_LOCAL", payload: { id, updates } });
     },
-    [updateLineItemMutation]
+    [updateLineItemMutation],
   );
 
   const deleteLineItem = useCallback(
@@ -271,7 +285,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       await deleteLineItemMutation.mutateAsync({ budgetId, itemId: id });
       dispatch({ type: "DELETE_LINE_ITEM_LOCAL", payload: id });
     },
-    [deleteLineItemMutation]
+    [deleteLineItemMutation],
   );
 
   const addCategory = useCallback((name: string) => {
@@ -305,13 +319,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     getLineItems,
   };
 
-  return (
-    <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>
-  );
+  return <AppStateContext value={value}>{children}</AppStateContext>;
 }
 
 export function useAppState(): AppStateContextValue {
-  const ctx = useContext(AppStateContext);
+  const ctx = use(AppStateContext);
   if (!ctx) {
     throw new Error("useAppState must be used within AppStateProvider");
   }

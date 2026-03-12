@@ -5,8 +5,9 @@
  * createScheduleItem; createMilestone; createPackingCategory; createVolunteer; createAssignment (and related).
  */
 
-import { TRPCError } from "@trpc/server";
+import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
+import { EventAssignmentCategory, EventType } from "@satyrsmc/shared/lib/enums";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
 import { BAD_ID, createEvent, createContact, createMember, MINIMAL_JPEG_BUFFER } from "../helpers";
@@ -27,7 +28,7 @@ describe("admin.events", () => {
     });
 
     test("filters by type when provided", async () => {
-      const result = await harness.caller.admin.events.list({ type: "badger" });
+      const result = await harness.caller.admin.events.list({ type: EventType.Badger });
       expect(Array.isArray(result)).toBe(true);
     });
   });
@@ -53,7 +54,7 @@ describe("admin.events", () => {
     test("creates event and returns it", async () => {
       const result = await harness.caller.admin.events.create({
         name: "New Event",
-        event_type: "badger",
+        event_type: EventType.Badger,
       });
       expect(result.id).toBeDefined();
       expect(result.name).toBe("New Event");
@@ -296,7 +297,7 @@ describe("admin.events", () => {
       const assignment = await harness.caller.admin.events.createAssignment({
         eventId: event.id,
         name: "Setup",
-        category: "planning",
+        category: EventAssignmentCategory.Planning,
       });
       expect(assignment).toBeDefined();
       await harness.caller.admin.events.addAssignmentMember({

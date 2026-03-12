@@ -6,7 +6,12 @@ import { toISOString } from "../lib/date";
 export class ContactSubmissionsService {
   constructor(private ds: DataSource) {}
 
-  async createContact(body: { name: string; email: string; subject?: string | null; message: string }) {
+  async createContact(body: {
+    name: string;
+    email: string;
+    subject?: string | null;
+    message: string;
+  }) {
     const id = uuid();
     const repo = this.ds.getRepository(ContactSubmission);
     const row = repo.create({

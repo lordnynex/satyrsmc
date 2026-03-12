@@ -29,7 +29,20 @@ export function formatMemberSinceDisplay(memberSince: string | null): string {
   const key = toMemberSinceKey(memberSince);
   if (!key) return "";
   const [y, mo] = key.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const month = months[parseInt(mo ?? "1", 10) - 1] ?? mo;
   const years = getYearsAsMember(key);
   if (years !== null) {
@@ -39,7 +52,20 @@ export function formatMemberSinceDisplay(memberSince: string | null): string {
 }
 
 export function formatBirthdayDate(d: Date): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
@@ -80,7 +106,20 @@ function toMemberSinceKey(s: string | null | undefined): string | null {
 }
 
 export function formatAnniversaryDate(date: Date, member: Member): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const base = `${months[date.getMonth()]} ${date.getDate()}`;
   const memberSince = toMemberSinceKey(member.member_since);
   if (!memberSince) return base;
@@ -89,7 +128,10 @@ export function formatAnniversaryDate(date: Date, member: Member): string {
   return `${base} (${years} year${years === 1 ? "" : "s"})`;
 }
 
-export function getUpcomingBirthdays(members: Member[], daysAhead = 90): { member: Member; date: Date }[] {
+export function getUpcomingBirthdays(
+  members: Member[],
+  daysAhead = 90,
+): { member: Member; date: Date }[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const endDate = new Date(today);
@@ -113,7 +155,10 @@ export function getUpcomingBirthdays(members: Member[], daysAhead = 90): { membe
   return result;
 }
 
-export function getUpcomingAnniversaries(members: Member[], daysAhead = 90): { member: Member; date: Date }[] {
+export function getUpcomingAnniversaries(
+  members: Member[],
+  daysAhead = 90,
+): { member: Member; date: Date }[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const endDate = new Date(today);
@@ -266,7 +311,7 @@ export async function downloadMembersRosterPdf(members: Member[]): Promise<void>
     const contentWidth = colWidth - cardPadding * 2;
     const textStartX = x + cardPadding;
 
-    let lineY = y + cardPadding;
+    const lineY = y + cardPadding;
 
     let photoDrawn = false;
     if (m.photo_url || m.photo_thumbnail_url) {

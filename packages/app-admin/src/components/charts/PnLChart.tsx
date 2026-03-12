@@ -80,12 +80,7 @@ export function PnLChart({ metrics, profitTarget }: PnLChartProps) {
       description="Gross revenue minus total costs. Green = profitable; red = loss."
       calculationNote="Gross Revenue − Total Costs"
     >
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <Chart options={options} series={series} type="bar" height={280} />
     </ChartCard>
   );
 }

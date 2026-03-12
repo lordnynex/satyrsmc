@@ -59,12 +59,7 @@ export function ROIChart({ metrics }: ROIChartProps) {
       description="Net revenue per dollar of cost. Positive values mean the event is profitable."
       calculationNote="Net Revenue ÷ Total Costs"
     >
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <Chart options={options} series={series} type="bar" height={280} />
     </ChartCard>
   );
 }

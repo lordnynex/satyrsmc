@@ -1,4 +1,5 @@
 import type { TrpcClient } from "../trpc";
+import type { MeetingSortField, MotionResult } from "../../lib/enums";
 import type {
   MeetingListOutput,
   MeetingGetOutput,
@@ -21,9 +22,9 @@ export class MeetingsApiClient {
     return this.client.admin.meetings.listMotions.query(params);
   }
 
-  list(options?: { sort?: "date" | "meeting_number" }): Promise<MeetingListOutput> {
+  list(options?: { sort?: MeetingSortField }): Promise<MeetingListOutput> {
     return this.client.admin.meetings.list.query(
-      options?.sort ? { sort: options.sort } : undefined
+      options?.sort ? { sort: options.sort } : undefined,
     ) as Promise<MeetingListOutput>;
   }
 
@@ -49,10 +50,7 @@ export class MeetingsApiClient {
     return this.client.admin.meetings.update.mutate({ id, ...body } as never);
   }
 
-  delete(
-    id: string,
-    options?: { delete_agenda?: boolean; delete_minutes?: boolean }
-  ) {
+  delete(id: string, options?: { delete_agenda?: boolean; delete_minutes?: boolean }) {
     return this.client.admin.meetings.delete.mutate({
       id,
       delete_agenda: options?.delete_agenda,
@@ -65,11 +63,11 @@ export class MeetingsApiClient {
       meetingId: string,
       body: {
         description?: string | null;
-        result: "pass" | "fail";
+        result: MotionResult;
         order_index?: number;
         mover_member_id: string;
         seconder_member_id: string;
-      }
+      },
     ) =>
       this.client.admin.meetings.createMotion.mutate({
         meetingId,
@@ -96,7 +94,7 @@ export class MeetingsApiClient {
         assignee_member_id?: string | null;
         due_date?: string | null;
         order_index?: number;
-      }
+      },
     ) =>
       this.client.admin.meetings.createActionItem.mutate({
         meetingId,
@@ -116,10 +114,7 @@ export class MeetingsApiClient {
   };
 
   readonly oldBusiness = {
-    create: (
-      meetingId: string,
-      body: { description: string; order_index?: number }
-    ) =>
+    create: (meetingId: string, body: { description: string; order_index?: number }) =>
       this.client.admin.meetings.createOldBusiness.mutate({
         meetingId,
         ...body,

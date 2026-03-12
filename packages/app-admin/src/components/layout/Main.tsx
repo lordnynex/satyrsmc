@@ -18,7 +18,7 @@ interface MainProps {
   onEmail?: () => void;
 }
 
-export function Main({ activeTab, onPrint, onEmail }: MainProps) {
+export function Main({ activeTab, onPrint: _onPrint, onEmail: _onEmail }: MainProps) {
   const navigate = useNavigate();
   const { getInputs, getLineItems, selectedScenarioId } = useAppState();
   const metrics = useScenarioMetrics(getInputs(), getLineItems());
@@ -28,7 +28,16 @@ export function Main({ activeTab, onPrint, onEmail }: MainProps) {
       {activeTab === "events" && <EventsPanel />}
       {activeTab === "projections" && (
         <>
-          <InputsPanel readOnly onEditScenario={() => navigate(selectedScenarioId ? `/budgeting/scenarios/${selectedScenarioId}` : "/budgeting/scenarios")} />
+          <InputsPanel
+            readOnly
+            onEditScenario={() =>
+              navigate(
+                selectedScenarioId
+                  ? `/budgeting/scenarios/${selectedScenarioId}`
+                  : "/budgeting/scenarios",
+              )
+            }
+          />
           <section id="summary" className="scroll-mt-28">
             <SummarySection metrics={metrics} filteredMetrics={metrics} />
           </section>
@@ -41,10 +50,7 @@ export function Main({ activeTab, onPrint, onEmail }: MainProps) {
           </section>
           <section id="scenario-matrix" className="scroll-mt-28 space-y-6">
             <ScenarioProfitHeatmap metrics={metrics} profitTarget={getInputs().profitTarget} />
-            <ScenarioMatrixTable
-              metrics={metrics}
-              profitTarget={getInputs().profitTarget}
-            />
+            <ScenarioMatrixTable metrics={metrics} profitTarget={getInputs().profitTarget} />
           </section>
         </>
       )}

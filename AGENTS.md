@@ -12,7 +12,7 @@ Satyrs Motorcycle Club management system and public website — a Bun monorepo w
 - **API**: Bun.serve() + tRPC 11 — serves both SPAs and the API on port 3000
 - **App-Admin**: React 19 + TanStack Query + tRPC — admin panel for club management and website CMS (served at `/admin`)
 - **App-Public**: React 19 + tRPC — public website (served at `/`)
-- **Shared**: Hand-written TypeScript interfaces shared across all packages
+- **Shared**: Zod DTO schemas and derived TypeScript types shared across all packages
 - **Database**: Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
 - **Build**: `Bun.build()` for both SPAs (no Vite, no webpack)
 
@@ -58,7 +58,7 @@ TypeORM Entity → Service (returns @satyrsmc/shared type) → tRPC Router → A
 
 - **Services MUST annotate return types** with the shared interface (e.g., `entityToContact(e: ContactEntity): Contact`)
 - **Shared types** in `@satyrsmc/shared/client` and `@satyrsmc/shared/dto/*` are the cross-package contract
-- **Zod for tRPC inputs only** — all mutation inputs need Zod schemas, no `.passthrough()`
+- **Zod for tRPC input/output validation** — all mutation inputs need Zod schemas, no `.passthrough()`
 - **Import from canonical paths** — `@satyrsmc/shared/client` for frontend types/constants, or `@satyrsmc/shared/dto/admin/*` for DTOs
 - **Frontend hooks get types automatically** from `createTRPCReact<AppRouter>()` — don't re-annotate
 
@@ -66,20 +66,40 @@ See the "End-to-End Type Safety" section in [CONTRIBUTING.md](CONTRIBUTING.md) f
 
 ## Shared Types
 
-The `@satyrsmc/shared` package contains hand-written TypeScript interfaces. There are no auto-generated Zod schemas. Zod is used only for tRPC input validation in routers.
+The `@satyrsmc/shared` package contains Zod DTO schemas, derived TypeScript types, and shared domain enums. Types are inferred from Zod schemas via `z.infer<>`.
 
 **Exports** (from `packages/shared/package.json`):
+
 ```
-@satyrsmc/shared/client           — trpc, createTrpcClient, TrpcClientProvider, useTrpcClient; RouterOutputs/RouterInputs; Contact, Member, Event, MeetingSummary, CommitteeSummary, Document, Budget, Scenario, QrCode, etc.; MEMBER_POSITIONS, Inputs, LineItem, ScenarioMetrics; unwrap, getErrorMessage
+@satyrsmc/shared/client           — tRPC client, React providers, type aliases, domain enums, constants, helpers
 @satyrsmc/shared/client/admin-api — buildApi, useApi, ApiProvider, *ApiClient (admin-only)
-@satyrsmc/shared/dto/*            — DTO schemas and inferred types (admin/event, admin/contact, website, …)
+@satyrsmc/shared/dto/*            — Zod DTO schemas and inferred types (admin/event, admin/contact, website, …)
+@satyrsmc/shared/lib/enums        — Domain string enums (const arrays + derived types) — server-safe
 @satyrsmc/shared/lib/constants    — ALL_MEMBERS_ID constant
 ```
 
 **Rules:**
+
 1. Check `@satyrsmc/shared` first for existing types before defining new ones
 2. When adding a new domain, create the shared type FIRST, then the entity, service, router, and frontend
 3. Never duplicate types that already exist in shared — import and extend them
+4. **String literal types use `const` array + derived type pattern** in `packages/shared/src/lib/enums.ts`:
+
+   ```typescript
+   export const COMMITTEE_STATUSES = ["active", "closed"] as const;
+   export type CommitteeStatus = (typeof COMMITTEE_STATUSES)[number];
+   ```
+
+   - In DTO Zod schemas, derive from the const: `z.enum(COMMITTEE_STATUSES)`
+   - Never hardcode the same strings in a `z.enum()` call
+   - Never define a local type alias in a service, router, or component that duplicates a shared type
+
+5. **TypeORM entities must import shared types** for constrained string columns (status, type, category fields). Use `import type` syntax.
+
+6. **DTOs and enums must stay in sync.** When adding a new string union:
+   - Define the const array + type in `packages/shared/src/lib/enums.ts`
+   - Import and use `z.enum(CONST_ARRAY)` in the corresponding DTO file
+   - Never define the same set of strings in both places independently
 
 ## File Structure
 
@@ -112,9 +132,11 @@ satyrsmc/
         App.tsx             # Routes
         trpc.ts             # createTRPCReact<AppRouter>()
       build.ts              # Bun.build() script
-    shared/                 # TypeScript interfaces
-      types/                # Per-domain type files
-      lib/                  # Constants + utilities
+    shared/                 # Zod DTO schemas, derived types, and utilities
+      src/
+        dto/                # DTO schemas and inferred types (admin/, website/)
+        client/             # tRPC client, React providers, re-exports
+        lib/                # Constants, enums, and utilities
   Makefile                  # Build + deploy targets
 ```
 
@@ -123,21 +145,22 @@ satyrsmc/
 **Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var (or in-memory PGlite when `USE_PGLITE=1` for local dev). Migrations auto-run on startup.
 
 **Adding a schema change:**
+
 1. Create a `MigrationInterface` class in `packages/api/src/db/migrations/`
 2. Register it in `dataSource.ts` migrations array
 3. If new table: create entity, register in `dataSource.ts` entities array
-4. Create matching shared type in `packages/shared/types/`
+4. Create matching shared DTO in `packages/shared/src/dto/admin/`
 5. Run `bun run migrate`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 
 ## Content Ownership
 
-| Content | Source | Notes |
-|---|---|---|
-| Members, contacts, events, budgets, meetings | Postgres via TypeORM | Full CRUD in app-admin |
-| Website pages, blog posts, menus, settings | Postgres via TypeORM | CMS in app-admin, served to app-public via `website` tRPC router |
-| Static events, gallery | Files in app-public `src/content/` | Some content not yet migrated to database |
+| Content                                      | Source                             | Notes                                                            |
+| -------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| Members, contacts, events, budgets, meetings | Postgres via TypeORM               | Full CRUD in app-admin                                           |
+| Website pages, blog posts, menus, settings   | Postgres via TypeORM               | CMS in app-admin, served to app-public via `website` tRPC router |
+| Static events, gallery                       | Files in app-public `src/content/` | Some content not yet migrated to database                        |
 
 ## Local Development
 

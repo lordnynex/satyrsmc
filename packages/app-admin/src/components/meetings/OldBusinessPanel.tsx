@@ -12,12 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Pencil, Check } from "lucide-react";
 import type { OldBusinessItemWithMeeting } from "@satyrsmc/shared/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -43,7 +38,7 @@ export function OldBusinessPanel() {
   const openItems = items.filter((ob) => ob.status === "open");
   const closedItems = items.filter((ob) => ob.status === "closed");
   const sortedMeetings = [...meetings].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
   const handleCreate = async () => {
@@ -62,7 +57,7 @@ export function OldBusinessPanel() {
 
   const handleUpdate = async (ob: OldBusinessItemWithMeeting) => {
     const trimmed = description.trim();
-    if (!trimmed) return;
+    if (!trimmed || !ob.meeting_id) return;
     setSaving(true);
     try {
       await updateMutation.mutateAsync({
@@ -78,6 +73,7 @@ export function OldBusinessPanel() {
   };
 
   const handleClose = async (ob: OldBusinessItemWithMeeting) => {
+    if (!ob.meeting_id) return;
     await updateMutation.mutateAsync({
       meetingId: ob.meeting_id,
       id: ob.id,
@@ -86,13 +82,14 @@ export function OldBusinessPanel() {
   };
 
   const handleDelete = async (ob: OldBusinessItemWithMeeting) => {
+    if (!ob.meeting_id) return;
     if (!confirm("Delete this open business item?")) return;
     await deleteMutation.mutateAsync({ meetingId: ob.meeting_id, id: ob.id });
   };
 
   const startEdit = (ob: OldBusinessItemWithMeeting) => {
     setEditingId(ob.id);
-    setDescription(ob.description);
+    setDescription(ob.description ?? "");
   };
 
   const meetingLabel = (m: { id: string; meeting_number: number; date: string }) =>
@@ -109,7 +106,8 @@ export function OldBusinessPanel() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Track discussion items carried from prior meetings. Add new items, edit descriptions, mark as resolved, or delete.
+        Track discussion items carried from prior meetings. Add new items, edit descriptions, mark
+        as resolved, or delete.
       </p>
 
       <div className="space-y-6">
@@ -154,9 +152,7 @@ export function OldBusinessPanel() {
                     <p className="text-sm line-through text-muted-foreground">{ob.description}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       From meeting #{ob.meeting_number} –{" "}
-                      {ob.meeting_date
-                        ? formatDateOnly(ob.meeting_date)
-                        : "Unknown"}
+                      {ob.meeting_date ? formatDateOnly(ob.meeting_date) : "Unknown"}
                     </p>
                   </div>
                   <Button
@@ -213,10 +209,7 @@ export function OldBusinessPanel() {
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={saving || !description.trim() || !meetingId}
-            >
+            <Button onClick={handleCreate} disabled={saving || !description.trim() || !meetingId}>
               {saving ? "Adding..." : "Add"}
             </Button>
           </div>

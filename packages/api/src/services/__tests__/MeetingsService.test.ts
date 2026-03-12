@@ -2,16 +2,17 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
+import { ActionItemStatus, MotionResult } from "@satyrsmc/shared/lib/enums";
 import { BAD_ID, createMeeting, createMember } from "./helpers";
 
 describe("MeetingsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -103,14 +104,14 @@ describe("MeetingsService", () => {
       const seconder = await createMember(api, { name: "Seconder" });
       const motion = await api.meetings.createMotion(m.id, {
         description: "Motion text",
-        result: "carried",
+        result: MotionResult.Pass,
         mover_member_id: mover.id,
         seconder_member_id: seconder.id,
       });
       expect(motion.id).toBeDefined();
       const updated = await api.meetings.updateMotion(m.id, motion.id, { result: "fail" });
       expect(updated).not.toBeNull();
-      expect(updated!.result).toBe("fail");
+      expect(updated!.result).toBe(MotionResult.Fail);
       const delOk = await api.meetings.deleteMotion(m.id, motion.id);
       expect(delOk).toBe(true);
     });
@@ -118,7 +119,7 @@ describe("MeetingsService", () => {
     test("updateMotion(meetingId, badMotionId) returns null", async () => {
       const m = await createMeeting(api, { date: "2025-08-01", meeting_number: 108 });
       if (!m) throw new Error("createMeeting failed");
-      const result = await api.meetings.updateMotion(m.id, BAD_ID, { result: "carried" });
+      const result = await api.meetings.updateMotion(m.id, BAD_ID, { result: MotionResult.Pass });
       expect(result).toBeNull();
     });
   });
@@ -129,9 +130,12 @@ describe("MeetingsService", () => {
       if (!m) throw new Error("createMeeting failed");
       const item = await api.meetings.createActionItem(m.id, { description: "Do something" });
       expect(item.id).toBeDefined();
-      const updated = await api.meetings.updateActionItem(m.id, item.id, { description: "Updated", status: "completed" });
+      const updated = await api.meetings.updateActionItem(m.id, item.id, {
+        description: "Updated",
+        status: "completed",
+      });
       expect(updated).not.toBeNull();
-      expect(updated!.status).toBe("completed");
+      expect(updated!.status).toBe(ActionItemStatus.Completed);
       const delOk = await api.meetings.deleteActionItem(m.id, item.id);
       expect(delOk).toBe(true);
     });

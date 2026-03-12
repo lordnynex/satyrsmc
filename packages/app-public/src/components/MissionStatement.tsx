@@ -18,18 +18,14 @@ export const MissionStatement: React.FC = () => (
         style={{
           width: "80px",
           height: "2px",
-          background:
-            "linear-gradient(90deg, transparent, var(--color-accent), transparent)",
+          background: "linear-gradient(90deg, transparent, var(--color-accent), transparent)",
         }}
       />
-      <p
-        className="text-lg leading-relaxed"
-        style={{ color: "var(--color-text)" }}
-      >
-        The Satyrs Motorcycle Club of Los Angeles, founded in 1954, is the
-        oldest continuously running gay men&rsquo;s motorcycle club in the
-        world. We ride together, build lasting community, preserve our rich
-        history, and support charitable causes throughout Southern California.
+      <p className="text-lg leading-relaxed" style={{ color: "var(--color-text)" }}>
+        The Satyrs Motorcycle Club of Los Angeles, founded in 1954, is the oldest continuously
+        running gay men&rsquo;s motorcycle club in the world. We ride together, build lasting
+        community, preserve our rich history, and support charitable causes throughout Southern
+        California.
       </p>
     </div>
   </section>

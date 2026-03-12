@@ -34,9 +34,7 @@ export const Left: Story = {
           <SheetDescription>Content slides in from the left.</SheetDescription>
         </SheetHeader>
         <SheetBody>
-          <p className="text-sm text-muted-foreground">
-            Panel body content goes here.
-          </p>
+          <p className="text-sm text-muted-foreground">Panel body content goes here.</p>
         </SheetBody>
       </SheetContent>
     </Sheet>
@@ -55,9 +53,7 @@ export const Right: Story = {
           <SheetDescription>Adjust filters for the current view.</SheetDescription>
         </SheetHeader>
         <SheetBody>
-          <p className="text-sm text-muted-foreground">
-            Filter options and form fields.
-          </p>
+          <p className="text-sm text-muted-foreground">Filter options and form fields.</p>
         </SheetBody>
       </SheetContent>
     </Sheet>

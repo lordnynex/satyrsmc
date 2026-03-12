@@ -1,3 +1,4 @@
+import { ContactType } from "@satyrsmc/shared/client";
 import type { Contact, ContactEmail, ContactAddress } from "@satyrsmc/shared/client";
 
 export function escapeVCardValue(s: string): string {
@@ -5,13 +6,18 @@ export function escapeVCardValue(s: string): string {
 }
 
 /** Convert a Contact to vCard 4.0 format */
-export function contactToVCard4(c: Contact, options?: { includeNotes?: boolean; includePhone?: boolean; includeEmail?: boolean }): string {
+export function contactToVCard4(
+  c: Contact,
+  options?: { includeNotes?: boolean; includePhone?: boolean; includeEmail?: boolean },
+): string {
   const opts = { includeNotes: true, includePhone: true, includeEmail: true, ...options };
   const lines: string[] = ["BEGIN:VCARD", "VERSION:4.0"];
 
   const uid = c.uid ?? `contact-${c.id}@satyrsmc`;
   lines.push(`UID:${uid}`);
-  lines.push(`REV:${(c.updated_at ?? c.created_at ?? new Date().toISOString()).replace(/[-:]/g, "").slice(0, 15)}Z`);
+  lines.push(
+    `REV:${(c.updated_at ?? c.created_at ?? new Date().toISOString()).replace(/[-:]/g, "").slice(0, 15)}Z`,
+  );
 
   const fn = c.display_name?.trim() || "Unknown";
   lines.push(`FN:${escapeVCardValue(fn)}`);
@@ -22,7 +28,9 @@ export function contactToVCard4(c: Contact, options?: { includeNotes?: boolean; 
     const additional = "";
     const prefix = "";
     const suffix = "";
-    lines.push(`N:${escapeVCardValue(family)};${escapeVCardValue(given)};${escapeVCardValue(additional)};${escapeVCardValue(prefix)};${escapeVCardValue(suffix)}`);
+    lines.push(
+      `N:${escapeVCardValue(family)};${escapeVCardValue(given)};${escapeVCardValue(additional)};${escapeVCardValue(prefix)};${escapeVCardValue(suffix)}`,
+    );
   }
 
   if (c.organization_name) {
@@ -60,14 +68,15 @@ export function contactToVCard4(c: Contact, options?: { includeNotes?: boolean; 
         a.state ?? "",
         a.postal_code ?? "",
         a.country ?? "US",
-      ].map(escapeVCardValue).join(";");
+      ]
+        .map(escapeVCardValue)
+        .join(";");
       lines.push(`ADR${type}${pref}:${adr}`);
     }
   }
 
-  const notesText = (c.contact_notes?.length
-    ? c.contact_notes.map((n) => n.content).join("\n\n")
-    : c.notes) ?? "";
+  const notesText =
+    (c.contact_notes?.length ? c.contact_notes.map((n) => n.content).join("\n\n") : c.notes) ?? "";
   if (opts.includeNotes && notesText) {
     lines.push(`NOTE:${escapeVCardValue(notesText.slice(0, 2000))}`);
   }
@@ -100,7 +109,7 @@ function foldLine(line: string): string {
 /** Convert a Contact to vCard 4.0 format, including main profile photo if present (async) */
 export async function contactToVCard4Async(
   c: Contact,
-  options?: { includeNotes?: boolean; includePhone?: boolean; includeEmail?: boolean }
+  options?: { includeNotes?: boolean; includePhone?: boolean; includeEmail?: boolean },
 ): Promise<string> {
   const vcf = contactToVCard4(c, options);
   const mainPhoto = c.contact_photos?.find((p) => p.type === "profile") ?? c.contact_photos?.[0];
@@ -134,14 +143,17 @@ export async function contactToVCard4Async(
 /** Export multiple contacts as a single vCard file (concatenated), including photos (async) */
 export async function contactsToVCardFileAsync(
   contacts: Contact[],
-  options?: { includeNotes?: boolean }
+  options?: { includeNotes?: boolean },
 ): Promise<string> {
   const vcfs = await Promise.all(contacts.map((c) => contactToVCard4Async(c, options)));
   return vcfs.join("\r\n");
 }
 
 /** Export multiple contacts as a single vCard file (concatenated) */
-export function contactsToVCardFile(contacts: Contact[], options?: { includeNotes?: boolean }): string {
+export function contactsToVCardFile(
+  contacts: Contact[],
+  options?: { includeNotes?: boolean },
+): string {
   return contacts.map((c) => contactToVCard4(c, options)).join("\r\n");
 }
 
@@ -235,7 +247,13 @@ function parseVCardBlock(block: string): ParsedVCardContact | null {
       case "N":
         {
           const parts = value.split(";");
-          result.n = { family: parts[0], given: parts[1], additional: parts[2], prefix: parts[3], suffix: parts[4] };
+          result.n = {
+            family: parts[0],
+            given: parts[1],
+            additional: parts[2],
+            prefix: parts[3],
+            suffix: parts[4],
+          };
         }
         break;
       case "ORG":
@@ -280,7 +298,10 @@ function parseVCardBlock(block: string): ParsedVCardContact | null {
         result.note = value;
         break;
       case "CATEGORIES":
-        result.categories = value.split(",").map((s) => s.trim()).filter(Boolean);
+        result.categories = value
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
         break;
     }
   }
@@ -301,12 +322,11 @@ export function parseVCardFile(content: string): ParsedVCardContact[] {
 }
 
 /** Convert ParsedVCardContact to Contact create payload */
-export function parsedToContactPayload(p: ParsedVCardContact): Partial<Contact> & { display_name: string } {
+export function parsedToContactPayload(
+  p: ParsedVCardContact,
+): Partial<Contact> & { display_name: string } {
   const displayName =
-    p.fn ||
-    [p.n?.given, p.n?.family].filter(Boolean).join(" ") ||
-    p.org ||
-    "Unknown";
+    p.fn || [p.n?.given, p.n?.family].filter(Boolean).join(" ") || p.org || "Unknown";
 
   const emails: ContactEmail[] = p.emails
     .sort((a, b) => (b.pref ?? 0) - (a.pref ?? 0))
@@ -334,7 +354,7 @@ export function parsedToContactPayload(p: ParsedVCardContact): Partial<Contact> 
   const [given, family] = p.n ? [p.n.given, p.n.family] : [undefined, undefined];
 
   return {
-    type: p.org && !p.n?.given && !p.n?.family ? "organization" : "person",
+    type: p.org && !p.n?.given && !p.n?.family ? ContactType.Organization : ContactType.Person,
     display_name: displayName,
     first_name: given ?? null,
     last_name: family ?? null,

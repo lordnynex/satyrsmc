@@ -20,8 +20,6 @@
  *     the stub type and this contract.
  */
 
-import type { DataSource } from "typeorm";
-import type { Api } from "../services/api";
 import type { Context } from "../trpc/context";
 import { appRouter } from "../trpc/root";
 import { t } from "../trpc/trpc";
@@ -81,7 +79,7 @@ async function createTrpcTestHarnessInner(options?: CreateTrpcTestHarnessOptions
  * @returns Harness with caller, api, ds, and context.
  */
 export async function createTrpcTestHarness(
-  options?: CreateTrpcTestHarnessOptions
+  options?: CreateTrpcTestHarnessOptions,
 ): Promise<TrpcTestHarness> {
   return createTrpcTestHarnessInner(options);
 }

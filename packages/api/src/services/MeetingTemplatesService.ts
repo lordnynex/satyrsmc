@@ -1,6 +1,7 @@
 import { In } from "typeorm";
 import type { DataSource } from "typeorm";
 import { Document, MeetingTemplate } from "../entities";
+import type { MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
 import type {
@@ -16,14 +17,11 @@ const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }]
 export class MeetingTemplatesService {
   constructor(private ds: DataSource) {}
 
-  private templateToApi(
-    t: MeetingTemplate,
-    doc: Document | null
-  ): MeetingTemplateGetOutput {
+  private templateToApi(t: MeetingTemplate, doc: Document | null): MeetingTemplateGetOutput {
     return {
       id: t.id,
       name: t.name,
-      type: t.type as "agenda" | "minutes",
+      type: t.type as MeetingTemplateType,
       document_id: t.documentId,
       content: doc?.content ?? EMPTY_DOC,
       created_at: toISOString(t.createdAt),
@@ -31,7 +29,7 @@ export class MeetingTemplatesService {
     };
   }
 
-  async list(type?: "agenda" | "minutes"): Promise<MeetingTemplateListOutput> {
+  async list(type?: MeetingTemplateType): Promise<MeetingTemplateListOutput> {
     const repo = this.ds.getRepository(MeetingTemplate);
     const findOptions: Parameters<typeof repo.find>[0] = {
       order: { name: "ASC" },
@@ -52,11 +50,17 @@ export class MeetingTemplatesService {
   async get(id: string): Promise<MeetingTemplateGetOutput | null> {
     const template = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });
     if (!template) return null;
-    const doc = await this.ds.getRepository(Document).findOne({ where: { id: template.documentId } });
+    const doc = await this.ds
+      .getRepository(Document)
+      .findOne({ where: { id: template.documentId } });
     return this.templateToApi(template, doc);
   }
 
-  async create(body: { name: string; type: string; content: string }): Promise<MeetingTemplateCreateOutput> {
+  async create(body: {
+    name: string;
+    type: MeetingTemplateType;
+    content: string;
+  }): Promise<MeetingTemplateCreateOutput> {
     const now = new Date().toISOString();
     const doc = this.ds.getRepository(Document).create({
       id: uuid(),
@@ -77,17 +81,22 @@ export class MeetingTemplatesService {
     return this.templateToApi(template, doc);
   }
 
-  async update(id: string, body: Record<string, unknown>): Promise<MeetingTemplateUpdateOutput | null> {
+  async update(
+    id: string,
+    body: Record<string, unknown>,
+  ): Promise<MeetingTemplateUpdateOutput | null> {
     const template = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });
     if (!template) return null;
     const updates: Partial<MeetingTemplate> = {};
     if (body.name !== undefined) updates.name = body.name as string;
-    if (body.type !== undefined) updates.type = body.type as string;
+    if (body.type !== undefined) updates.type = body.type as MeetingTemplateType;
     updates.updatedAt = new Date();
     await this.ds.getRepository(MeetingTemplate).update(id, updates);
     const updated = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });
     if (!updated) return null;
-    const doc = await this.ds.getRepository(Document).findOne({ where: { id: updated.documentId } });
+    const doc = await this.ds
+      .getRepository(Document)
+      .findOne({ where: { id: updated.documentId } });
     return this.templateToApi(updated, doc);
   }
 

@@ -1,15 +1,26 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { ContactType, ContactStatus, ConsentStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("contacts")
 export class Contact {
   @PrimaryColumn("text")
   id!: string;
 
-  @Column({ type: "text", default: "person" })
-  type!: string;
+  @Column({
+    type: "enum",
+    enum: ContactType,
+    enumName: "contact_type_enum",
+    default: ContactType.Person,
+  })
+  type!: ContactType;
 
-  @Column({ type: "text", default: "active" })
-  status!: string;
+  @Column({
+    type: "enum",
+    enum: ContactStatus,
+    enumName: "contact_status_enum",
+    default: ContactStatus.Active,
+  })
+  status!: ContactStatus;
 
   @Column({ name: "display_name", type: "text" })
   displayName!: string;
@@ -29,14 +40,32 @@ export class Contact {
   @Column({ name: "how_we_know_them", type: "text", nullable: true })
   howWeKnowThem!: string | null;
 
-  @Column({ name: "ok_to_email", type: "text", default: "unknown" })
-  okToEmail!: string;
+  @Column({
+    name: "ok_to_email",
+    type: "enum",
+    enum: ConsentStatus,
+    enumName: "consent_status_enum",
+    default: ConsentStatus.Unknown,
+  })
+  okToEmail!: ConsentStatus;
 
-  @Column({ name: "ok_to_mail", type: "text", default: "unknown" })
-  okToMail!: string;
+  @Column({
+    name: "ok_to_mail",
+    type: "enum",
+    enum: ConsentStatus,
+    enumName: "consent_status_enum",
+    default: ConsentStatus.Unknown,
+  })
+  okToMail!: ConsentStatus;
 
-  @Column({ name: "ok_to_sms", type: "text", default: "unknown" })
-  okToSms!: string;
+  @Column({
+    name: "ok_to_sms",
+    type: "enum",
+    enum: ConsentStatus,
+    enumName: "consent_status_enum",
+    default: ConsentStatus.Unknown,
+  })
+  okToSms!: ConsentStatus;
 
   @Column({ name: "do_not_contact", type: "boolean", default: false })
   doNotContact!: boolean;

@@ -12,10 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import {
-  useMeetingTemplatesOptional,
-  useCreateCommitteeMeeting,
-} from "@/queries/hooks";
+import { useMeetingTemplatesOptional, useCreateCommitteeMeeting } from "@/queries/hooks";
+import { MeetingTemplateType } from "@satyrsmc/shared/client";
 import { ArrowLeft } from "lucide-react";
 
 export function CreateCommitteeMeetingPage() {
@@ -23,7 +21,7 @@ export function CreateCommitteeMeetingPage() {
   const { id: committeeId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const committee = unwrapSuspenseData(useCommitteeSuspense(committeeId!))!;
-  const { data: templates = [] } = useMeetingTemplatesOptional("agenda");
+  const { data: templates = [] } = useMeetingTemplatesOptional(MeetingTemplateType.Agenda);
 
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [meetingNumber, setMeetingNumber] = useState<number | "">("");
@@ -34,12 +32,10 @@ export function CreateCommitteeMeetingPage() {
   const [agendaTemplateId, setAgendaTemplateId] = useState("__none__");
   const [saving, setSaving] = useState(false);
 
-  const meetings = committee.meetings;
+  const meetings = committee.meetings ?? [];
   useEffect(() => {
     const nextNum =
-      meetings.length > 0
-        ? Math.max(...meetings.map((m) => m.meeting_number), 0) + 1
-        : 1;
+      meetings.length > 0 ? Math.max(...meetings.map((m) => m.meeting_number ?? 0), 0) + 1 : 1;
     setMeetingNumber(nextNum);
   }, [meetings]);
 
@@ -58,13 +54,10 @@ export function CreateCommitteeMeetingPage() {
           start_time: startTime.trim() || null,
           end_time: endTime.trim() || null,
           video_conference_url: videoConferenceUrl.trim() || null,
-          agenda_template_id:
-            agendaTemplateId === "__none__" ? undefined : agendaTemplateId,
+          agenda_template_id: agendaTemplateId === "__none__" ? undefined : agendaTemplateId,
         },
       });
-      navigate(
-        `/meetings/committees/${committeeId}/meetings/${(meeting as { id: string }).id}`
-      );
+      navigate(`/meetings/committees/${committeeId}/meetings/${(meeting as { id: string }).id}`);
     } finally {
       setSaving(false);
     }
@@ -78,21 +71,14 @@ export function CreateCommitteeMeetingPage() {
             <ArrowLeft className="size-4" />
           </Link>
         </Button>
-        <h1 className="text-2xl font-semibold">
-          New meeting – {committee.name}
-        </h1>
+        <h1 className="text-2xl font-semibold">New meeting – {committee.name}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-md space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
-            <DatePicker
-              id="date"
-              value={date}
-              onChange={setDate}
-              placeholder="Pick meeting date"
-            />
+            <DatePicker id="date" value={date} onChange={setDate} placeholder="Pick meeting date" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="meeting-number">Meeting number</Label>
@@ -102,9 +88,7 @@ export function CreateCommitteeMeetingPage() {
               min={1}
               value={meetingNumber}
               onChange={(e) =>
-                setMeetingNumber(
-                  e.target.value === "" ? "" : parseInt(e.target.value, 10)
-                )
+                setMeetingNumber(e.target.value === "" ? "" : parseInt(e.target.value, 10))
               }
             />
           </div>

@@ -77,7 +77,10 @@ export const meetingsRouter = t.router({
     .output(MeetingDeleteOutputSchema)
     .meta({ description: "Delete a meeting." })
     .mutation(async ({ ctx, input }) => {
-      await ctx.api.meetings.delete(input.id, { delete_agenda: input.delete_agenda, delete_minutes: input.delete_minutes });
+      await ctx.api.meetings.delete(input.id, {
+        delete_agenda: input.delete_agenda,
+        delete_minutes: input.delete_minutes,
+      });
     }),
 
   listOldBusiness: t.procedure
@@ -141,7 +144,9 @@ export const meetingsRouter = t.router({
     .input(MeetingDeleteActionItemInputSchema)
     .output(MeetingDeleteActionItemOutputSchema)
     .meta({ description: "Delete an action item." })
-    .mutation(({ ctx, input }) => ctx.api.meetings.deleteActionItem(input.meetingId, input.actionItemId)),
+    .mutation(({ ctx, input }) =>
+      ctx.api.meetings.deleteActionItem(input.meetingId, input.actionItemId),
+    ),
 
   createOldBusiness: t.procedure
     .input(MeetingCreateOldBusinessInputSchema)
@@ -167,5 +172,7 @@ export const meetingsRouter = t.router({
     .input(MeetingDeleteOldBusinessInputSchema)
     .output(MeetingDeleteOldBusinessOutputSchema)
     .meta({ description: "Delete an old business item." })
-    .mutation(({ ctx, input }) => ctx.api.meetings.deleteOldBusiness(input.meetingId, input.oldBusinessId)),
+    .mutation(({ ctx, input }) =>
+      ctx.api.meetings.deleteOldBusiness(input.meetingId, input.oldBusinessId),
+    ),
 });

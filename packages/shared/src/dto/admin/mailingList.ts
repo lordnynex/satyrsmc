@@ -67,7 +67,32 @@ const MailingListMemberSchema = z.object({
   suppressed: z.boolean().optional(),
   suppress_reason: z.string().nullable().optional(),
   unsubscribed: z.boolean().optional(),
-  contact: z.unknown().optional(),
+  contact: z.record(z.unknown()).optional(),
+});
+
+// Lightweight contact reference used in preview/included responses
+const ContactRefSchema = z
+  .object({
+    id: z.string(),
+    display_name: z.string(),
+  })
+  .passthrough();
+
+const PreviewIncludedItemSchema = z.object({
+  contact: ContactRefSchema,
+  canRemoveFromList: z.boolean().optional(),
+});
+
+const PreviewExcludedItemSchema = z.object({
+  contact: ContactRefSchema,
+  reason: z.string(),
+  canRemoveFromList: z.boolean().optional(),
+  removable: z.boolean().optional(),
+});
+
+const IncludedPageContactSchema = z.object({
+  contact: ContactRefSchema,
+  canRemoveFromList: z.boolean().optional(),
 });
 
 // ----- Procedure output schemas -----
@@ -81,14 +106,34 @@ export const MailingListGetMembersOutputSchema = z.array(MailingListMemberSchema
 export const MailingListAddMemberOutputSchema = MailingListSchema.nullable();
 export const MailingListRemoveMemberOutputSchema = z.object({ ok: z.literal(true) });
 export const MailingListPreviewOutputSchema = z.object({
-  included: z.array(z.unknown()),
-  excluded: z.array(z.unknown()),
+  included: z.array(PreviewIncludedItemSchema),
+  excluded: z.array(PreviewExcludedItemSchema),
   totalIncluded: z.number(),
   totalExcluded: z.number(),
 });
-export const MailingListGetStatsOutputSchema = z.record(z.unknown());
+export const MailingListGetStatsOutputSchema = z.object({
+  duplicateAddresses: z
+    .object({
+      totalDuplicateContacts: z.number(),
+      uniqueAddressesWithDuplicates: z.number(),
+      groups: z.array(
+        z.object({
+          address: z.string(),
+          contactIds: z.array(z.string()),
+          contacts: z.array(z.object({ id: z.string(), display_name: z.string() })),
+        }),
+      ),
+    })
+    .optional(),
+  geographic: z
+    .object({
+      byState: z.array(z.object({ state: z.string(), count: z.number() })),
+      byCountry: z.array(z.object({ country: z.string(), count: z.number() })),
+    })
+    .optional(),
+});
 export const MailingListGetIncludedOutputSchema = z.object({
-  contacts: z.array(z.unknown()),
+  contacts: z.array(IncludedPageContactSchema),
   total: z.number(),
   page: z.number(),
   limit: z.number(),

@@ -3,8 +3,9 @@ import { performance } from "node:perf_hooks";
 import { join } from "path";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { Api } from "./services/api";
-import { createContextFn } from "./trpc/context";
+import type { createContextFn } from "./trpc/context";
 import { appRouter } from "./trpc/root";
+import { MemberPhotoSize, ContactPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { logger } from "./logger";
 
 const TRPC_PREFIX = "/trpc";
@@ -33,10 +34,7 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       if (process.env.NODE_ENV === "production") {
         const durationMs = Math.round(performance.now() - start);
         const ip = server?.requestIP?.(request)?.address ?? "unknown";
-        logger.info(
-          { method: request.method, path, status: 404, durationMs, ip },
-          "http request",
-        );
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
         return new Response("Not Found", { status: 404 });
       }
       const mod = (await import("trpc-ui")) as {
@@ -57,10 +55,7 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       });
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
-      logger.info(
-        { method: request.method, path, status: 200, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
       return new Response(html, { headers: { "Content-Type": "text/html" } });
     }
 
@@ -86,39 +81,25 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       return response;
     }
 
-    if (
-      request.method === "GET" &&
-      (path === "/health" || path === "/api/health")
-    ) {
+    if (request.method === "GET" && (path === "/health" || path === "/api/health")) {
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
-      logger.info(
-        { method: request.method, path, status: 200, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
       return new Response("OK", { status: 200 });
     }
 
     const memberPhotoMatch = path.match(/^\/api\/members\/([^/]+)\/photo$/);
     if (request.method === "GET" && memberPhotoMatch) {
       const id = memberPhotoMatch[1];
-      const size =
-        (url.searchParams.get("size") as "thumbnail" | "medium" | "full") ??
-        "full";
+      const size = (url.searchParams.get("size") as MemberPhotoSize) ?? MemberPhotoSize.Full;
       const buffer = await api.members.getPhoto(id, size);
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
       if (!buffer) {
-        logger.info(
-          { method: request.method, path, status: 404, durationMs, ip },
-          "http request",
-        );
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
         return new Response("Not Found", { status: 404 });
       }
-      logger.info(
-        { method: request.method, path, status: 200, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "image/jpeg",
@@ -127,29 +108,19 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       });
     }
 
-    const contactPhotoMatch = path.match(
-      /^\/api\/contacts\/([^/]+)\/photos\/([^/]+)$/,
-    );
+    const contactPhotoMatch = path.match(/^\/api\/contacts\/([^/]+)\/photos\/([^/]+)$/);
     if (request.method === "GET" && contactPhotoMatch) {
       const contactId = contactPhotoMatch[1];
       const photoId = contactPhotoMatch[2];
-      const size =
-        (url.searchParams.get("size") as "thumbnail" | "display" | "full") ??
-        "full";
+      const size = (url.searchParams.get("size") as ContactPhotoSize) ?? ContactPhotoSize.Full;
       const buffer = await api.contacts.getPhoto(contactId, photoId, size);
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
       if (!buffer) {
-        logger.info(
-          { method: request.method, path, status: 404, durationMs, ip },
-          "http request",
-        );
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
         return new Response("Not Found", { status: 404 });
       }
-      logger.info(
-        { method: request.method, path, status: 200, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "image/jpeg",
@@ -158,29 +129,19 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       });
     }
 
-    const eventPhotoMatch = path.match(
-      /^\/api\/events\/([^/]+)\/photos\/([^/]+)$/,
-    );
+    const eventPhotoMatch = path.match(/^\/api\/events\/([^/]+)\/photos\/([^/]+)$/);
     if (request.method === "GET" && eventPhotoMatch) {
       const eventId = eventPhotoMatch[1];
       const photoId = eventPhotoMatch[2];
-      const size =
-        (url.searchParams.get("size") as "thumbnail" | "display" | "full") ??
-        "full";
+      const size = (url.searchParams.get("size") as "thumbnail" | "display" | "full") ?? "full";
       const buffer = await api.events.getPhoto(eventId, photoId, size);
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
       if (!buffer) {
-        logger.info(
-          { method: request.method, path, status: 404, durationMs, ip },
-          "http request",
-        );
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
         return new Response("Not Found", { status: 404 });
       }
-      logger.info(
-        { method: request.method, path, status: 200, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "image/jpeg",
@@ -189,29 +150,19 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       });
     }
 
-    const eventAssetMatch = path.match(
-      /^\/api\/events\/([^/]+)\/assets\/([^/]+)$/,
-    );
+    const eventAssetMatch = path.match(/^\/api\/events\/([^/]+)\/assets\/([^/]+)$/);
     if (request.method === "GET" && eventAssetMatch) {
       const eventId = eventAssetMatch[1];
       const assetId = eventAssetMatch[2];
-      const size =
-        (url.searchParams.get("size") as "thumbnail" | "display" | "full") ??
-        "full";
+      const size = (url.searchParams.get("size") as "thumbnail" | "display" | "full") ?? "full";
       const buffer = await api.events.getAsset(eventId, assetId, size);
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
       if (!buffer) {
-        logger.info(
-          { method: request.method, path, status: 404, durationMs, ip },
-          "http request",
-        );
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
         return new Response("Not Found", { status: 404 });
       }
-      logger.info(
-        { method: request.method, path, status: 200, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "image/jpeg",
@@ -223,10 +174,7 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
     if (!serveFrontend) {
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
-      logger.info(
-        { method: request.method, path, status: 404, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
       return new Response("Not Found", { status: 404 });
     }
 
@@ -281,15 +229,11 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       }
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
-      logger.info(
-        { method: request.method, path, status: 404, durationMs, ip },
-        "http request",
-      );
+      logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
       return new Response("Not Found", { status: 404 });
     }
 
-    const filePath =
-      path === "/" ? join(webDist, "index.html") : join(webDist, path);
+    const filePath = path === "/" ? join(webDist, "index.html") : join(webDist, path);
     try {
       const file = Bun.file(filePath);
       if (await file.exists()) {
@@ -337,10 +281,7 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
 
     const durationMs = Math.round(performance.now() - start);
     const ip = server?.requestIP?.(request)?.address ?? "unknown";
-    logger.info(
-      { method: request.method, path, status: 404, durationMs, ip },
-      "http request",
-    );
+    logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
     return new Response("Not Found", { status: 404 });
   };
 }

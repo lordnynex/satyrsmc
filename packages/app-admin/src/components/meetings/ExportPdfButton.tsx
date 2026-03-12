@@ -23,13 +23,7 @@ export function ExportPdfButton({
   };
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={handleExport}
-      className={className}
-    >
+    <Button type="button" variant="outline" size="sm" onClick={handleExport} className={className}>
       <FileDown className="size-4" />
       {label}
     </Button>

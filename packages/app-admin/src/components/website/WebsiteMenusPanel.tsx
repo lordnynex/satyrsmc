@@ -5,36 +5,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { List } from "lucide-react";
 
-interface MenuItem {
-  id: string;
-  menu_key: string;
-  label: string;
-  url: string | null;
-  internal_ref: string | null;
-  sort_order: number;
-}
-
 const MENU_KEYS = ["main", "footer"] as const;
 
 export function WebsiteMenusPanel() {
   const { data: menus = {}, isLoading } = useWebsiteMenusOptional();
   const updateMutation = useWebsiteUpdateMenu();
   const [selectedKey, setSelectedKey] = useState<string>("main");
-  const [items, setItems] = useState<Array<{ label: string; url: string; internal_ref: string }>>([]);
+  const [items, setItems] = useState<
+    Array<{ id: string; label: string; url: string; internal_ref: string }>
+  >([]);
 
   useEffect(() => {
     const list = menus[selectedKey] ?? [];
     setItems(
       list.map((it) => ({
+        id: it.id,
         label: it.label,
         url: it.url ?? "",
         internal_ref: it.internal_ref ?? "",
-      }))
+      })),
     );
   }, [selectedKey, menus]);
 
   function addItem() {
-    setItems((prev) => [...prev, { label: "", url: "", internal_ref: "" }]);
+    setItems((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), label: "", url: "", internal_ref: "" },
+    ]);
   }
 
   function removeItem(i: number) {
@@ -93,7 +90,10 @@ export function WebsiteMenusPanel() {
               </div>
               <div className="space-y-3">
                 {items.map((item, i) => (
-                  <div key={i} className="flex flex-wrap items-center gap-2 rounded-md border p-2">
+                  <div
+                    key={item.id}
+                    className="flex flex-wrap items-center gap-2 rounded-md border p-2"
+                  >
                     <Input
                       placeholder="Label"
                       value={item.label}
@@ -127,11 +127,7 @@ export function WebsiteMenusPanel() {
                   Add item
                 </Button>
               </div>
-              <Button
-                className="mt-4"
-                onClick={handleSave}
-                disabled={updateMutation.isPending}
-              >
+              <Button className="mt-4" onClick={handleSave} disabled={updateMutation.isPending}>
                 {updateMutation.isPending ? "Saving…" : "Save menu"}
               </Button>
             </>

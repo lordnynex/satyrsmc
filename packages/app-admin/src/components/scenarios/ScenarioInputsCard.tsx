@@ -43,7 +43,7 @@ export function ScenarioInputsCard() {
 
   useEffect(() => {
     if (currentScenario?.inputs) {
-      setInputs(currentScenario.inputs);
+      setInputs(currentScenario.inputs as Inputs);
     } else if (!selectedScenarioId) {
       setInputs(DEFAULT_INPUTS);
     }

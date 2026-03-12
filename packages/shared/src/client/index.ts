@@ -8,8 +8,11 @@ export type { RouterOutputs, RouterInputs } from "./routerTypes";
 // Helpers
 export { unwrap, getErrorMessage } from "./helpers";
 
-// Client-only constants and state types (no DTO enum changes)
-export { ALL_MEMBERS_ID, MEMBER_POSITIONS, type MemberPosition } from "./constants";
+// Domain enums (single source of truth for string literal unions)
+export * from "../lib/enums";
+
+// Client-only constants and state types
+export { ALL_MEMBERS_ID } from "./constants";
 export type {
   Inputs,
   LineItem,
@@ -30,7 +33,6 @@ export type {
   MotionWithMeeting,
   MeetingActionItem,
   OldBusinessItem,
-  EventType,
   Event,
   EventPhoto,
   EventAsset,
@@ -43,7 +45,6 @@ export type {
   EventPlanningMilestone,
   EventAttendee,
   RideMemberAttendee,
-  EventAssignmentCategory,
   CommitteeSummary,
   CommitteeDetail,
   CommitteeMeetingSummary,

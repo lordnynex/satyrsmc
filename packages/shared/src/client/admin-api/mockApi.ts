@@ -8,7 +8,9 @@ const stubNull = (): Promise<null> => Promise.resolve(null);
  * Creates a stub client object whose methods return empty/neutral values.
  * Used as the base for the mock API so any unused method is safe to call.
  */
-function createStubClient(listDefault = stubList): Record<string, (...args: unknown[]) => Promise<unknown>> {
+function createStubClient(
+  listDefault = stubList,
+): Record<string, (...args: unknown[]) => Promise<unknown>> {
   return new Proxy(
     {},
     {
@@ -17,26 +19,27 @@ function createStubClient(listDefault = stubList): Record<string, (...args: unkn
         if (prop === "get" || String(prop).startsWith("get")) return stubNull;
         return stub;
       },
-    }
+    },
   );
 }
 
 function createStubApi(): Api {
+  const s = createStubClient;
   return {
-    events: createStubClient() as Api["events"],
-    budgets: createStubClient() as Api["budgets"],
-    members: createStubClient() as Api["members"],
-    scenarios: createStubClient() as Api["scenarios"],
-    contacts: createStubClient() as Api["contacts"],
-    mailingLists: createStubClient() as Api["mailingLists"],
-    mailingBatches: createStubClient() as Api["mailingBatches"],
-    qrCodes: createStubClient() as Api["qrCodes"],
-    meetings: createStubClient() as Api["meetings"],
-    meetingTemplates: createStubClient() as Api["meetingTemplates"],
-    documents: createStubClient() as Api["documents"],
-    committees: createStubClient() as Api["committees"],
-    website: createStubClient() as Api["website"],
-    incidents: createStubClient() as Api["incidents"],
+    events: s() as unknown as Api["events"],
+    budgets: s() as unknown as Api["budgets"],
+    members: s() as unknown as Api["members"],
+    scenarios: s() as unknown as Api["scenarios"],
+    contacts: s() as unknown as Api["contacts"],
+    mailingLists: s() as unknown as Api["mailingLists"],
+    mailingBatches: s() as unknown as Api["mailingBatches"],
+    qrCodes: s() as unknown as Api["qrCodes"],
+    meetings: s() as unknown as Api["meetings"],
+    meetingTemplates: s() as unknown as Api["meetingTemplates"],
+    documents: s() as unknown as Api["documents"],
+    committees: s() as unknown as Api["committees"],
+    website: s() as unknown as Api["website"],
+    incidents: s() as unknown as Api["incidents"],
   };
 }
 
@@ -46,25 +49,32 @@ function createStubApi(): Api {
  * a component calls e.g. mailingLists.get after we only overrode mailingLists.list).
  */
 function mergeOverrides(base: Api, overrides: Partial<Api>): Api {
-  const result = { ...base };
+  const result: Record<string, unknown> = { ...base };
   for (const key of Object.keys(overrides) as (keyof Api)[]) {
     const overrideVal = overrides[key];
-    if (overrideVal && typeof overrideVal === "object" && typeof (overrideVal as Record<string, unknown>).then !== "function") {
-      const baseClient = base[key] as Record<string, unknown>;
-      const overrideClient = overrideVal as Record<string, unknown>;
+    if (
+      overrideVal &&
+      typeof overrideVal === "object" &&
+      typeof (overrideVal as unknown as Record<string, unknown>).then !== "function"
+    ) {
+      const baseClient = base[key] as unknown as Record<string, unknown>;
+      const overrideClient = overrideVal as unknown as Record<string, unknown>;
       result[key] = new Proxy(baseClient, {
         get(target, prop) {
-          if (Object.prototype.hasOwnProperty.call(overrideClient, prop)) {
+          if (
+            typeof prop === "string" &&
+            Object.prototype.hasOwnProperty.call(overrideClient, prop)
+          ) {
             return overrideClient[prop];
           }
-          return (target as Record<string, unknown>)[prop as string];
+          return typeof prop === "string" ? (target as Record<string, unknown>)[prop] : undefined;
         },
-      }) as Api[keyof Api];
+      });
     } else if (overrideVal !== undefined) {
-      result[key] = overrideVal as Api[keyof Api];
+      result[key] = overrideVal;
     }
   }
-  return result;
+  return result as Api;
 }
 
 /**

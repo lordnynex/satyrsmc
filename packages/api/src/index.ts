@@ -15,8 +15,7 @@ async function main() {
   const ds = await getDataSource();
 
   if (process.env.USE_PGLITE === "1") {
-    const sqlitePath =
-      process.env.SQLITE_SEED_PATH ?? join(getProjectRoot(), "data", "badger.db");
+    const sqlitePath = process.env.SQLITE_SEED_PATH ?? join(getProjectRoot(), "data", "badger.db");
     if (await Bun.file(sqlitePath).exists()) {
       const count = await seedPgliteFromSqlite(ds, sqlitePath);
       logger.info({ sqlitePath, rows: count }, "Seeded PGlite from SQLite");

@@ -2,20 +2,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { MeetingTemplate } from "@satyrsmc/shared/client";
+import type { MeetingTemplateType } from "@satyrsmc/shared/client";
 
 /** Data: MeetingTemplate[] */
-export function useMeetingTemplatesSuspense(type?: "agenda" | "minutes") {
-  return trpc.admin.meetingTemplates.list.useSuspenseQuery(
-    type ? { type } : undefined
-  );
+export function useMeetingTemplatesSuspense(type?: MeetingTemplateType) {
+  return trpc.admin.meetingTemplates.list.useSuspenseQuery(type ? { type } : undefined);
 }
 
 /** Data: MeetingTemplate[] */
-export function useMeetingTemplatesOptional(type?: "agenda" | "minutes") {
-  return trpc.admin.meetingTemplates.list.useQuery(
-    type ? { type } : undefined
-  );
+export function useMeetingTemplatesOptional(type?: MeetingTemplateType) {
+  return trpc.admin.meetingTemplates.list.useQuery(type ? { type } : undefined);
 }
 
 /** Data: MeetingTemplate */
@@ -27,7 +23,7 @@ export function useCreateMeetingTemplate() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { name: string; type: "agenda" | "minutes"; content: string }) =>
+    mutationFn: (body: { name: string; type: MeetingTemplateType; content: string }) =>
       api.meetingTemplates.create(body),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.meetingTemplates() }),
   });

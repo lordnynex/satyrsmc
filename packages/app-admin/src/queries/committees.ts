@@ -2,18 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type {
-  CommitteeDetail,
-  CommitteeMeetingDetail,
-  CommitteeMeetingSummary,
-  CommitteeSummary,
-} from "@satyrsmc/shared/client";
+import type { CommitteeSortField } from "@satyrsmc/shared/client";
 
 /** Data: CommitteeSummary[] */
-export function useCommitteesSuspense(sort?: "formed_date" | "name") {
-  return trpc.admin.committees.list.useSuspenseQuery(
-    sort ? { sort } : undefined
-  );
+export function useCommitteesSuspense(sort?: CommitteeSortField) {
+  return trpc.admin.committees.list.useSuspenseQuery(sort ? { sort } : undefined);
 }
 
 /** Data: CommitteeDetail */
@@ -27,10 +20,7 @@ export function useCommitteeMeetingsSuspense(committeeId: string) {
 }
 
 /** Data: CommitteeMeetingDetail */
-export function useCommitteeMeetingSuspense(
-  committeeId: string,
-  meetingId: string
-) {
+export function useCommitteeMeetingSuspense(committeeId: string, meetingId: string) {
   return trpc.admin.committees.getMeeting.useSuspenseQuery({
     committeeId,
     meetingId,
@@ -101,13 +91,8 @@ export function useCreateCommitteeMeeting() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      committeeId,
-      body,
-    }: {
-      committeeId: string;
-      body: Record<string, unknown>;
-    }) => api.committees.createMeeting(committeeId, body as never),
+    mutationFn: ({ committeeId, body }: { committeeId: string; body: Record<string, unknown> }) =>
+      api.committees.createMeeting(committeeId, body as never),
     onSuccess: (_, { committeeId }) => {
       qc.invalidateQueries({ queryKey: queryKeys.committeeMeetings(committeeId) });
       qc.invalidateQueries({ queryKey: queryKeys.committee(committeeId) });

@@ -63,12 +63,7 @@ export function ProfitMarginChart({ metrics }: ProfitMarginChartProps) {
       description="Profit as % of revenue. Higher margin means more of each dollar stays as profit."
       calculationNote="(Net Revenue ÷ Gross Revenue) × 100"
     >
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <Chart options={options} series={series} type="bar" height={280} />
     </ChartCard>
   );
 }

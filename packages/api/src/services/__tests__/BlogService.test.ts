@@ -6,12 +6,12 @@ import { BAD_ID, createBlogPost } from "./helpers";
 
 describe("BlogService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("listPublished", () => {
@@ -33,7 +33,11 @@ describe("BlogService", () => {
 
   describe("listAll", () => {
     test("returns all posts", async () => {
-      const post = await createBlogPost(api, { slug: "all-post", title: "All Post", published_at: null });
+      const post = await createBlogPost(api, {
+        slug: "all-post",
+        title: "All Post",
+        published_at: null,
+      });
       const result = await api.blog.listAll();
       expect(result.some((p) => p.id === post.id)).toBe(true);
     });

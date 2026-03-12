@@ -25,7 +25,14 @@ interface CreateMailLabelsDialogProps {
   contacts: Contact[];
 }
 
-function getPrimaryAddress(c: Contact): { line1: string; line2?: string; city: string; state: string; postalCode: string; country?: string } | null {
+function getPrimaryAddress(c: Contact): {
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country?: string;
+} | null {
   const addrs = c.addresses ?? [];
   const primary = addrs.find((a) => a.is_primary_mailing) ?? addrs[0];
   if (!primary?.address_line1 && !primary?.city && !primary?.postal_code) return null;

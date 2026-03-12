@@ -11,7 +11,6 @@ import {
 } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
@@ -54,14 +53,14 @@ export function CommitteeDetailPage() {
   const [name, setName] = useState(committee.name);
   const [description, setDescription] = useState(committee.description ?? "");
   const [purpose, setPurpose] = useState(committee.purpose ?? "");
-  const [formedDate, setFormedDate] = useState(committee.formed_date);
+  const [formedDate, setFormedDate] = useState(committee.formed_date?.toString() ?? "");
   const [closedDate, setClosedDate] = useState(committee.closed_date ?? "");
   const [chairpersonMemberId, setChairpersonMemberId] = useState(
-    committee.chairperson_member_id ?? ""
+    committee.chairperson_member_id ?? "",
   );
-  const [status, setStatus] = useState(committee.status);
+  const [status, setStatus] = useState<string>(committee.status ?? "active");
 
-  const memberIdsInCommittee = new Set(committee.members.map((m) => m.member_id));
+  const memberIdsInCommittee = new Set((committee.members ?? []).map((m) => m.member_id));
 
   const handleSave = async () => {
     setSaving(true);
@@ -88,10 +87,10 @@ export function CommitteeDetailPage() {
     setName(committee.name);
     setDescription(committee.description ?? "");
     setPurpose(committee.purpose ?? "");
-    setFormedDate(committee.formed_date);
+    setFormedDate(committee.formed_date?.toString() ?? "");
     setClosedDate(committee.closed_date ?? "");
     setChairpersonMemberId(committee.chairperson_member_id ?? "");
-    setStatus(committee.status);
+    setStatus(committee.status ?? "active");
     setEditing(false);
   };
 
@@ -157,9 +156,7 @@ export function CommitteeDetailPage() {
                   </Select>
                   <Select
                     value={chairpersonMemberId || "__none__"}
-                    onValueChange={(v) =>
-                      setChairpersonMemberId(v === "__none__" ? "" : v)
-                    }
+                    onValueChange={(v) => setChairpersonMemberId(v === "__none__" ? "" : v)}
                   >
                     <SelectTrigger className="h-9 w-40">
                       <SelectValue placeholder="Chairperson" />
@@ -196,7 +193,7 @@ export function CommitteeDetailPage() {
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                 <h1 className="text-2xl font-semibold">{committee.name}</h1>
                 <span className="text-muted-foreground">
-                  Formed {formatDateOnly(committee.formed_date)}
+                  Formed {formatDateOnly(committee.formed_date?.toString() ?? "")}
                 </span>
                 {committee.closed_date && (
                   <span className="text-muted-foreground">
@@ -227,9 +224,7 @@ export function CommitteeDetailPage() {
         </div>
       </div>
 
-      {committee.description && (
-        <p className="text-muted-foreground">{committee.description}</p>
-      )}
+      {committee.description && <p className="text-muted-foreground">{committee.description}</p>}
       {committee.purpose && (
         <p className="text-sm text-muted-foreground">
           <strong>Purpose:</strong> {committee.purpose}
@@ -245,11 +240,7 @@ export function CommitteeDetailPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Members</CardTitle>
           {committee.status === "active" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAddMemberOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setAddMemberOpen(true)}>
               <Plus className="size-4" />
               Add member
             </Button>
@@ -258,27 +249,21 @@ export function CommitteeDetailPage() {
         <CardContent>
           {(() => {
             const allMembersList = members as Member[];
-            const memberIdsInList = new Set(
-              committee.members.map((cm) => cm.member_id)
-            );
-            const membersFromCommittee = committee.members
+            const memberIdsInList = new Set((committee.members ?? []).map((cm) => cm.member_id));
+            const membersFromCommittee = (committee.members ?? [])
               .map((cm) => allMembersList.find((m) => m.id === cm.member_id))
               .filter((m): m is Member => m != null);
             const chairId = committee.chairperson_member_id;
             const chairInList = chairId && memberIdsInList.has(chairId);
             const chairMember =
-              chairId && !chairInList
-                ? allMembersList.find((m) => m.id === chairId)
-                : null;
+              chairId && !chairInList ? allMembersList.find((m) => m.id === chairId) : null;
             const membersToShow: Member[] =
               chairMember != null
                 ? [chairMember, ...membersFromCommittee.filter((m) => m.id !== chairId)]
                 : membersFromCommittee;
 
             if (membersToShow.length === 0) {
-              return (
-                <p className="text-sm text-muted-foreground">No members yet.</p>
-              );
+              return <p className="text-sm text-muted-foreground">No members yet.</p>;
             }
             return (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -289,21 +274,20 @@ export function CommitteeDetailPage() {
                       onNavigate={(memberId) => navigate(`/members/${memberId}`)}
                       isChair={member.id === committee.chairperson_member_id}
                     />
-                    {committee.status === "active" &&
-                      memberIdsInList.has(member.id) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveMember(member.id);
-                          }}
-                          aria-label={`Remove ${member.name} from committee`}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      )}
+                    {committee.status === "active" && memberIdsInList.has(member.id) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveMember(member.id);
+                        }}
+                        aria-label={`Remove ${member.name} from committee`}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -325,7 +309,7 @@ export function CommitteeDetailPage() {
           )}
         </CardHeader>
         <CardContent>
-          {committee.meetings.length === 0 ? (
+          {(committee.meetings ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">No meetings yet.</p>
           ) : (
             <table className="w-full text-sm">
@@ -338,7 +322,7 @@ export function CommitteeDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {committee.meetings.map((m) => (
+                {(committee.meetings ?? []).map((m) => (
                   <tr key={m.id} className="border-b last:border-0">
                     <td className="py-2">
                       <Link
@@ -346,18 +330,14 @@ export function CommitteeDetailPage() {
                         className="flex items-center gap-2 text-primary hover:underline"
                       >
                         <Calendar className="size-4" />
-                        {formatDateOnly(m.date)}
+                        {formatDateOnly(m.date?.toString() ?? "")}
                       </Link>
                     </td>
                     <td className="py-2">{m.meeting_number}</td>
-                    <td className="py-2 text-muted-foreground">
-                      {m.location ?? "—"}
-                    </td>
+                    <td className="py-2 text-muted-foreground">{m.location ?? "—"}</td>
                     <td className="py-2 text-right">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/meetings/committees/${id}/meetings/${m.id}`}>
-                          View
-                        </Link>
+                        <Link to={`/meetings/committees/${id}/meetings/${m.id}`}>View</Link>
                       </Button>
                     </td>
                   </tr>
@@ -372,9 +352,7 @@ export function CommitteeDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add member</DialogTitle>
-            <DialogDescription>
-              Select a club member to add to this committee.
-            </DialogDescription>
+            <DialogDescription>Select a club member to add to this committee.</DialogDescription>
           </DialogHeader>
           <MemberSelectCombobox
             members={members as Member[]}
@@ -390,8 +368,8 @@ export function CommitteeDetailPage() {
           <DialogHeader>
             <DialogTitle>Delete committee?</DialogTitle>
             <DialogDescription>
-              This will permanently delete the committee and all its meetings
-              and documents. This cannot be undone.
+              This will permanently delete the committee and all its meetings and documents. This
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter showCloseButton={false}>
@@ -402,11 +380,7 @@ export function CommitteeDetailPage() {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
               {deleting ? "Deleting…" : "Delete committee"}
             </Button>
           </DialogFooter>

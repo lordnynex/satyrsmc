@@ -2,16 +2,17 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
+import { EventType } from "@satyrsmc/shared/lib/enums";
 import { BAD_ID, MINIMAL_JPEG_BUFFER, createEvent } from "./helpers";
 
 describe("EventsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -56,7 +57,7 @@ describe("EventsService", () => {
       const ev = await createEvent(api, { name: "Minimal Event" });
       expect(ev.id).toBeDefined();
       expect(ev.name).toBe("Minimal Event");
-      expect(ev.event_type).toBe("badger");
+      expect(ev.event_type).toBe(EventType.Badger);
     });
 
     test("creates event with full body", async () => {

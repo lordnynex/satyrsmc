@@ -3,7 +3,7 @@
  * Covers list, get, create, update, delete, addLineItem, updateLineItem, deleteLineItem.
  */
 
-import { TRPCError } from "@trpc/server";
+import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
@@ -18,7 +18,7 @@ describe("admin.budgets", () => {
 
   describe("list", () => {
     test("returns created budgets", async () => {
-      const b = await createBudget(harness.api, { name: "Budget List", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "Budget List", year: 2025 }))!;
       const result = await harness.caller.admin.budgets.list();
       expect(Array.isArray(result)).toBe(true);
       expect(result.some((x) => x.id === b.id)).toBe(true);
@@ -27,7 +27,7 @@ describe("admin.budgets", () => {
 
   describe("get", () => {
     test("returns budget by id", async () => {
-      const b = await createBudget(harness.api, { name: "Get Budget", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "Get Budget", year: 2025 }))!;
       const result = await harness.caller.admin.budgets.get({ id: b.id });
       expect(result.id).toBe(b.id);
       expect(result.name).toBe("Get Budget");
@@ -56,7 +56,7 @@ describe("admin.budgets", () => {
 
   describe("update", () => {
     test("updates budget and returns it", async () => {
-      const b = await createBudget(harness.api, { name: "To Update", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "To Update", year: 2025 }))!;
       const result = await harness.caller.admin.budgets.update({
         id: b.id,
         name: "Updated Budget",
@@ -76,7 +76,7 @@ describe("admin.budgets", () => {
 
   describe("delete", () => {
     test("deletes budget and returns ok", async () => {
-      const b = await createBudget(harness.api, { name: "To Delete", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "To Delete", year: 2025 }))!;
       const result = await harness.caller.admin.budgets.delete({ id: b.id });
       expect(result.ok).toBe(true);
       const list = await harness.caller.admin.budgets.list();
@@ -86,7 +86,7 @@ describe("admin.budgets", () => {
 
   describe("addLineItem", () => {
     test("adds line item to budget", async () => {
-      const b = await createBudget(harness.api, { name: "With Line", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "With Line", year: 2025 }))!;
       const result = await harness.caller.admin.budgets.addLineItem({
         budgetId: b.id,
         name: "Item",
@@ -102,7 +102,7 @@ describe("admin.budgets", () => {
 
   describe("updateLineItem", () => {
     test("updates line item and returns updated line item", async () => {
-      const b = await createBudget(harness.api, { name: "Update Item", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "Update Item", year: 2025 }))!;
       const added = await harness.caller.admin.budgets.addLineItem({
         budgetId: b.id,
         name: "Line",
@@ -121,7 +121,7 @@ describe("admin.budgets", () => {
     });
 
     test("throws NOT_FOUND when itemId does not exist", async () => {
-      const b = await createBudget(harness.api, { name: "Bad Item", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "Bad Item", year: 2025 }))!;
       try {
         await harness.caller.admin.budgets.updateLineItem({
           budgetId: b.id,
@@ -136,7 +136,7 @@ describe("admin.budgets", () => {
 
   describe("deleteLineItem", () => {
     test("deletes line item", async () => {
-      const b = await createBudget(harness.api, { name: "Del Item", year: 2025 });
+      const b = (await createBudget(harness.api, { name: "Del Item", year: 2025 }))!;
       const added = await harness.caller.admin.budgets.addLineItem({
         budgetId: b.id,
         name: "To Del",

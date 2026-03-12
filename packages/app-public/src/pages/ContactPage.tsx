@@ -33,21 +33,14 @@ const ContactPage: React.FC = () => {
             <div className="card-body flex flex-col gap-4">
               <div className="mb-4" style={{ color: "var(--color-muted)" }}>
                 <p className="m-0 mb-2">
-                  <strong style={{ color: "var(--color-text)" }}>
-                    Mailing Address:
-                  </strong>{" "}
-                  P.O. Box 1137, Los Angeles, CA
+                  <strong style={{ color: "var(--color-text)" }}>Mailing Address:</strong> P.O. Box
+                  1137, Los Angeles, CA
                 </p>
               </div>
 
               {submitted ? (
-                <div
-                  className="text-center py-8"
-                  style={{ color: "var(--color-accent)" }}
-                >
-                  <p className="text-lg font-semibold m-0 mb-2">
-                    Thank you for your message!
-                  </p>
+                <div className="text-center py-8" style={{ color: "var(--color-accent)" }}>
+                  <p className="text-lg font-semibold m-0 mb-2">Thank you for your message!</p>
                   <p className="m-0" style={{ color: "var(--color-muted)" }}>
                     We&rsquo;ll get back to you as soon as we can.
                   </p>

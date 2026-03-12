@@ -3,14 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-interface EditableNumberInputProps
-  extends Omit<React.ComponentProps<"input">, "value" | "onChange" | "type"> {
+interface EditableNumberInputProps extends Omit<
+  React.ComponentProps<"input">,
+  "value" | "onChange" | "type"
+> {
   label?: string;
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
-  step?: number;
   className?: string;
   readOnly?: boolean;
 }
@@ -21,7 +22,6 @@ export function EditableNumberInput({
   onChange,
   min,
   max,
-  step = 1,
   className,
   readOnly,
   ...props

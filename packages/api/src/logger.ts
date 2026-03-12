@@ -2,11 +2,11 @@ import pino from "pino";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-function createDest(): pino.DestinationStream {
+async function createDest(): Promise<pino.DestinationStream> {
   if (!isDev) return pino.destination(1);
   try {
-    const pretty = require("pino-pretty");
-    return pretty({ colorize: true, sync: true });
+    const pretty = await import("pino-pretty");
+    return pretty.default({ colorize: true, sync: true });
   } catch {
     return pino.destination({ dest: 1, minLength: 0 });
   }
@@ -20,7 +20,7 @@ const logger = pino(
   {
     level: process.env.LOG_LEVEL ?? (isDev ? "debug" : "info"),
   },
-  createDest()
+  await createDest(),
 );
 
 export type Logger = pino.Logger;

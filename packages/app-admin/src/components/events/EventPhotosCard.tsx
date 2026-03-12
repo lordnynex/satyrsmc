@@ -20,7 +20,7 @@ interface EventPhotosCardProps {
 }
 
 export function EventPhotosCard({
-  eventId,
+  eventId: _eventId,
   eventName,
   photos,
   onAddPhoto,
@@ -59,9 +59,7 @@ export function EventPhotosCard({
     <Card id="event-photos">
       <CardHeader>
         <CardTitle>Event photos</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Photos taken at or after the event.
-        </p>
+        <p className="text-sm text-muted-foreground">Photos taken at or after the event.</p>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3">
@@ -150,11 +148,7 @@ export function EventPhotosCard({
                   }`}
                   onClick={() => setSelectedIndex(idx)}
                 >
-                  <img
-                    src={photo.photo_thumbnail_url}
-                    alt=""
-                    className="size-full object-cover"
-                  />
+                  <img src={photo.photo_thumbnail_url} alt="" className="size-full object-cover" />
                   {!disabled && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

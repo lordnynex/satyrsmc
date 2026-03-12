@@ -20,13 +20,8 @@ interface EmailViewProps {
 }
 
 export function EmailView({ state, metrics }: EmailViewProps) {
-  const totalCosts = state.lineItems.reduce(
-    (sum, li) => sum + li.unitCost * li.quantity,
-    0
-  );
-  const [chartImages, setChartImages] = useState<Record<string, string> | null>(
-    null
-  );
+  const totalCosts = state.lineItems.reduce((sum, li) => sum + li.unitCost * li.quantity, 0);
+  const [chartImages, setChartImages] = useState<Record<string, string> | null>(null);
   const [html, setHtml] = useState<string>("");
 
   const summary = computeExportSummary(state.inputs, state.lineItems, metrics);
@@ -50,17 +45,22 @@ export function EmailView({ state, metrics }: EmailViewProps) {
         ? `<img src="${chartImages[key]}" alt="${key}" style="max-width: 100%; width: 100%; height: auto; margin: 8px 0; border: 1px solid #eee; border-radius: 6px;" />`
         : "";
 
-    const scenarioChartTypes = ["ROI", "PnL", "Revenue", "ProfitMargin", "ProfitPerAttendee", "CostCoverage"] as const;
+    const scenarioChartTypes = [
+      "ROI",
+      "PnL",
+      "Revenue",
+      "ProfitMargin",
+      "ProfitPerAttendee",
+      "CostCoverage",
+    ] as const;
     const scenarioTablesHtml = scenarioMatrix.attendanceLevels
       .filter((pct) => pct >= 50)
       .map((pct) => {
-        const tableMetrics = (scenarioMatrix.byAttendance[pct] ?? [])
-          .slice()
-          .sort((a, b) => {
-            if (a.profit !== b.profit) return a.profit - b.profit;
-            if (a.ticketPrice !== b.ticketPrice) return a.ticketPrice - b.ticketPrice;
-            return a.staffPrice - b.staffPrice;
-          });
+        const tableMetrics = (scenarioMatrix.byAttendance[pct] ?? []).slice().sort((a, b) => {
+          if (a.profit !== b.profit) return a.profit - b.profit;
+          if (a.ticketPrice !== b.ticketPrice) return a.ticketPrice - b.ticketPrice;
+          return a.staffPrice - b.staffPrice;
+        });
         const showCharts = tableMetrics.length > 1 && tableMetrics.length <= 12;
         const rows = tableMetrics
           .map(
@@ -80,7 +80,7 @@ export function EmailView({ state, metrics }: EmailViewProps) {
                 <td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; font-size: 11px;">${m.profitTargetCoverage != null ? m.profitTargetCoverage.toFixed(0) + "%" : "—"}</td>
                 <td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; font-size: 11px;">${m.profitVsBreakEven >= 0 ? "Yes" : "No"}</td>
                 <td style="padding: 6px; border-bottom: 1px solid #eee; text-align: right; font-size: 11px;">$${m.costPerAttendee.toFixed(0)}</td>
-              </tr>`
+              </tr>`,
           )
           .join("");
         const chartLabels: Record<string, string> = {
@@ -99,7 +99,7 @@ export function EmailView({ state, metrics }: EmailViewProps) {
                   `<div>
                     <p style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">${chartLabels[t]}</p>
                     ${chartImg(`scenario-${pct}-${t}`)}
-                  </div>`
+                  </div>`,
               )
               .join("")}
           </div>`
@@ -210,7 +210,7 @@ export function EmailView({ state, metrics }: EmailViewProps) {
             <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${li.unitCost.toFixed(2)}</td>
             <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${li.quantity}</td>
             <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(li.unitCost * li.quantity).toFixed(2)}</td>
-          </tr>`
+          </tr>`,
       )
       .join("")}
   </table>
@@ -258,14 +258,10 @@ export function EmailView({ state, metrics }: EmailViewProps) {
       {html && (
         <>
           <p className="text-muted-foreground text-sm">
-            Copy the HTML below or open in a new tab to share via email. Charts
-            are embedded as base64 images.
+            Copy the HTML below or open in a new tab to share via email. Charts are embedded as
+            base64 images.
           </p>
-          <Textarea
-            readOnly
-            className="h-64 font-mono text-xs"
-            value={html}
-          />
+          <Textarea readOnly className="h-64 font-mono text-xs" value={html} />
           <Button
             type="button"
             onClick={() => {

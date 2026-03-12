@@ -23,11 +23,9 @@ function bodyToPlainText(body: string): string {
   try {
     const doc = JSON.parse(body) as { content?: Array<{ content?: Array<{ text?: string }> }> };
     if (!doc?.content?.length) return "";
-    return (doc.content
-      .map((block) =>
-        block.content?.map((c) => c.text ?? "").join("") ?? ""
-      )
-      .join("\n")) as string;
+    return doc.content
+      .map((block) => block.content?.map((c) => c.text ?? "").join("") ?? "")
+      .join("\n") as string;
   } catch {
     return body;
   }

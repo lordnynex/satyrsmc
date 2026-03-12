@@ -1,8 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
 interface MemberPhotoLightboxProps {
@@ -12,7 +9,12 @@ interface MemberPhotoLightboxProps {
   memberName: string;
 }
 
-export function MemberPhotoLightbox({ open, onOpenChange, photoUrl, memberName }: MemberPhotoLightboxProps) {
+export function MemberPhotoLightbox({
+  open,
+  onOpenChange,
+  photoUrl,
+  memberName,
+}: MemberPhotoLightboxProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent

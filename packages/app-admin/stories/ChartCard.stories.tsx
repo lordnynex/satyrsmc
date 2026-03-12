@@ -34,11 +34,8 @@ export const WithBarPlaceholder: Story = {
     children: (
       <div className="flex h-32 items-end gap-2">
         {[40, 65, 45, 80, 55].map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-t bg-primary/80"
-            style={{ height: `${h}%` }}
-          />
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <div key={i} className="flex-1 rounded-t bg-primary/80" style={{ height: `${h}%` }} />
         ))}
       </div>
     ),

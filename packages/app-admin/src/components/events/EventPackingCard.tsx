@@ -6,7 +6,7 @@ import { ChevronDown, Package, Plus, FolderPlus } from "lucide-react";
 import { PackingCategorySection } from "./PackingCategorySection";
 import { AddPackingCategoryDialog } from "./AddPackingCategoryDialog";
 import { AddEditPackingItemDialog } from "./AddEditPackingItemDialog";
-import type { Event, EventPackingCategory, EventPackingItem } from "@satyrsmc/shared/client";
+import type { Event, EventPackingItem } from "@satyrsmc/shared/client";
 
 interface EventPackingCardProps {
   event: Event;
@@ -19,7 +19,7 @@ interface EventPackingCardProps {
   }) => Promise<void>;
   onEditItem: (
     pid: string,
-    payload: { category_id?: string; name?: string; quantity?: number; note?: string }
+    payload: { category_id?: string; name?: string; quantity?: number; note?: string },
   ) => Promise<void>;
   onToggleLoaded: (pid: string, loaded: boolean) => Promise<void>;
   onDeleteItem: (pid: string) => Promise<void>;
@@ -48,7 +48,7 @@ export function EventPackingCard({
         .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
       return acc;
     },
-    {} as Record<string, EventPackingItem[]>
+    {} as Record<string, EventPackingItem[]>,
   );
 
   const hasCategories = categories.length > 0;
@@ -115,7 +115,7 @@ export function EventPackingCard({
                       <FolderPlus className="size-4" />
                       Add Category
                     </Button>
-                    <Button variant="outline" size="sm" onClick={openAddItem}>
+                    <Button variant="outline" size="sm" onClick={() => openAddItem()}>
                       <Plus className="size-4" />
                       Add Item
                     </Button>
@@ -139,7 +139,7 @@ export function EventPackingCard({
                       <FolderPlus className="size-4" />
                       Add Category
                     </Button>
-                    <Button variant="outline" size="sm" onClick={openAddItem}>
+                    <Button variant="outline" size="sm" onClick={() => openAddItem()}>
                       <Plus className="size-4" />
                       Add Item
                     </Button>

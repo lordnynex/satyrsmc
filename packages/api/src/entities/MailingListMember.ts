@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { MailingMemberSource } from "@satyrsmc/shared/lib/enums";
 
 @Entity("mailing_list_members")
 export class MailingListMember {
@@ -17,8 +18,13 @@ export class MailingListMember {
   @Column({ name: "added_at", type: "timestamptz", nullable: true })
   addedAt!: Date | null;
 
-  @Column({ type: "text", default: "manual" })
-  source!: string;
+  @Column({
+    type: "enum",
+    enum: MailingMemberSource,
+    enumName: "mailing_member_source_enum",
+    default: MailingMemberSource.Manual,
+  })
+  source!: MailingMemberSource;
 
   @Column({ type: "boolean", default: false })
   suppressed!: boolean;

@@ -13,6 +13,7 @@ import {
 import { Plus, Trash2, FileCheck, Users } from "lucide-react";
 import { useMembersOptional, useContactsListFetcher } from "@/queries/hooks";
 import { MemberChipPopover } from "@/components/members/MemberChipPopover";
+import { ContactStatusFilter } from "@satyrsmc/shared/client";
 import type { EventAttendee, RideMemberAttendee, Contact, Member } from "@satyrsmc/shared/client";
 
 interface RideAttendeesCardProps {
@@ -28,7 +29,7 @@ interface RideAttendeesCardProps {
 }
 
 export function RideAttendeesCard({
-  eventId,
+  eventId: _eventId,
   attendees,
   memberAttendees,
   onAdd,
@@ -59,7 +60,7 @@ export function RideAttendeesCard({
       setLoading(true);
       fetchContactsList({
         q: search || undefined,
-        status: "active",
+        status: ContactStatusFilter.Active,
         excludeDeceased: true,
         limit: 50,
       })
@@ -113,7 +114,10 @@ export function RideAttendeesCard({
           ) : (
             <ul className="space-y-1">
               {attendees.map((a) => (
-                <li key={a.id} className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50">
+                <li
+                  key={a.id}
+                  className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50"
+                >
                   <span className="flex-1 min-w-0 truncate text-sm font-medium">
                     {a.contact?.display_name ?? a.contact_id}
                   </span>
@@ -168,7 +172,10 @@ export function RideAttendeesCard({
                     onRemove={() => confirm("Remove member?") && onRemoveMember(a.id)}
                     removeContextLabel="attendees"
                   />
-                  <label className="flex items-center gap-1 cursor-pointer shrink-0" title="Waiver signed">
+                  <label
+                    className="flex items-center gap-1 cursor-pointer shrink-0"
+                    title="Waiver signed"
+                  >
                     <input
                       type="checkbox"
                       checked={a.waiver_signed}
@@ -189,7 +196,8 @@ export function RideAttendeesCard({
           <DialogHeader>
             <DialogTitle>Add attendee</DialogTitle>
             <DialogDescription className="sr-only">
-              Search contacts and add them as attendees. Use Add more to add multiple, or Add & close when done.
+              Search contacts and add them as attendees. Use Add more to add multiple, or Add &
+              close when done.
             </DialogDescription>
           </DialogHeader>
           <Input
@@ -236,11 +244,7 @@ export function RideAttendeesCard({
             <Button variant="outline" onClick={() => setAddOpen(false)}>
               Done
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleAdd(false)}
-              disabled={!selectedId}
-            >
+            <Button variant="outline" onClick={() => handleAdd(false)} disabled={!selectedId}>
               Add more
             </Button>
             <Button onClick={() => handleAdd(true)} disabled={!selectedId}>
@@ -255,12 +259,15 @@ export function RideAttendeesCard({
           <DialogHeader>
             <DialogTitle>Add club member</DialogTitle>
             <DialogDescription className="sr-only">
-              Select a club member who attended. Use Add more to add multiple, or Add & close when done.
+              Select a club member who attended. Use Add more to add multiple, or Add & close when
+              done.
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
             {availableMembers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No members available (all already added).</p>
+              <p className="text-sm text-muted-foreground">
+                No members available (all already added).
+              </p>
             ) : (
               availableMembers.map((m) => (
                 <div

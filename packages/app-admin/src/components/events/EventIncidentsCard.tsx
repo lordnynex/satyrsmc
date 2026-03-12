@@ -17,15 +17,13 @@ import type { Incident } from "@satyrsmc/shared/client";
 
 interface EventIncidentsCardProps {
   incidents: Incident[];
-  onAddIncident: (
-    payload: {
-      type: string;
-      severity: string;
-      summary: string;
-      details?: string;
-      occurred_at?: string;
-    }
-  ) => Promise<void>;
+  onAddIncident: (payload: {
+    type: string;
+    severity: string;
+    summary: string;
+    details?: string;
+    occurred_at?: string;
+  }) => Promise<void>;
   onUpdateIncident: (
     incidentId: string,
     payload: {
@@ -34,7 +32,7 @@ interface EventIncidentsCardProps {
       summary?: string;
       details?: string;
       occurred_at?: string | null;
-    }
+    },
   ) => Promise<void>;
   onDeleteIncident: (incidentId: string) => Promise<void>;
 }
@@ -121,10 +119,7 @@ export function EventIncidentsCard({
         ) : (
           <ul className="space-y-3">
             {incidents.map((incident) => (
-              <li
-                key={incident.id}
-                className="flex items-start gap-3 rounded-lg border p-3"
-              >
+              <li key={incident.id} className="flex items-start gap-3 rounded-lg border p-3">
                 <AlertTriangle className="size-4 shrink-0 text-amber-500 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
@@ -132,9 +127,7 @@ export function EventIncidentsCard({
                       <p className="font-medium truncate">{incident.summary}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {incident.type} · {incident.severity}
-                        {incident.occurred_at && (
-                          <> · {formatDateTime(incident.occurred_at)}</>
-                        )}
+                        {incident.occurred_at && <> · {formatDateTime(incident.occurred_at)}</>}
                       </p>
                     </div>
                   </div>
@@ -158,8 +151,7 @@ export function EventIncidentsCard({
                     size="icon"
                     className="h-8 w-8 text-destructive"
                     onClick={() =>
-                      confirm("Delete this incident?") &&
-                      onDeleteIncident(incident.id)
+                      confirm("Delete this incident?") && onDeleteIncident(incident.id)
                     }
                   >
                     <Trash2 className="size-4" />
@@ -171,10 +163,13 @@ export function EventIncidentsCard({
         )}
       </CardContent>
 
-      <Dialog open={addOpen} onOpenChange={(open) => {
-        setAddOpen(open);
-        if (!open) resetForm();
-      }}>
+      <Dialog
+        open={addOpen}
+        onOpenChange={(open) => {
+          setAddOpen(open);
+          if (!open) resetForm();
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Log incident</DialogTitle>
@@ -254,24 +249,15 @@ export function EventIncidentsCard({
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>Type</Label>
-              <Input
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              />
+              <Input value={type} onChange={(e) => setType(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Severity</Label>
-              <Input
-                value={severity}
-                onChange={(e) => setSeverity(e.target.value)}
-              />
+              <Input value={severity} onChange={(e) => setSeverity(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Summary</Label>
-              <Input
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-              />
+              <Input value={summary} onChange={(e) => setSummary(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Occurred at (optional)</Label>
@@ -283,10 +269,7 @@ export function EventIncidentsCard({
             </div>
             <div className="space-y-2">
               <Label>Details (optional)</Label>
-              <Textarea
-                value={details}
-                onChange={(e) => setDetails(e.target.value)}
-              />
+              <Textarea value={details} onChange={(e) => setDetails(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
@@ -301,9 +284,7 @@ export function EventIncidentsCard({
             </Button>
             <Button
               onClick={() => {
-                const incident = editId
-                  ? incidents.find((i) => i.id === editId)
-                  : null;
+                const incident = editId ? incidents.find((i) => i.id === editId) : null;
                 if (incident) {
                   void handleEdit(incident);
                 }
@@ -318,4 +299,3 @@ export function EventIncidentsCard({
     </Card>
   );
 }
-

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { useAppState } from "@/state/AppState";
-import {
-  useCreateScenario,
-  useDeleteScenario,
-  useUpdateScenario,
-} from "@/queries/hooks";
+import { useCreateScenario, useDeleteScenario, useUpdateScenario } from "@/queries/hooks";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +20,7 @@ import { ScenarioInputsCard } from "./ScenarioInputsCard";
 export function ScenariosPanel() {
   const { id: scenarioId } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const {
-    scenarios,
-    currentScenario,
-    refreshScenarios,
-    refreshScenario,
-  } = useAppState();
+  const { scenarios, currentScenario, refreshScenarios, refreshScenario } = useAppState();
   const createScenarioMutation = useCreateScenario();
   const deleteScenarioMutation = useDeleteScenario();
   const updateScenarioMutation = useUpdateScenario();
@@ -37,7 +28,11 @@ export function ScenariosPanel() {
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [editOpen, setEditOpen] = useState(false);
-  const [editingScenario, setEditingScenario] = useState<{ id: string; name: string; description: string | null } | null>(null);
+  const [editingScenario, setEditingScenario] = useState<{
+    id: string;
+    name: string;
+    description: string | null;
+  } | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editSaved, setEditSaved] = useState(false);
@@ -145,9 +140,7 @@ export function ScenariosPanel() {
                     <div>
                       <p className="font-medium">{s.name}</p>
                       {s.description && (
-                        <p className="text-muted-foreground text-sm mt-1">
-                          {s.description}
-                        </p>
+                        <p className="text-muted-foreground text-sm mt-1">{s.description}</p>
                       )}
                     </div>
                     <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -176,7 +169,13 @@ export function ScenariosPanel() {
         </Card>
       </div>
 
-      <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) setEditingScenario(null); }}>
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setEditingScenario(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Scenario</DialogTitle>
@@ -262,7 +261,7 @@ function ScenarioDetail({
   onSaveEdit,
   editOpen,
   setEditOpen,
-  editingScenario,
+  editingScenario: _editingScenario,
   setEditingScenario,
   editName,
   setEditName,
@@ -271,18 +270,18 @@ function ScenarioDetail({
   editSaved,
 }: {
   scenarioId: string;
-  onBack: () => void;
+  onBack: () => void | Promise<void>;
   onEdit: (s: { id: string; name: string; description: string | null }) => void;
-  onDelete: (id: string) => void;
-  onSaveEdit: () => void;
+  onDelete: (id: string) => void | Promise<void>;
+  onSaveEdit: () => void | Promise<void>;
   editOpen: boolean;
   setEditOpen: (open: boolean) => void;
   editingScenario: { id: string; name: string; description: string | null } | null;
   setEditingScenario: (s: { id: string; name: string; description: string | null } | null) => void;
   editName: string;
-  setEditName: (s: string) => void;
+  setEditName: Dispatch<SetStateAction<string>>;
   editDescription: string;
-  setEditDescription: (s: string) => void;
+  setEditDescription: Dispatch<SetStateAction<string>>;
   editSaved: boolean;
 }) {
   const { currentScenario } = useAppState();
@@ -309,7 +308,13 @@ function ScenarioDetail({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => onEdit(currentScenario)}
+            onClick={() =>
+              onEdit({
+                id: currentScenario.id,
+                name: currentScenario.name,
+                description: currentScenario.description ?? null,
+              })
+            }
           >
             <Pencil className="size-4" />
             Edit

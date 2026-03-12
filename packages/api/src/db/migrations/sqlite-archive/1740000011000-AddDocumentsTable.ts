@@ -1,6 +1,6 @@
 import type { MigrationInterface } from "typeorm";
 import type { QueryRunner } from "typeorm";
-import { uuid } from "../../services/utils";
+import { uuid } from "../../../services/utils";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -74,11 +74,11 @@ export class AddDocumentsTable1740000011000 implements MigrationInterface {
       const minutesId = uuid();
       await queryRunner.query(
         `INSERT INTO documents (id, content, created_at, updated_at) VALUES (?, ?, ?, ?)`,
-        [agendaId, m.agenda_content ?? EMPTY_DOC, m.created_at ?? now, m.updated_at ?? now]
+        [agendaId, m.agenda_content ?? EMPTY_DOC, m.created_at ?? now, m.updated_at ?? now],
       );
       await queryRunner.query(
         `INSERT INTO documents (id, content, created_at, updated_at) VALUES (?, ?, ?, ?)`,
-        [minutesId, m.minutes_content ?? EMPTY_DOC, m.created_at ?? now, m.updated_at ?? now]
+        [minutesId, m.minutes_content ?? EMPTY_DOC, m.created_at ?? now, m.updated_at ?? now],
       );
       await queryRunner.query(
         `INSERT INTO meetings_new (id, date, meeting_number, location, previous_meeting_id, agenda_document_id, minutes_document_id, created_at, updated_at)
@@ -93,7 +93,7 @@ export class AddDocumentsTable1740000011000 implements MigrationInterface {
           minutesId,
           m.created_at ?? now,
           m.updated_at ?? now,
-        ]
+        ],
       );
     }
 
@@ -137,11 +137,11 @@ export class AddDocumentsTable1740000011000 implements MigrationInterface {
       const docId = uuid();
       await queryRunner.query(
         `INSERT INTO documents (id, content, created_at, updated_at) VALUES (?, ?, ?, ?)`,
-        [docId, t.content ?? EMPTY_DOC, t.created_at ?? now, t.updated_at ?? now]
+        [docId, t.content ?? EMPTY_DOC, t.created_at ?? now, t.updated_at ?? now],
       );
       await queryRunner.query(
         `INSERT INTO meeting_templates_new (id, name, type, document_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-        [t.id, t.name, t.type, docId, t.created_at ?? now, t.updated_at ?? now]
+        [t.id, t.name, t.type, docId, t.created_at ?? now, t.updated_at ?? now],
       );
     }
 
@@ -195,7 +195,9 @@ export class AddDocumentsTable1740000011000 implements MigrationInterface {
 
     for (const m of meetings) {
       const agendaContent = docMap.get(m.agenda_document_id) ?? EMPTY_DOC;
-      const minutesContent = m.minutes_document_id ? docMap.get(m.minutes_document_id) ?? null : null;
+      const minutesContent = m.minutes_document_id
+        ? (docMap.get(m.minutes_document_id) ?? null)
+        : null;
       await queryRunner.query(
         `INSERT INTO meetings_old (id, date, meeting_number, location, previous_meeting_id, agenda_content, minutes_content, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -209,7 +211,7 @@ export class AddDocumentsTable1740000011000 implements MigrationInterface {
           minutesContent,
           m.created_at,
           m.updated_at,
-        ]
+        ],
       );
     }
 
@@ -246,7 +248,7 @@ export class AddDocumentsTable1740000011000 implements MigrationInterface {
       const content = docMap.get(t.document_id) ?? EMPTY_DOC;
       await queryRunner.query(
         `INSERT INTO meeting_templates_old (id, name, type, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-        [t.id, t.name, t.type, content, t.created_at, t.updated_at]
+        [t.id, t.name, t.type, content, t.created_at, t.updated_at],
       );
     }
 

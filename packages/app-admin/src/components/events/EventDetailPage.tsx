@@ -58,6 +58,7 @@ import { EventIncidentsCard } from "./EventIncidentsCard";
 import { EditEventDialog } from "./EditEventDialog";
 import { EventDetailSubNav } from "@/components/layout/EventDetailSubNav";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import type { EventAssignmentCategory, EventType } from "@satyrsmc/shared/client";
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -174,7 +175,7 @@ function EventDetailContent({ id }: { id: string }) {
         budget_id: editBudgetId || undefined,
         scenario_id: editScenarioId || undefined,
         planning_notes: editPlanningNotes || undefined,
-        event_type: editEventType as "badger" | "anniversary" | "pioneer_run" | "rides",
+        event_type: editEventType as EventType,
         start_location: editStartLocation || undefined,
         end_location: editEndLocation || undefined,
         facebook_event_url: editFacebookEventUrl || undefined,
@@ -242,7 +243,7 @@ function EventDetailContent({ id }: { id: string }) {
 
   const handleUpdateScheduleItem = async (
     scheduleId: string,
-    body: { scheduled_time?: string; label?: string; location?: string | null }
+    body: { scheduled_time?: string; label?: string; location?: string | null },
   ) => {
     await updateScheduleItemMutation.mutateAsync({ eventId: id, scheduleId, body });
     refresh();
@@ -272,7 +273,7 @@ function EventDetailContent({ id }: { id: string }) {
       summary?: string;
       details?: string;
       occurred_at?: string | null;
-    }
+    },
   ) => {
     await updateIncidentMutation.mutateAsync({
       eventId: id,
@@ -323,7 +324,7 @@ function EventDetailContent({ id }: { id: string }) {
 
   const handleEditMilestone = async (
     mid: string,
-    payload: { month: number; year: number; description: string; due_date: string }
+    payload: { month: number; year: number; description: string; due_date: string },
   ) => {
     await updateMilestoneMutation.mutateAsync({
       eventId: id,
@@ -368,7 +369,7 @@ function EventDetailContent({ id }: { id: string }) {
 
   const handleEditPackingItem = async (
     pid: string,
-    payload: { category_id?: string; name?: string; quantity?: number; note?: string }
+    payload: { category_id?: string; name?: string; quantity?: number; note?: string },
   ) => {
     await updatePackingItemMutation.mutateAsync({
       eventId: id,
@@ -402,7 +403,7 @@ function EventDetailContent({ id }: { id: string }) {
     refresh();
   };
 
-  const handleCreateRole = async (payload: { name: string; category: "planning" | "during" }) => {
+  const handleCreateRole = async (payload: { name: string; category: EventAssignmentCategory }) => {
     await createAssignmentMutation.mutateAsync({ eventId: id, body: payload });
     refresh();
   };
@@ -459,12 +460,14 @@ function EventDetailContent({ id }: { id: string }) {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight">{event.name}</h1>
-          {event.year != null && (
-            <p className="text-muted-foreground text-sm">{event.year}</p>
-          )}
+          {event.year != null && <p className="text-muted-foreground text-sm">{event.year}</p>}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleDeleteEvent} className="text-destructive hover:text-destructive">
+          <Button
+            variant="outline"
+            onClick={handleDeleteEvent}
+            className="text-destructive hover:text-destructive"
+          >
             <Trash2 className="size-4" />
             Delete
           </Button>
@@ -476,11 +479,7 @@ function EventDetailContent({ id }: { id: string }) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <EventDetailsCard
-          event={event}
-          budgetName={budgetName}
-          scenarioName={scenarioName}
-        />
+        <EventDetailsCard event={event} budgetName={budgetName} scenarioName={scenarioName} />
         {event.event_type === "rides" && <RideInfoCard event={event} />}
         {mapEmbedUrl && <EventLocationCard mapEmbedUrl={mapEmbedUrl} />}
       </div>

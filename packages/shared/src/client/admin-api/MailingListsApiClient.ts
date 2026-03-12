@@ -1,5 +1,9 @@
 import type { TrpcClient } from "../trpc";
-import type { MailingList, ListPreview, MailingListStats } from "@satyrsmc/shared/dto/admin/mailingList";
+import type {
+  MailingList,
+  ListPreview,
+  MailingListStats,
+} from "@satyrsmc/shared/dto/admin/mailingList";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -51,10 +55,7 @@ export class MailingListsApiClient {
       .catch(() => null) as Promise<MailingListStats | null>;
   }
 
-  getIncluded(
-    id: string,
-    params?: { page?: number; limit?: number; q?: string }
-  ) {
+  getIncluded(id: string, params?: { page?: number; limit?: number; q?: string }) {
     return this.client.admin.mailingLists.getIncluded.query({
       listId: id,
       page: params?.page ?? 1,
@@ -77,7 +78,7 @@ export class MailingListsApiClient {
   async addMembersBulk(
     listId: string,
     contactIds: string[],
-    source?: "manual" | "import" | "rule"
+    source?: "manual" | "import" | "rule",
   ) {
     return fetchJson<unknown>(`/api/mailing-lists/${listId}/members`, {
       method: "POST",
@@ -89,17 +90,13 @@ export class MailingListsApiClient {
   }
 
   addAllContacts(listId: string) {
-    return fetchJson<unknown>(
-      `/api/mailing-lists/${listId}/members/add-all`,
-      { method: "POST" }
-    );
+    return fetchJson<unknown>(`/api/mailing-lists/${listId}/members/add-all`, { method: "POST" });
   }
 
   addAllHellenics(listId: string) {
-    return fetchJson<unknown>(
-      `/api/mailing-lists/${listId}/members/add-all-hellenics`,
-      { method: "POST" }
-    );
+    return fetchJson<unknown>(`/api/mailing-lists/${listId}/members/add-all-hellenics`, {
+      method: "POST",
+    });
   }
 
   removeMember(listId: string, contactId: string) {
@@ -110,9 +107,8 @@ export class MailingListsApiClient {
   }
 
   reinstateMember(listId: string, contactId: string) {
-    return fetchJson<unknown>(
-      `/api/mailing-lists/${listId}/members/${contactId}/reinstate`,
-      { method: "POST" }
-    );
+    return fetchJson<unknown>(`/api/mailing-lists/${listId}/members/${contactId}/reinstate`, {
+      method: "POST",
+    });
   }
 }

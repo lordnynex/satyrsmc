@@ -17,18 +17,14 @@ export function useInvalidateQueries() {
     invalidateBudgets: () => utils.admin.budgets.list.invalidate(),
     invalidateBudget: (id: string) => utils.admin.budgets.get.invalidate({ id }),
     invalidateScenarios: () => utils.admin.scenarios.list.invalidate(),
-    invalidateScenario: (id: string) =>
-      utils.admin.scenarios.get.invalidate({ id }),
+    invalidateScenario: (id: string) => utils.admin.scenarios.get.invalidate({ id }),
     invalidateEvents: () => utils.admin.events.list.invalidate(),
     invalidateEvent: (id: string) => utils.admin.events.get.invalidate({ id }),
     invalidateMembers: () => utils.admin.members.list.invalidate(),
-    invalidateMember: (id: string) =>
-      utils.admin.members.get.invalidate({ id }),
+    invalidateMember: (id: string) => utils.admin.members.get.invalidate({ id }),
     invalidateContacts: () => utils.admin.contacts.list.invalidate(),
-    invalidateContact: (id: string) =>
-      utils.admin.contacts.get.invalidate({ id }),
-    setContactData: (id: string, data: Contact) =>
-      utils.admin.contacts.get.setData({ id }, data),
+    invalidateContact: (id: string) => utils.admin.contacts.get.invalidate({ id }),
+    setContactData: (id: string, data: Contact) => utils.admin.contacts.get.setData({ id }, data),
     invalidateMailingLists: () => utils.admin.mailingLists.list.invalidate(),
     invalidateMailingList: (id: string) => {
       utils.admin.mailingLists.get.invalidate({ id });
@@ -36,27 +32,19 @@ export function useInvalidateQueries() {
       utils.admin.mailingLists.getStats.invalidate({ id });
       utils.admin.mailingLists.getIncluded.invalidate();
     },
-    invalidateMailingBatches: () =>
-      utils.admin.mailingBatches.list.invalidate(),
-    invalidateMailingBatch: (id: string) =>
-      utils.admin.mailingBatches.get.invalidate({ id }),
+    invalidateMailingBatches: () => utils.admin.mailingBatches.list.invalidate(),
+    invalidateMailingBatch: (id: string) => utils.admin.mailingBatches.get.invalidate({ id }),
     invalidateQrCodes: () => utils.admin.qrCodes.list.invalidate(),
-    invalidateQrCode: (id: string) =>
-      utils.admin.qrCodes.get.invalidate({ id }),
+    invalidateQrCode: (id: string) => utils.admin.qrCodes.get.invalidate({ id }),
     invalidateMeetings: () => utils.admin.meetings.list.invalidate(),
-    invalidateMeeting: (id: string) =>
-      utils.admin.meetings.get.invalidate({ id }),
-    invalidateOldBusiness: () =>
-      utils.admin.meetings.listOldBusiness.invalidate(),
-    invalidateMeetingTemplates: () =>
-      utils.admin.meetingTemplates.list.invalidate(),
-    invalidateMeetingTemplate: (id: string) =>
-      utils.admin.meetingTemplates.get.invalidate({ id }),
+    invalidateMeeting: (id: string) => utils.admin.meetings.get.invalidate({ id }),
+    invalidateOldBusiness: () => utils.admin.meetings.listOldBusiness.invalidate(),
+    invalidateMeetingTemplates: () => utils.admin.meetingTemplates.list.invalidate(),
+    invalidateMeetingTemplate: (id: string) => utils.admin.meetingTemplates.get.invalidate({ id }),
     setMeetingTemplateData: (id: string, data: MeetingTemplate) =>
       utils.admin.meetingTemplates.get.setData({ id }, data),
     invalidateCommittees: () => utils.admin.committees.list.invalidate(),
-    invalidateCommittee: (id: string) =>
-      utils.admin.committees.get.invalidate({ id }),
+    invalidateCommittee: (id: string) => utils.admin.committees.get.invalidate({ id }),
     invalidateCommitteeMeetings: (committeeId: string) =>
       utils.admin.committees.listMeetings.invalidate({ committeeId }),
     invalidateCommitteeMeeting: (committeeId: string, meetingId: string) =>

@@ -1,6 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
-
-export type ContactPhotoType = "profile" | "contact";
+import { ContactPhotoType } from "@satyrsmc/shared/lib/enums";
 
 @Entity("contact_photos")
 export class ContactPhoto {
@@ -11,7 +10,12 @@ export class ContactPhoto {
   contactId!: string;
 
   /** profile = main/primary photo; contact = additional photo */
-  @Column({ type: "text", default: "contact" })
+  @Column({
+    type: "enum",
+    enum: ContactPhotoType,
+    enumName: "contact_photo_type_enum",
+    default: ContactPhotoType.Contact,
+  })
   type!: ContactPhotoType;
 
   @Column({ name: "sort_order", type: "integer", default: 0 })

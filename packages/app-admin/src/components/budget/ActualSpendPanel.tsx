@@ -6,7 +6,8 @@ export function ActualSpendPanel() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Actual Spend</h1>
         <p className="mt-1 text-muted-foreground">
-          Budget variance review — compare budgeted amounts to actual spend and see how close the budget was to reality.
+          Budget variance review — compare budgeted amounts to actual spend and see how close the
+          budget was to reality.
         </p>
       </div>
       <div className="flex min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed bg-muted/30 p-8">

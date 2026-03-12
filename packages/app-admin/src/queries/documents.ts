@@ -9,7 +9,7 @@ export function useUpdateDocument() {
     mutationFn: ({
       id,
       body,
-      meetingId,
+      meetingId: _meetingId,
     }: {
       id: string;
       body: { content: string };

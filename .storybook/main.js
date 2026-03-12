@@ -3,8 +3,6 @@ import path, { dirname } from "path";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const appAdminSrc = path.join(rootDir, "packages/app-admin/src");

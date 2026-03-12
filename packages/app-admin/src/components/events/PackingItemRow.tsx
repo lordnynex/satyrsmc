@@ -9,12 +9,7 @@ interface PackingItemRowProps {
   onDelete: () => void;
 }
 
-export function PackingItemRow({
-  item,
-  onToggleLoaded,
-  onEdit,
-  onDelete,
-}: PackingItemRowProps) {
+export function PackingItemRow({ item, onToggleLoaded, onEdit, onDelete }: PackingItemRowProps) {
   const loaded = item.loaded ?? false;
 
   return (

@@ -1,22 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
-import type {
-  MeetingDetail,
-  MeetingSummary,
-  MotionsListResponse,
-  OldBusinessItemWithMeeting,
-} from "@satyrsmc/shared/client";
+import type { MotionResult, MeetingSortField } from "@satyrsmc/shared/client";
 
 function useTrpcUtils() {
   return trpc.useUtils();
 }
 
 /** Data: MeetingSummary[] */
-export function useMeetingsSuspense(sort?: "date" | "meeting_number") {
-  return trpc.admin.meetings.list.useSuspenseQuery(
-    sort ? { sort } : undefined
-  );
+export function useMeetingsSuspense(sort?: MeetingSortField) {
+  return trpc.admin.meetings.list.useSuspenseQuery(sort ? { sort } : undefined);
 }
 
 /** Data: MeetingDetail */
@@ -25,7 +18,7 @@ export function useMeetingSuspense(id: string) {
 }
 
 /** Data: MeetingSummary[] */
-export function useMeetingsOptional(sort?: "date" | "meeting_number") {
+export function useMeetingsOptional(sort?: MeetingSortField) {
   return trpc.admin.meetings.list.useQuery(sort ? { sort } : undefined);
 }
 
@@ -77,11 +70,7 @@ export function useDeleteMeeting() {
   const api = useApi();
   const utils = useTrpcUtils();
   return useMutation({
-    mutationFn: (args: {
-      id: string;
-      delete_agenda?: boolean;
-      delete_minutes?: boolean;
-    }) =>
+    mutationFn: (args: { id: string; delete_agenda?: boolean; delete_minutes?: boolean }) =>
       api.meetings.delete(args.id, {
         delete_agenda: args.delete_agenda,
         delete_minutes: args.delete_minutes,
@@ -101,8 +90,7 @@ export function useOldBusinessCreate() {
       meetingId: string;
       body: { description: string; order_index?: number };
     }) => api.meetings.oldBusiness.create(meetingId, body),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -119,8 +107,7 @@ export function useOldBusinessUpdate() {
       id: string;
       body: Record<string, unknown>;
     }) => api.meetings.oldBusiness.update(meetingId, oid, body),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -130,8 +117,7 @@ export function useOldBusinessDelete() {
   return useMutation({
     mutationFn: ({ meetingId, id: oid }: { meetingId: string; id: string }) =>
       api.meetings.oldBusiness.delete(meetingId, oid),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -146,14 +132,13 @@ export function useMotionCreate() {
       meetingId: string;
       body: {
         description?: string | null;
-        result: "pass" | "fail";
+        result: MotionResult;
         order_index?: number;
         mover_member_id: string;
         seconder_member_id: string;
       };
     }) => api.meetings.motions.create(meetingId, body),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -170,8 +155,7 @@ export function useMotionUpdate() {
       motionId: string;
       body: Record<string, unknown>;
     }) => api.meetings.motions.update(meetingId, motionId, body),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -181,8 +165,7 @@ export function useMotionDelete() {
   return useMutation({
     mutationFn: ({ meetingId, motionId }: { meetingId: string; motionId: string }) =>
       api.meetings.motions.delete(meetingId, motionId),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -202,8 +185,7 @@ export function useActionItemCreate() {
         order_index?: number;
       };
     }) => api.meetings.actionItems.create(meetingId, body),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -220,8 +202,7 @@ export function useActionItemUpdate() {
       actionItemId: string;
       body: Record<string, unknown>;
     }) => api.meetings.actionItems.update(meetingId, actionItemId, body),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }
 
@@ -229,14 +210,8 @@ export function useActionItemDelete() {
   const api = useApi();
   const utils = useTrpcUtils();
   return useMutation({
-    mutationFn: ({
-      meetingId,
-      actionItemId,
-    }: {
-      meetingId: string;
-      actionItemId: string;
-    }) => api.meetings.actionItems.delete(meetingId, actionItemId),
-    onSuccess: (_, { meetingId }) =>
-      utils.admin.meetings.get.invalidate({ id: meetingId }),
+    mutationFn: ({ meetingId, actionItemId }: { meetingId: string; actionItemId: string }) =>
+      api.meetings.actionItems.delete(meetingId, actionItemId),
+    onSuccess: (_, { meetingId }) => utils.admin.meetings.get.invalidate({ id: meetingId }),
   });
 }

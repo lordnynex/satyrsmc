@@ -4,6 +4,7 @@ import { useCommitteesSuspense, unwrapSuspenseData } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
+import { CommitteeStatus } from "@satyrsmc/shared/client";
 import type { CommitteeSummary } from "@satyrsmc/shared/client";
 
 function CommitteeRow({ c }: { c: CommitteeSummary }) {
@@ -18,7 +19,7 @@ function CommitteeRow({ c }: { c: CommitteeSummary }) {
         </Link>
       </td>
       <td className="px-4 py-3 text-muted-foreground">
-        {formatDateOnly(c.formed_date)}
+        {formatDateOnly(c.formed_date?.toString() ?? "")}
       </td>
       <td className="px-4 py-3">
         <span
@@ -44,12 +45,9 @@ function CommitteeRow({ c }: { c: CommitteeSummary }) {
 
 export function CommitteesPanel() {
   const committees = unwrapSuspenseData(useCommitteesSuspense()) ?? [];
-  const [filter, setFilter] = useState<"all" | "active" | "closed">("all");
+  const [filter, setFilter] = useState<"all" | CommitteeStatus>("all");
 
-  const filtered =
-    filter === "all"
-      ? committees
-      : committees.filter((c) => c.status === filter);
+  const filtered = filter === "all" ? committees : committees.filter((c) => c.status === filter);
 
   return (
     <div className="space-y-8">
@@ -72,16 +70,16 @@ export function CommitteesPanel() {
           All
         </Button>
         <Button
-          variant={filter === "active" ? "secondary" : "ghost"}
+          variant={filter === CommitteeStatus.Active ? "secondary" : "ghost"}
           size="sm"
-          onClick={() => setFilter("active")}
+          onClick={() => setFilter(CommitteeStatus.Active)}
         >
           Active
         </Button>
         <Button
-          variant={filter === "closed" ? "secondary" : "ghost"}
+          variant={filter === CommitteeStatus.Closed ? "secondary" : "ghost"}
           size="sm"
-          onClick={() => setFilter("closed")}
+          onClick={() => setFilter(CommitteeStatus.Closed)}
         >
           Closed
         </Button>
@@ -94,9 +92,7 @@ export function CommitteesPanel() {
               <thead>
                 <tr className="border-b bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Name</th>
-                  <th className="px-4 py-3 text-left font-medium">
-                    Formation date
-                  </th>
+                  <th className="px-4 py-3 text-left font-medium">Formation date</th>
                   <th className="px-4 py-3 text-left font-medium">Status</th>
                   <th className="px-4 py-3 text-left font-medium">Members</th>
                   <th className="px-4 py-3 text-left font-medium">Meetings</th>

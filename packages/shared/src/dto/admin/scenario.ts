@@ -1,5 +1,28 @@
 import { z } from "zod";
 
+// ----- Scenario inputs (budget/projection variables) -----
+
+const TicketPricesSchema = z.object({
+  proposedPrice1: z.number(),
+  proposedPrice2: z.number(),
+  proposedPrice3: z.number(),
+  staffPrice1: z.number(),
+  staffPrice2: z.number(),
+  staffPrice3: z.number(),
+});
+
+export const ScenarioInputsSchema = z.object({
+  profitTarget: z.number(),
+  staffCount: z.number(),
+  maxOccupancy: z.number(),
+  complimentaryTickets: z.number(),
+  dayPassPrice: z.number(),
+  dayPassesSold: z.number(),
+  ticketPrices: TicketPricesSchema,
+});
+
+export type ScenarioInputs = z.infer<typeof ScenarioInputsSchema>;
+
 // ----- Input schemas -----
 
 export const ScenarioGetInputSchema = z.object({ id: z.string() });
@@ -7,14 +30,14 @@ export const ScenarioGetInputSchema = z.object({ id: z.string() });
 export const ScenarioCreateInputSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
-  inputs: z.record(z.unknown()).optional(),
+  inputs: ScenarioInputsSchema.optional(),
 });
 
 export const ScenarioUpdateInputSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),
-  inputs: z.record(z.unknown()).optional(),
+  inputs: ScenarioInputsSchema.optional(),
 });
 
 export const ScenarioDeleteInputSchema = z.object({ id: z.string() });
@@ -27,7 +50,22 @@ const ScenarioSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().nullable().optional(),
-  inputs: z.union([z.record(z.unknown()), z.string()]).optional().default({}),
+  inputs: ScenarioInputsSchema.optional().default({
+    profitTarget: 0,
+    staffCount: 0,
+    maxOccupancy: 0,
+    complimentaryTickets: 0,
+    dayPassPrice: 0,
+    dayPassesSold: 0,
+    ticketPrices: {
+      proposedPrice1: 0,
+      proposedPrice2: 0,
+      proposedPrice3: 0,
+      staffPrice1: 0,
+      staffPrice2: 0,
+      staffPrice3: 0,
+    },
+  }),
   created_at: dateLike.optional(),
 });
 

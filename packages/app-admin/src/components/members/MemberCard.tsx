@@ -38,25 +38,19 @@ export function MemberCard({ member, onNavigate, isChair }: MemberCardProps) {
                 </span>
               )}
               {member.is_baby && (
-              <span title="Baby" className="shrink-0">
-                <Baby className="size-4 text-muted-foreground" />
-              </span>
-            )}
+                <span title="Baby" className="shrink-0">
+                  <Baby className="size-4 text-muted-foreground" />
+                </span>
+              )}
             </CardTitle>
             {member.position && (
-              <p className="text-sm text-muted-foreground truncate">
-                {member.position}
-              </p>
+              <p className="text-sm text-muted-foreground truncate">{member.position}</p>
             )}
             {!member.position && member.phone_number && (
-              <p className="text-sm text-muted-foreground truncate">
-                {member.phone_number}
-              </p>
+              <p className="text-sm text-muted-foreground truncate">{member.phone_number}</p>
             )}
             {member.position && member.phone_number && (
-              <p className="text-xs text-muted-foreground truncate">
-                {member.phone_number}
-              </p>
+              <p className="text-xs text-muted-foreground truncate">{member.phone_number}</p>
             )}
             {member.member_since && (
               <p className="text-xs text-muted-foreground truncate">

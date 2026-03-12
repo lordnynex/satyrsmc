@@ -4,7 +4,9 @@ import { existsSync } from "fs";
 import { rm } from "fs/promises";
 import path from "path";
 
-const outdir = process.env.OUTDIR ? path.resolve(process.env.OUTDIR) : path.join(process.cwd(), "dist");
+const outdir = process.env.OUTDIR
+  ? path.resolve(process.env.OUTDIR)
+  : path.join(process.cwd(), "dist");
 if (existsSync(outdir)) {
   await rm(outdir, { recursive: true, force: true });
 }
@@ -24,7 +26,7 @@ const result = await Bun.build({
   publicPath: "/admin/",
   define: {
     "process.env.NODE_ENV": JSON.stringify(isDev ? "development" : "production"),
-    "__BUILD_API_ORIGIN__": JSON.stringify(apiOrigin),
+    __BUILD_API_ORIGIN__: JSON.stringify(apiOrigin),
   },
 });
 

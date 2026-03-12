@@ -7,7 +7,8 @@ declare const __BUILD_API_ORIGIN__: string | undefined;
 export const trpc = createTRPCReact<AppRouter>();
 
 function getTrpcUrlDefault(): string {
-  if (typeof __BUILD_API_ORIGIN__ !== "undefined" && __BUILD_API_ORIGIN__ !== "") return __BUILD_API_ORIGIN__;
+  if (typeof __BUILD_API_ORIGIN__ !== "undefined" && __BUILD_API_ORIGIN__ !== "")
+    return __BUILD_API_ORIGIN__;
   if (typeof window === "undefined") return "http://localhost:3000";
   return window.location.origin;
 }

@@ -2,23 +2,31 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
+import {
+  ContactPhotoType,
+  ContactType,
+  ContactStatus,
+  ContactStatusFilter,
+  ContactPhotoSize,
+  SortDirection,
+} from "@satyrsmc/shared/lib/enums";
 import { BAD_ID, MINIMAL_JPEG_BUFFER, createContact } from "./helpers";
 
 describe("ContactsService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("create", () => {
     test("creates a contact and returns it", async () => {
       const contact = await createContact(api, {
         display_name: "John Doe",
-        type: "person",
+        type: ContactType.Person,
         first_name: "John",
         last_name: "Doe",
       });
@@ -27,8 +35,8 @@ describe("ContactsService", () => {
       expect(contact.display_name).toBe("John Doe");
       expect(contact.first_name).toBe("John");
       expect(contact.last_name).toBe("Doe");
-      expect(contact.type).toBe("person");
-      expect(contact.status).toBe("active");
+      expect(contact.type).toBe(ContactType.Person);
+      expect(contact.status).toBe(ContactStatus.Active);
       expect(contact.created_at).toBeDefined();
       expect(typeof contact.created_at).toBe("string");
     });
@@ -51,7 +59,9 @@ describe("ContactsService", () => {
       const contact = await createContact(api, { display_name: "Searchable Alice Smith" });
       const result = await api.contacts.list({ q: "alice" });
       expect(result.contacts.some((c) => c.id === contact.id)).toBe(true);
-      expect(result.contacts.find((c) => c.id === contact.id)?.display_name).toBe("Searchable Alice Smith");
+      expect(result.contacts.find((c) => c.id === contact.id)?.display_name).toBe(
+        "Searchable Alice Smith",
+      );
     });
 
     test("pagination: page and limit", async () => {
@@ -69,15 +79,18 @@ describe("ContactsService", () => {
 
     test("sort and sortDir", async () => {
       const c = await createContact(api, { display_name: "Sort Contact" });
-      const byName = await api.contacts.list({ sort: "name", sortDir: "asc" });
-      const byUpdated = await api.contacts.list({ sort: "updated_at", sortDir: "desc" });
+      const byName = await api.contacts.list({ sort: "name", sortDir: SortDirection.Asc });
+      const byUpdated = await api.contacts.list({
+        sort: "updated_at",
+        sortDir: SortDirection.Desc,
+      });
       expect(byName.contacts.some((x) => x.id === c.id)).toBe(true);
       expect(byUpdated.contacts.some((x) => x.id === c.id)).toBe(true);
     });
 
     test("status filter", async () => {
       const active = await createContact(api, { display_name: "Active Contact" });
-      const result = await api.contacts.list({ status: "active" });
+      const result = await api.contacts.list({ status: ContactStatusFilter.Active });
       expect(result.contacts.some((c) => c.id === active.id)).toBe(true);
     });
 
@@ -93,14 +106,25 @@ describe("ContactsService", () => {
     test("hasPostalAddress filter when contact has address", async () => {
       const contact = await createContact(api, {
         display_name: "With Address",
-        addresses: [{ address_line1: "123 Main St", city: "City", country: "US", type: "home", is_primary_mailing: true }],
+        addresses: [
+          {
+            address_line1: "123 Main St",
+            city: "City",
+            country: "US",
+            type: "home",
+            is_primary_mailing: true,
+          },
+        ],
       });
       const result = await api.contacts.list({ hasPostalAddress: true });
       expect(result.contacts.some((c) => c.id === contact.id)).toBe(true);
     });
 
     test("hellenic filter", async () => {
-      const contact = await createContact(api, { display_name: "Hellenic Contact", hellenic: true });
+      const contact = await createContact(api, {
+        display_name: "Hellenic Contact",
+        hellenic: true,
+      });
       const result = await api.contacts.list({ hellenic: true });
       expect(result.contacts.some((c) => c.id === contact.id)).toBe(true);
     });
@@ -127,7 +151,15 @@ describe("ContactsService", () => {
         display_name: "Full Contact",
         emails: [{ email: "e@example.com", type: "work", is_primary: true }],
         phones: [{ phone: "555-1234", type: "cell", is_primary: true }],
-        addresses: [{ address_line1: "1 St", city: "Town", country: "US", type: "home", is_primary_mailing: true }],
+        addresses: [
+          {
+            address_line1: "1 St",
+            city: "Town",
+            country: "US",
+            type: "home",
+            is_primary_mailing: true,
+          },
+        ],
         emergency_contacts: [{ name: "Emergency", phone: "555-9999" }],
       });
       const contact = await api.contacts.get(created.id);
@@ -147,7 +179,10 @@ describe("ContactsService", () => {
   describe("update", () => {
     test("partial update", async () => {
       const created = await createContact(api, { display_name: "To Update", first_name: "Old" });
-      const updated = await api.contacts.update(created.id, { first_name: "New", last_name: "Name" });
+      const updated = await api.contacts.update(created.id, {
+        first_name: "New",
+        last_name: "Name",
+      });
       expect(updated).not.toBeNull();
       expect(updated!.first_name).toBe("New");
       expect(updated!.last_name).toBe("Name");
@@ -169,7 +204,7 @@ describe("ContactsService", () => {
       expect(listResult.contacts.some((c) => c.id === created.id)).toBe(false);
       const getResult = await api.contacts.get(created.id);
       expect(getResult).not.toBeNull();
-      expect(getResult!.status).toBe("deleted");
+      expect(getResult!.status).toBe(ContactStatus.Deleted);
     });
 
     test("delete(nonExistentId) does not throw", async () => {
@@ -184,7 +219,7 @@ describe("ContactsService", () => {
       const restored = await api.contacts.restore(created.id);
       expect(restored).not.toBeNull();
       expect(restored!.id).toBe(created.id);
-      expect(restored!.status).toBe("active");
+      expect(restored!.status).toBe(ContactStatus.Active);
       const listResult = await api.contacts.list({});
       expect(listResult.contacts.some((c) => c.id === created.id)).toBe(true);
     });
@@ -199,11 +234,11 @@ describe("ContactsService", () => {
     test("updates status for multiple contacts", async () => {
       const a = await createContact(api, { display_name: "Bulk A" });
       const b = await createContact(api, { display_name: "Bulk B" });
-      await api.contacts.bulkUpdate([a.id, b.id], { status: "inactive" });
+      await api.contacts.bulkUpdate([a.id, b.id], { status: ContactStatus.Inactive });
       const getA = await api.contacts.get(a.id);
       const getB = await api.contacts.get(b.id);
-      expect(getA?.status).toBe("inactive");
-      expect(getB?.status).toBe("inactive");
+      expect(getA?.status).toBe(ContactStatus.Inactive);
+      expect(getB?.status).toBe(ContactStatus.Inactive);
     });
   });
 
@@ -215,7 +250,7 @@ describe("ContactsService", () => {
       expect(merged).not.toBeNull();
       expect(merged!.id).toBe(target.id);
       const sourceAfter = await api.contacts.get(source.id);
-      expect(sourceAfter?.status).toBe("deleted");
+      expect(sourceAfter?.status).toBe(ContactStatus.Deleted);
     });
 
     test("merge with non-existent source returns null", async () => {
@@ -250,7 +285,12 @@ describe("ContactsService", () => {
   });
 
   describe("photos", () => {
-    type AddPhotoResult = { id: string; contact_id: string; photo_url: string; photo_thumbnail_url: string };
+    type AddPhotoResult = {
+      id: string;
+      contact_id: string;
+      photo_url: string;
+      photo_thumbnail_url: string;
+    };
 
     test("addPhoto returns photo with urls", async () => {
       const contact = await createContact(api, { display_name: "Photo Contact" });
@@ -268,15 +308,20 @@ describe("ContactsService", () => {
       const added = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER);
       expect(added).not.toBeNull();
       const p = added as AddPhotoResult;
-      const thumb = await api.contacts.getPhoto(contact.id, p.id, "thumbnail");
-      const full = await api.contacts.getPhoto(contact.id, p.id, "full");
+      const thumb = await api.contacts.getPhoto(contact.id, p.id, ContactPhotoSize.Thumbnail);
+      const full = await api.contacts.getPhoto(contact.id, p.id, ContactPhotoSize.Full);
       expect(thumb).toBeInstanceOf(Buffer);
       expect(full).toBeInstanceOf(Buffer);
     });
 
     test("setProfilePhoto", async () => {
       const contact = await createContact(api, { display_name: "Profile Photo Contact" });
-      const photo = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER, "contact", false);
+      const photo = await api.contacts.addPhoto(
+        contact.id,
+        MINIMAL_JPEG_BUFFER,
+        ContactPhotoType.Contact,
+        false,
+      );
       expect(photo).not.toBeNull();
       const p = photo as AddPhotoResult;
       const set = await api.contacts.setProfilePhoto(contact.id, p.id);
@@ -289,7 +334,7 @@ describe("ContactsService", () => {
       expect(photo).not.toBeNull();
       const p = photo as AddPhotoResult;
       await api.contacts.deletePhoto(contact.id, p.id);
-      const getAfter = await api.contacts.getPhoto(contact.id, p.id, "full");
+      const getAfter = await api.contacts.getPhoto(contact.id, p.id, ContactPhotoSize.Full);
       expect(getAfter).toBeNull();
     });
 
@@ -298,13 +343,13 @@ describe("ContactsService", () => {
       const photo = await api.contacts.addPhoto(contact.id, MINIMAL_JPEG_BUFFER);
       expect(photo).not.toBeNull();
       const p = photo as AddPhotoResult;
-      const result = await api.contacts.getPhoto(BAD_ID, p.id, "full");
+      const result = await api.contacts.getPhoto(BAD_ID, p.id, ContactPhotoSize.Full);
       expect(result).toBeNull();
     });
 
     test("getPhoto(contactId, badPhotoId) returns null", async () => {
       const contact = await createContact(api, { display_name: "Bad Photo Id" });
-      const result = await api.contacts.getPhoto(contact.id, BAD_ID, "full");
+      const result = await api.contacts.getPhoto(contact.id, BAD_ID, ContactPhotoSize.Full);
       expect(result).toBeNull();
     });
   });

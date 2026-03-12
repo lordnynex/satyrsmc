@@ -11,10 +11,9 @@ import type {
 } from "@satyrsmc/shared/dto/admin/member";
 import type { GetMembersFeedOutput } from "@satyrsmc/shared/dto/website";
 import { uuid, VALID_POSITIONS, parsePhotoToBlob, memberRowToApi } from "./utils";
+import type { MemberPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { ImageService } from "./ImageService";
 import { toISOString } from "../lib/date";
-
-export type PhotoSize = "thumbnail" | "medium" | "full";
 
 function rowToMember(m: Record<string, unknown>): MemberGetOutput {
   const { photo_url, photo_thumbnail_url } = memberRowToApi(m);
@@ -39,7 +38,7 @@ function rowToMember(m: Record<string, unknown>): MemberGetOutput {
 export class MembersService {
   constructor(
     private db: DbLike,
-    private ds: DataSource
+    private ds: DataSource,
   ) {}
 
   async list(): Promise<MemberListOutput> {
@@ -120,7 +119,7 @@ export class MembersService {
   /**
    * Get member photo as buffer for the given size. Returns null if member has no photo.
    */
-  async getPhoto(id: string, size: PhotoSize): Promise<Buffer | null> {
+  async getPhoto(id: string, size: MemberPhotoSize): Promise<Buffer | null> {
     /* Original: SELECT photo, photo_thumbnail FROM members WHERE id = ? */
     const member = await this.ds.getRepository(Member).findOne({
       where: { id },
@@ -162,11 +161,8 @@ export class MembersService {
   }): Promise<MemberCreateOutput | null> {
     const id = uuid();
     const rawPhoto = body.photo ? parsePhotoToBlob(body.photo) : null;
-    const photoBlob = rawPhoto
-      ? (await ImageService.optimize(rawPhoto)) ?? rawPhoto
-      : null;
-    const photoThumbnailBlob =
-      photoBlob ? await ImageService.createThumbnail(photoBlob) : null;
+    const photoBlob = rawPhoto ? ((await ImageService.optimize(rawPhoto)) ?? rawPhoto) : null;
+    const photoThumbnailBlob = photoBlob ? await ImageService.createThumbnail(photoBlob) : null;
     await this.db.run(
       `INSERT INTO members (id, name, phone_number, email, address, birthday, member_since, is_baby, position, emergency_contact_name, emergency_contact_phone, photo, photo_thumbnail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -183,25 +179,28 @@ export class MembersService {
         body.emergency_contact_phone ?? null,
         photoBlob,
         photoThumbnailBlob,
-      ]
+      ],
     );
     return this.get(id)!;
   }
 
-  async update(id: string, body: Partial<{
-    name: string;
-    phone_number: string | null;
-    email: string | null;
-    address: string | null;
-    birthday: string | null;
-    member_since: string | null;
-    is_baby: boolean;
-    position: string | null;
-    emergency_contact_name: string | null;
-    emergency_contact_phone: string | null;
-    photo: string | null;
-    show_on_website: boolean;
-  }>): Promise<MemberUpdateOutput | null> {
+  async update(
+    id: string,
+    body: Partial<{
+      name: string;
+      phone_number: string | null;
+      email: string | null;
+      address: string | null;
+      birthday: string | null;
+      member_since: string | null;
+      is_baby: boolean;
+      position: string | null;
+      emergency_contact_name: string | null;
+      emergency_contact_phone: string | null;
+      photo: string | null;
+      show_on_website: boolean;
+    }>,
+  ): Promise<MemberUpdateOutput | null> {
     /* Original: SELECT * FROM members WHERE id = ? */
     const existing = await this.ds.getRepository(Member).findOne({ where: { id } });
     if (!existing) return null;
@@ -214,24 +213,50 @@ export class MembersService {
     const is_baby = body.is_baby !== undefined ? body.is_baby : existing.isBaby;
     const positionRaw = body.position !== undefined ? body.position : existing.position;
     const position = positionRaw && VALID_POSITIONS.has(positionRaw) ? positionRaw : null;
-    const emergency_contact_name = body.emergency_contact_name !== undefined ? body.emergency_contact_name : existing.emergencyContactName;
-    const emergency_contact_phone = body.emergency_contact_phone !== undefined ? body.emergency_contact_phone : existing.emergencyContactPhone;
+    const emergency_contact_name =
+      body.emergency_contact_name !== undefined
+        ? body.emergency_contact_name
+        : existing.emergencyContactName;
+    const emergency_contact_phone =
+      body.emergency_contact_phone !== undefined
+        ? body.emergency_contact_phone
+        : existing.emergencyContactPhone;
     const rawPhoto =
       body.photo !== undefined
-        ? (body.photo === null ? null : parsePhotoToBlob(body.photo) ?? null)
+        ? body.photo === null
+          ? null
+          : (parsePhotoToBlob(body.photo) ?? null)
         : existing.photo;
     const photoBlob =
       body.photo !== undefined && rawPhoto !== null
-        ? (await ImageService.optimize(Buffer.from(rawPhoto))) ?? rawPhoto
+        ? ((await ImageService.optimize(Buffer.from(rawPhoto))) ?? rawPhoto)
         : rawPhoto;
     const photoThumbnailBlob =
       body.photo !== undefined
-        ? (photoBlob ? await ImageService.createThumbnail(Buffer.from(photoBlob)) : null)
-        : existing.photoThumbnail ?? null;
-    const show_on_website = body.show_on_website !== undefined ? body.show_on_website : existing.showOnWebsite;
+        ? photoBlob
+          ? await ImageService.createThumbnail(Buffer.from(photoBlob))
+          : null
+        : (existing.photoThumbnail ?? null);
+    const show_on_website =
+      body.show_on_website !== undefined ? body.show_on_website : existing.showOnWebsite;
     await this.db.run(
       `UPDATE members SET name = ?, phone_number = ?, email = ?, address = ?, birthday = ?, member_since = ?, is_baby = ?, position = ?, emergency_contact_name = ?, emergency_contact_phone = ?, photo = ?, photo_thumbnail = ?, show_on_website = ? WHERE id = ?`,
-      [name, phone_number, email, address, birthday, member_since, is_baby, position, emergency_contact_name, emergency_contact_phone, photoBlob, photoThumbnailBlob, show_on_website, id]
+      [
+        name,
+        phone_number,
+        email,
+        address,
+        birthday,
+        member_since,
+        is_baby,
+        position,
+        emergency_contact_name,
+        emergency_contact_phone,
+        photoBlob,
+        photoThumbnailBlob,
+        show_on_website,
+        id,
+      ],
     );
     return this.get(id)!;
   }

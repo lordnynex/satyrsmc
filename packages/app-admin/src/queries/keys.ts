@@ -3,8 +3,7 @@ export const queryKeys = {
   budget: (id: string) => ["budget", id] as const,
   scenarios: ["scenarios"] as const,
   scenario: (id: string) => ["scenario", id] as const,
-  events: (type?: string) =>
-    (type ? (["events", type] as const) : (["events"] as const)),
+  events: (type?: string) => (type ? (["events", type] as const) : (["events"] as const)),
   event: (id: string) => ["event", id] as const,
   members: ["members"] as const,
   member: (id: string) => ["member", id] as const,
@@ -33,8 +32,7 @@ export const queryKeys = {
   committees: (sort?: string) =>
     sort ? (["committees", sort] as const) : (["committees"] as const),
   committee: (id: string) => ["committee", id] as const,
-  committeeMeetings: (committeeId: string) =>
-    ["committee", committeeId, "meetings"] as const,
+  committeeMeetings: (committeeId: string) => ["committee", committeeId, "meetings"] as const,
   committeeMeeting: (committeeId: string, meetingId: string) =>
     ["committee", committeeId, "meeting", meetingId] as const,
   websitePages: ["website", "pages"] as const,

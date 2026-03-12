@@ -13,36 +13,24 @@ import { ArrowLeft, Save, FileDown } from "lucide-react";
 
 type DocumentType = "agenda" | "minutes";
 
-export function CommitteeMeetingDocumentEditPage({
-  documentType,
-}: {
-  documentType: DocumentType;
-}) {
+export function CommitteeMeetingDocumentEditPage({ documentType }: { documentType: DocumentType }) {
   const { id: committeeId, meetingId } = useParams<{
     id: string;
     meetingId: string;
   }>();
   const navigate = useNavigate();
   const committee = unwrapSuspenseData(useCommitteeSuspense(committeeId!))!;
-  const meeting = unwrapSuspenseData(
-    useCommitteeMeetingSuspense(committeeId!, meetingId!)
-  )!;
+  const meeting = unwrapSuspenseData(useCommitteeMeetingSuspense(committeeId!, meetingId!))!;
   const updateDocumentMutation = useUpdateDocument();
   const exportPdfMutation = useExportDocumentPdf();
 
   const documentId =
-    documentType === "agenda"
-      ? meeting.agenda_document_id
-      : meeting.minutes_document_id;
+    documentType === "agenda" ? meeting.agenda_document_id : meeting.minutes_document_id;
   const content =
-    documentType === "agenda"
-      ? meeting.agenda_content
-      : meeting.minutes_content ?? "";
+    documentType === "agenda" ? (meeting.agenda_content ?? "") : (meeting.minutes_content ?? "");
   const title = documentType === "agenda" ? "Agenda" : "Minutes";
   const placeholder =
-    documentType === "agenda"
-      ? "Enter meeting agenda..."
-      : "Transcribe meeting minutes...";
+    documentType === "agenda" ? "Enter meeting agenda..." : "Transcribe meeting minutes...";
 
   const [editContent, setEditContent] = useState(content);
   const [dirty, setDirty] = useState(false);
@@ -66,9 +54,7 @@ export function CommitteeMeetingDocumentEditPage({
         body: { content: editContent },
       });
       setDirty(false);
-      navigate(
-        `/meetings/committees/${committeeId}/meetings/${meetingId}`
-      );
+      navigate(`/meetings/committees/${committeeId}/meetings/${meetingId}`);
     } finally {
       setSaving(false);
     }
@@ -91,15 +77,11 @@ export function CommitteeMeetingDocumentEditPage({
     return (
       <div className="space-y-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link
-            to={`/meetings/committees/${committeeId}/meetings/${meetingId}`}
-          >
+          <Link to={`/meetings/committees/${committeeId}/meetings/${meetingId}`}>
             <ArrowLeft className="size-4" />
           </Link>
         </Button>
-        <p className="text-muted-foreground">
-          No {title.toLowerCase()} document found.
-        </p>
+        <p className="text-muted-foreground">No {title.toLowerCase()} document found.</p>
       </div>
     );
   }
@@ -109,9 +91,7 @@ export function CommitteeMeetingDocumentEditPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link
-              to={`/meetings/committees/${committeeId}/meetings/${meetingId}`}
-            >
+            <Link to={`/meetings/committees/${committeeId}/meetings/${meetingId}`}>
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
@@ -127,11 +107,7 @@ export function CommitteeMeetingDocumentEditPage({
           <Button variant="outline" size="sm" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button
-            size="sm"
-            onClick={handleSave}
-            disabled={saving || !dirty}
-          >
+          <Button size="sm" onClick={handleSave} disabled={saving || !dirty}>
             <Save className="size-4" />
             {saving ? "Saving..." : "Save"}
           </Button>

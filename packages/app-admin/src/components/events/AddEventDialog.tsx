@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateEvent } from "@/queries/hooks";
 import { EVENT_TYPE_LABELS } from "@/lib/event-constants";
-import type { EventType } from "@satyrsmc/shared/client";
+import { EventType } from "@satyrsmc/shared/client";
 
 interface AddEventDialogProps {
   open: boolean;
@@ -35,7 +35,7 @@ export function AddEventDialog({
   open,
   onOpenChange,
   onSuccess,
-  defaultEventType = "badger",
+  defaultEventType = EventType.Badger,
 }: AddEventDialogProps) {
   const [name, setName] = useState("");
   const [eventType, setEventType] = useState<EventType>(defaultEventType);
@@ -127,10 +127,7 @@ export function AddEventDialog({
             </div>
             <div className="space-y-2">
               <Label>Event date</Label>
-              <DatePicker
-                value={eventDate}
-                onChange={setEventDate}
-              />
+              <DatePicker value={eventDate} onChange={setEventDate} />
             </div>
           </div>
           <div className="space-y-2">

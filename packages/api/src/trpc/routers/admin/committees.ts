@@ -85,10 +85,7 @@ export const committeesRouter = t.router({
     .output(CommitteeAddMemberOutputSchema)
     .meta({ description: "Add a member to a committee." })
     .mutation(async ({ ctx, input }) => {
-      const c = await ctx.api.committees.addMember(
-        input.committeeId,
-        input.memberId,
-      );
+      const c = await ctx.api.committees.addMember(input.committeeId, input.memberId);
       if (!c) throw new TRPCError({ code: "NOT_FOUND" });
       return c;
     }),
@@ -135,10 +132,7 @@ export const committeesRouter = t.router({
     .output(CommitteeGetMeetingOutputSchema)
     .meta({ description: "Get a committee meeting by id." })
     .query(async ({ ctx, input }) => {
-      const m = await ctx.api.committees.getMeeting(
-        input.committeeId,
-        input.meetingId,
-      );
+      const m = await ctx.api.committees.getMeeting(input.committeeId, input.meetingId);
       if (!m) throw new TRPCError({ code: "NOT_FOUND" });
       return m;
     }),
@@ -149,11 +143,7 @@ export const committeesRouter = t.router({
     .meta({ description: "Update a committee meeting." })
     .mutation(async ({ ctx, input }) => {
       const { committeeId, meetingId, ...body } = input;
-      const m = await ctx.api.committees.updateMeeting(
-        committeeId,
-        meetingId,
-        body,
-      );
+      const m = await ctx.api.committees.updateMeeting(committeeId, meetingId, body);
       if (!m) throw new TRPCError({ code: "NOT_FOUND" });
       return m;
     }),

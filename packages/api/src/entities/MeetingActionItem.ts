@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { ActionItemStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("meeting_action_items")
 export class MeetingActionItem {
@@ -17,8 +18,13 @@ export class MeetingActionItem {
   @Column({ name: "due_date", type: "timestamptz", nullable: true })
   dueDate!: Date | null;
 
-  @Column({ type: "text", default: "open" })
-  status!: "open" | "completed";
+  @Column({
+    type: "enum",
+    enum: ActionItemStatus,
+    enumName: "action_item_status_enum",
+    default: ActionItemStatus.Open,
+  })
+  status!: ActionItemStatus;
 
   @Column({ name: "completed_at", type: "timestamptz", nullable: true })
   completedAt!: Date | null;

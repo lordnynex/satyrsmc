@@ -104,9 +104,7 @@ export function MemberSelectCombobox({
           >
             {filteredMembers.length === 0 ? (
               <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                {availableMembers.length === 0
-                  ? "No members available"
-                  : "No matching members"}
+                {availableMembers.length === 0 ? "No members available" : "No matching members"}
               </div>
             ) : (
               filteredMembers.map((m) => (
@@ -115,7 +113,7 @@ export function MemberSelectCombobox({
                   type="button"
                   className={cn(
                     "flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm",
-                    "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground outline-none"
+                    "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground outline-none",
                   )}
                   onClick={() => handleSelect(m.id)}
                 >

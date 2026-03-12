@@ -10,11 +10,11 @@ export class AddMailingListDeliveryType1740000000000 implements MigrationInterfa
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE mailing_lists ADD COLUMN delivery_type TEXT NOT NULL DEFAULT 'both' CHECK (delivery_type IN ('physical', 'email', 'both'))`
+      `ALTER TABLE mailing_lists ADD COLUMN delivery_type TEXT NOT NULL DEFAULT 'both' CHECK (delivery_type IN ('physical', 'email', 'both'))`,
     );
   }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
+  async down(_queryRunner: QueryRunner): Promise<void> {
     // SQLite does not support DROP COLUMN directly.
   }
 }

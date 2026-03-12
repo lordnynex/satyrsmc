@@ -31,12 +31,12 @@ graph TB
 
 **Packages:**
 
-| Package | Purpose |
-|---|---|
-| `@satyrsmc/api` | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database |
-| `@satyrsmc/app-admin` | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
-| `@satyrsmc/app-public` | React 19 public website (home, about, events, gallery, members) |
-| `@satyrsmc/shared` | Hand-written TypeScript interfaces shared across all packages |
+| Package                | Purpose                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| `@satyrsmc/api`        | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database                      |
+| `@satyrsmc/app-admin`  | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
+| `@satyrsmc/app-public` | React 19 public website (home, about, events, gallery, members)                                      |
+| `@satyrsmc/shared`     | Zod DTO schemas and derived TypeScript types shared across all packages                              |
 
 ## Prerequisites
 
@@ -142,9 +142,11 @@ satyrsmc/
         content/            # Static content (events)
         data/               # Static data (members.json)
       build.ts              # Bun.build() script
-    shared/                 # Shared TypeScript interfaces
-      types/                # Per-domain type definitions
-      lib/                  # Constants and utilities
+    shared/                 # Zod DTO schemas, derived types, and utilities
+      src/
+        dto/                # DTO schemas and inferred types (admin/, website/)
+        client/             # tRPC client, React providers, re-exports
+        lib/                # Constants, enums, and utilities
   .storybook/               # Storybook config
   Makefile                  # Build and deploy targets
 ```
@@ -197,7 +199,7 @@ bun run migrate
 
 # 5. If you added a new table, create a matching:
 #    - Entity class in packages/api/src/entities/
-#    - Shared type in packages/shared/types/
+#    - Shared DTO in packages/shared/src/dto/admin/
 #    - Service in packages/api/src/services/
 #    - Register entity in dataSource.ts entities array
 ```
@@ -207,6 +209,7 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 ## CI/CD
 
 > **TODO:** CI/CD pipelines are not yet configured. When set up, they should include:
+>
 > - Lint, typecheck, and test jobs per package
 > - Coverage enforcement
 > - Deploy previews for PRs
@@ -214,13 +217,13 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 ## Environment Variables
 
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | Postgres connection string (required unless `USE_PGLITE=1`) |
-| `USE_PGLITE` | Set to `1` to use in-memory PGlite instead of Postgres (local dev only) |
+| Variable           | Description                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`     | Postgres connection string (required unless `USE_PGLITE=1`)                                           |
+| `USE_PGLITE`       | Set to `1` to use in-memory PGlite instead of Postgres (local dev only)                               |
 | `SQLITE_SEED_PATH` | Optional path to SQLite file when `USE_PGLITE=1` (default: `data/badger.db` relative to project root) |
-| `PORT` | API server port (default: 3000) |
-| `NODE_ENV` | `production` for production mode |
+| `PORT`             | API server port (default: 3000)                                                                       |
+| `NODE_ENV`         | `production` for production mode                                                                      |
 
 Bun automatically loads `.env` files — do not use `dotenv`.
 
@@ -242,12 +245,14 @@ This project uses Bun exclusively. Do not introduce Node.js, npm, Vite, or other
 ## TypeScript Configuration
 
 Always maintain:
+
 - `strict: true`
 - `noUncheckedIndexedAccess: true` — forces null-checking on array/object access
 - `verbatimModuleSyntax: true` — enforces `import type` for type-only imports
 - `experimentalDecorators: true` + `emitDecoratorMetadata: true` — required for TypeORM
 
 Use `.charAt(0)` instead of `[0]` for string access (required by `noUncheckedIndexedAccess`):
+
 ```typescript
 // GOOD
 const first = str.charAt(0);
@@ -266,9 +271,10 @@ TypeORM Entity → Service (returns shared type) → tRPC Router → AppRouter t
 
 ### Rules
 
-1. **Shared types are the cross-package contract.** Define interfaces in `@satyrsmc/shared/types/*`. Services annotate return types with these interfaces. tRPC infers them automatically. Frontends consume them via `createTRPCReact<AppRouter>()`.
+1. **Shared types are the cross-package contract.** Define DTO schemas in `@satyrsmc/shared/dto/*` and enums in `@satyrsmc/shared/lib/enums`. Services annotate return types with these interfaces. tRPC infers them automatically. Frontends consume them via `createTRPCReact<AppRouter>()`.
 
 2. **Service return types MUST be annotated** with the shared interface:
+
    ```typescript
    // GOOD — explicit return type using shared interface
    function entityToContact(e: ContactEntity): Contact {
@@ -286,19 +292,28 @@ TypeORM Entity → Service (returns shared type) → tRPC Router → AppRouter t
 4. **Zod schemas for tRPC inputs.** All mutation inputs must have proper Zod validation. Do not use `.passthrough()` to accept arbitrary fields.
 
 5. **Import from canonical paths:**
+
    ```typescript
    // GOOD
-   import type { Contact } from "@satyrsmc/shared/types/contact";
+   import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
 
    // BAD — fragile barrel re-export from unrelated module
-   import type { Contact } from "@satyrsmc/shared/types/budget";
+   import type { Contact } from "@satyrsmc/shared/dto/admin/budget";
    ```
 
 6. **Frontend hooks use tRPC-inferred types.** Do not manually re-annotate or cast return types from `useSuspenseQuery()`.
 
+### String Literal Conventions
+
+- All domain string unions are defined in `@satyrsmc/shared/lib/enums` using the `as const` array + derived type pattern
+- DTO Zod schemas derive from shared arrays: `z.enum(SHARED_CONST)` — never duplicate strings
+- TypeORM entities import shared types for constrained columns
+- Services import types from shared, never define local aliases for domain types
+- The const arrays are the **single source of truth** — both the TypeScript type and Zod schema derive from them
+
 ### Adding a New Domain Type
 
-1. **Define the shared interface** in `packages/shared/types/<domain>.ts`
+1. **Define shared DTO schemas** in `packages/shared/src/dto/admin/<domain>.ts` and enums in `packages/shared/src/lib/enums.ts`
 2. **Add the export** to `packages/shared/package.json` exports map
 3. **Create the TypeORM entity** in `packages/api/src/entities/` — register in `dataSource.ts`
 4. **Create the service** in `packages/api/src/services/` — import and return the shared type explicitly
@@ -341,6 +356,7 @@ Services should use explicit field selection where performance matters. Avoid `S
 ## tRPC Routers (Thin Router Pattern)
 
 tRPC routers contain ONLY:
+
 1. Zod input validation
 2. Delegation to `ctx.api.*` service methods
 
@@ -363,6 +379,7 @@ list: t.procedure.query(async ({ ctx }) => {
 ## Service Pattern
 
 Services encapsulate all database access for a domain. They:
+
 - Take `DbLike` and `DataSource` in constructor
 - Return shared types (explicitly annotated)
 - Contain business logic and data transformation
@@ -373,12 +390,15 @@ See `packages/api/src/services/ContactsService.ts` as the gold-standard example.
 ## React Patterns (React 19)
 
 ### Context API
+
 - Use `use()` hook, NOT `useContext()`
 - Render `<Context value={...}>`, NOT `<Context.Provider>`
 - Pass `ref` as prop, NOT via `forwardRef`
 
 ### Router
+
 Import from `react-router` or `react-router-dom`:
+
 ```typescript
 import { Link, useNavigate } from "react-router-dom";
 ```
@@ -386,21 +406,26 @@ import { Link, useNavigate } from "react-router-dom";
 ## Styling & UI
 
 ### Tailwind CSS 4
+
 - No `postcss.config.js` or `tailwind.config.js`
 - Use `bun-plugin-tailwind` for builds
 - Theme tokens in `@theme` blocks in CSS
 - Custom utilities via `@utility` blocks
 
 ### shadcn/ui Components
+
 Install as local source files (NOT as a package). Components use React 19 patterns (ref as prop, no forwardRef).
 
 ## Security
 
 ### HTML Rendering
+
 **Never use `dangerouslySetInnerHTML` directly.** Always use the `SafeHtml` component that wraps DOMPurify.
 
 ### No Suppressions
+
 Never use:
+
 - `eslint-disable`
 - `@ts-ignore`
 - `@ts-expect-error`
@@ -408,24 +433,30 @@ Never use:
 Fix root causes instead of suppressing warnings.
 
 ### No `any`
+
 `@typescript-eslint/no-explicit-any` should be treated as an error. Use proper types or `unknown` with narrowing.
 
 ## Testing
 
 ### Coverage Requirements
+
 Target **90% coverage thresholds** for statements, branches, functions, and lines.
 
 ### Two-Layer Strategy
+
 1. **Unit tests**: Mock services, test business logic
 2. **Integration tests**: Use PGlite embedded Postgres for data operations
 
 ### Test Data
+
 Use typed interfaces for fixture data. Import shared types to ensure test data matches the contract.
 
 ## Error Handling
 
 ### Generic Responses for Security
+
 When an operation could reveal information (user enumeration, email existence), always return generic responses:
+
 ```typescript
 // GOOD
 return { message: "If that email exists, a reset link has been sent" };
@@ -435,7 +466,9 @@ if (!user) throw new Error("Email not found");
 ```
 
 ### Loading States
+
 Every data-fetching component must handle:
+
 1. Loading state (Skeleton components)
 2. Error state (Alert/error message)
 3. Empty state (if applicable)
@@ -444,17 +477,20 @@ Every data-fetching component must handle:
 ## Password & Auth
 
 ### Password Requirements
+
 - 8-128 characters
 - At least one uppercase, lowercase, number, and special character
 - Enforce via Zod schema with separate regex checks
 
 ### Cookie Configuration
+
 - `httpOnly: true` (always)
 - `secure: true` in production
 - `sameSite: "strict"` in production, `"lax"` in development
 - Separate cookies for access (short-lived) and refresh (long-lived) tokens
 
 ### Token Storage
+
 Store SHA-256 hashes of tokens in database. Send raw tokens in emails/links. Never store raw tokens.
 
 ## Code Style
@@ -467,6 +503,7 @@ Store SHA-256 hashes of tokens in database. Send raw tokens in emails/links. Nev
 ## Linting & Formatting
 
 > **TODO:** ESLint flat config and Prettier are not yet configured in this repo. When set up:
+>
 > - Use ESLint flat config with `@eslint-react/eslint-plugin`
 > - Prettier: double quotes, semicolons, trailing commas
 > - Pre-commit hook: lint-staged (ESLint + Prettier)

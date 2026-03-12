@@ -62,7 +62,7 @@ export function TemplateDetailPage() {
           updateDocumentMutation.mutateAsync({
             id: template.document_id,
             body: { content },
-          })
+          }),
         );
       }
       await Promise.all(promises);
@@ -115,19 +115,11 @@ export function TemplateDetailPage() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleSave}
-            disabled={saving || !dirty}
-          >
+          <Button variant="default" size="sm" onClick={handleSave} disabled={saving || !dirty}>
             <Save className="size-4" />
             {saving ? "Saving..." : "Save"}
           </Button>
-          <ExportPdfButton
-            onPrint={() => printRef.current?.scrollIntoView()}
-            label="Export PDF"
-          />
+          <ExportPdfButton onPrint={() => printRef.current?.scrollIntoView()} label="Export PDF" />
           <Button
             variant="ghost"
             size="sm"

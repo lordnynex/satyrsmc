@@ -44,7 +44,7 @@ export function LineItemRow({
       await onUpdate(id, updates);
       showSaved();
     },
-    [onUpdate, showSaved]
+    [onUpdate, showSaved],
   );
 
   return (

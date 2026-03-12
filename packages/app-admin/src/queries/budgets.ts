@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
-import type { Budget, BudgetSummary, Scenario, ScenarioSummary } from "@satyrsmc/shared/client";
+import type { Inputs } from "@satyrsmc/shared/client";
 
 /** Data: BudgetSummary[] */
 export function useBudgetsSuspense() {
@@ -33,7 +33,7 @@ export function useBudgetSuspense(id: string) {
 export function useBudgetOptional(id: string, options?: { enabled?: boolean }) {
   return trpc.admin.budgets.get.useQuery(
     { id },
-    { enabled: options?.enabled !== false && !!id, ...options }
+    { enabled: options?.enabled !== false && !!id, ...options },
   );
 }
 
@@ -47,7 +47,7 @@ export function useCreateScenario() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { name: string; description?: string; inputs?: Record<string, unknown> }) =>
+    mutationFn: (body: { name: string; description?: string; inputs?: Inputs }) =>
       api.scenarios.create(body),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.scenarios }),
   });
@@ -62,7 +62,7 @@ export function useUpdateScenario() {
       body,
     }: {
       id: string;
-      body: { name?: string; description?: string; inputs?: Record<string, unknown> };
+      body: { name?: string; description?: string; inputs?: Inputs };
     }) => api.scenarios.update(id, body),
     onSuccess: (_, { id }) => {
       qc.invalidateQueries({ queryKey: queryKeys.scenarios });

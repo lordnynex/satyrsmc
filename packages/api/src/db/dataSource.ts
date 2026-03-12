@@ -52,6 +52,7 @@ import {
   Incident,
 } from "../entities";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
+import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
 
 export function getProjectRoot(): string {
   return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
@@ -113,7 +114,7 @@ export const dataSourceOptions: DataSourceOptions = {
   type: "postgres",
   url: process.env.DATABASE_URL,
   synchronize: false,
-  migrations: [PostgresBaseline1800000000000],
+  migrations: [PostgresBaseline1800000000000, ConvertTextToEnumTypes1800000001000],
   migrationsRun: true,
   entities,
 };

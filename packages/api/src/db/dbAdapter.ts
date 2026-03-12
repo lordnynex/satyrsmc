@@ -2,7 +2,10 @@ import type { DataSource } from "typeorm";
 import { getDataSource } from "./dataSource";
 
 export interface DbLike {
-  query(sql: string, ...bound: unknown[]): {
+  query(
+    sql: string,
+    ...bound: unknown[]
+  ): {
     get(...args: unknown[]): Promise<unknown>;
     all(...args: unknown[]): Promise<unknown[]>;
   };

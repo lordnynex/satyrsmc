@@ -1,4 +1,5 @@
 import type { TrpcClient } from "../trpc";
+import type { CommitteeSortField } from "../../lib/enums";
 import type {
   CommitteeListOutput,
   CommitteeGetOutput,
@@ -9,9 +10,9 @@ import type {
 export class CommitteesApiClient {
   constructor(private client: TrpcClient) {}
 
-  list(options?: { sort?: "formed_date" | "name" }): Promise<CommitteeListOutput> {
+  list(options?: { sort?: CommitteeSortField }): Promise<CommitteeListOutput> {
     return this.client.admin.committees.list.query(
-      options?.sort ? { sort: options.sort } : undefined
+      options?.sort ? { sort: options.sort } : undefined,
     ) as Promise<CommitteeListOutput>;
   }
 
@@ -77,7 +78,7 @@ export class CommitteesApiClient {
       agenda_content?: string;
       minutes_content?: string | null;
       agenda_template_id?: string;
-    }
+    },
   ) {
     return this.client.admin.committees.createMeeting.mutate({
       committeeId,
@@ -85,20 +86,13 @@ export class CommitteesApiClient {
     } as never);
   }
 
-  getMeeting(
-    committeeId: string,
-    meetingId: string
-  ): Promise<CommitteeGetMeetingOutput | null> {
+  getMeeting(committeeId: string, meetingId: string): Promise<CommitteeGetMeetingOutput | null> {
     return this.client.admin.committees.getMeeting
       .query({ committeeId, meetingId })
       .catch(() => null) as Promise<CommitteeGetMeetingOutput | null>;
   }
 
-  updateMeeting(
-    committeeId: string,
-    meetingId: string,
-    body: Record<string, unknown>
-  ) {
+  updateMeeting(committeeId: string, meetingId: string, body: Record<string, unknown>) {
     return this.client.admin.committees.updateMeeting.mutate({
       committeeId,
       meetingId,

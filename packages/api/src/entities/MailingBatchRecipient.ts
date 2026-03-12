@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { MailingRecipientStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("mailing_batch_recipients")
 export class MailingBatchRecipient {
@@ -35,8 +36,13 @@ export class MailingBatchRecipient {
   @Column({ name: "snapshot_organization", type: "text", nullable: true })
   snapshotOrganization!: string | null;
 
-  @Column({ type: "text", default: "queued" })
-  status!: string;
+  @Column({
+    type: "enum",
+    enum: MailingRecipientStatus,
+    enumName: "mailing_recipient_status_enum",
+    default: MailingRecipientStatus.Queued,
+  })
+  status!: MailingRecipientStatus;
 
   @Column({ name: "invalid_reason", type: "text", nullable: true })
   invalidReason!: string | null;

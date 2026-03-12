@@ -7,8 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, FileDown, FileSpreadsheet, Loader2 } from "lucide-react";
-import { downloadContactsCsv, downloadContactsPdf } from "./contactUtils";
-
 interface ContactsExportDropdownProps {
   onExportCsv: () => Promise<void>;
   onExportPdf: () => Promise<void>;

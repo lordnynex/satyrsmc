@@ -1,5 +1,6 @@
 import { t } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import { MemberPhotoSize } from "@satyrsmc/shared/lib/enums";
 import {
   MemberCreateInputSchema,
   MemberCreateOutputSchema,
@@ -66,7 +67,7 @@ export const membersRouter = t.router({
     .output(MemberGetPhotoOutputSchema)
     .meta({ description: "Get a member photo as base64." })
     .query(async ({ ctx, input }) => {
-      const buffer = await ctx.api.members.getPhoto(input.id, input.size ?? "full");
+      const buffer = await ctx.api.members.getPhoto(input.id, input.size ?? MemberPhotoSize.Full);
       if (!buffer) throw new TRPCError({ code: "NOT_FOUND" });
       return Buffer.from(buffer).toString("base64");
     }),

@@ -32,7 +32,9 @@ export class SitePagesService {
     return page ? this.toResponse(page) : null;
   }
 
-  async create(body: SitePageCreateInput & { id?: string }): Promise<WebsiteAdminGetPageByIdOutput> {
+  async create(
+    body: SitePageCreateInput & { id?: string },
+  ): Promise<WebsiteAdminGetPageByIdOutput> {
     const now = new Date().toISOString();
     const page = this.ds.getRepository(SitePage).create({
       id: body.id ?? uuid(),

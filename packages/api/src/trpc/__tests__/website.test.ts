@@ -8,7 +8,12 @@ import { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
-import { BAD_ID, createMember, createBlogPost, createSitePage } from "../../services/__tests__/helpers";
+import {
+  BAD_ID,
+  createMember,
+  createBlogPost,
+  createSitePage,
+} from "../../services/__tests__/helpers";
 
 describe("website router", () => {
   let harness: TrpcTestHarness;
@@ -55,7 +60,9 @@ describe("website router", () => {
     });
 
     test("throws NOT_FOUND when slug does not exist", async () => {
-      await expect(harness.caller.website.getBlogBySlug({ slug: "nonexistent-slug-xyz" })).rejects.toThrow(TRPCError);
+      await expect(
+        harness.caller.website.getBlogBySlug({ slug: "nonexistent-slug-xyz" }),
+      ).rejects.toThrow(TRPCError);
       try {
         await harness.caller.website.getBlogBySlug({ slug: "nonexistent-slug-xyz" });
       } catch (e) {
@@ -136,7 +143,7 @@ describe("website router", () => {
           name: "Bad Email",
           email: "not-an-email",
           message: "Hi",
-        })
+        }),
       ).rejects.toThrow(TRPCError);
       try {
         await harness.caller.website.submitContact({
@@ -172,7 +179,7 @@ describe("website router", () => {
           sender_name: "S",
           sender_email: "invalid",
           message: "M",
-        })
+        }),
       ).rejects.toThrow(TRPCError);
       try {
         await harness.caller.website.submitContactMember({

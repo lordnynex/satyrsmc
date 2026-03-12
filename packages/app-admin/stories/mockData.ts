@@ -81,7 +81,13 @@ export const mockScenarioMetrics: ScenarioMetrics[] = [
 /** Mock line items for cost-by-category chart stories */
 export const mockLineItems: LineItem[] = [
   { id: "1", name: "Venue rental", category: "Venue", unitCost: 2000, quantity: 1 },
-  { id: "2", name: "Catering per person", category: "Food & Beverage", unitCost: 18, quantity: 150 },
+  {
+    id: "2",
+    name: "Catering per person",
+    category: "Food & Beverage",
+    unitCost: 18,
+    quantity: 150,
+  },
   { id: "3", name: "Sound system", category: "Equipment", unitCost: 500, quantity: 1 },
   { id: "4", name: "Security", category: "Staff & Safety", unitCost: 400, quantity: 2 },
   { id: "5", name: "Marketing", category: "Marketing", unitCost: 300, quantity: 1 },

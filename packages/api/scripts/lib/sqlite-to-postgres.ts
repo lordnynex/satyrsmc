@@ -125,10 +125,7 @@ export function convertValue(column: string, value: unknown): unknown {
  * Reads each table in FK order, converts values, and inserts via the DataSource.
  * Skips tables that don't exist in SQLite or have no rows.
  */
-export async function seedPgliteFromSqlite(
-  ds: DataSource,
-  sqlitePath: string
-): Promise<number> {
+export async function seedPgliteFromSqlite(ds: DataSource, sqlitePath: string): Promise<number> {
   const { Database } = await import("bun:sqlite");
   const sqlite = new Database(sqlitePath, { readonly: true });
   let totalRows = 0;

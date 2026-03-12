@@ -1,10 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import {
-  parseVCardFile,
-  contactToVCard4,
-  contactsToVCardFile,
-  parsedToContactPayload,
-} from "./vcard";
+import { parseVCardFile, contactToVCard4, parsedToContactPayload } from "./vcard";
+import { ContactType, ContactStatus, ConsentStatus } from "@satyrsmc/shared/client";
+import type { Contact } from "@satyrsmc/shared/client";
 
 describe("vCard parsing", () => {
   test("parses single vCard 3.0", () => {
@@ -56,7 +53,7 @@ END:VCARD`;
     expect(payload.display_name).toBe("Jane Smith");
     expect(payload.first_name).toBe("Jane");
     expect(payload.last_name).toBe("Smith");
-    expect(payload.emails[0]?.email).toBe("jane@test.com");
+    expect(payload.emails?.[0]?.email).toBe("jane@test.com");
   });
 });
 
@@ -64,22 +61,30 @@ describe("vCard export round-trip", () => {
   test("contactToVCard4 produces valid vCard 4.0", () => {
     const contact = {
       id: "test-1",
-      type: "person" as const,
-      status: "active" as const,
+      type: ContactType.Person,
+      status: ContactStatus.Active,
       display_name: "Test User",
       first_name: "Test",
       last_name: "User",
       organization_name: null,
       notes: null,
       how_we_know_them: null,
-      ok_to_email: "yes" as const,
-      ok_to_mail: "yes" as const,
-      ok_to_sms: "unknown" as const,
+      ok_to_email: ConsentStatus.Yes,
+      ok_to_mail: ConsentStatus.Yes,
+      ok_to_sms: ConsentStatus.Unknown,
       do_not_contact: false,
       club_name: null,
       role: null,
       uid: "test-1@badger",
-      emails: [{ id: "e1", contact_id: "c1", email: "test@example.com", type: "work" as const, is_primary: true }],
+      emails: [
+        {
+          id: "e1",
+          contact_id: "c1",
+          email: "test@example.com",
+          type: "work" as const,
+          is_primary: true,
+        },
+      ],
       phones: [],
       addresses: [
         {
@@ -118,13 +123,22 @@ END:VCARD`;
     const contact = {
       ...payload,
       id: "rt-1",
+      type: ContactType.Person,
       uid: "rt-1@badger",
-      emails: payload.emails ?? [],
-      phones: payload.phones ?? [],
-      addresses: payload.addresses ?? [],
-      tags: payload.tags ?? [],
+      status: ContactStatus.Active,
+      how_we_know_them: null,
+      ok_to_email: ConsentStatus.Unknown,
+      ok_to_mail: ConsentStatus.Unknown,
+      ok_to_sms: ConsentStatus.Unknown,
+      do_not_contact: false,
+      club_name: null,
+      role: null,
+      emails: (payload.emails ?? []) as Contact["emails"],
+      phones: (payload.phones ?? []) as Contact["phones"],
+      addresses: (payload.addresses ?? []) as Contact["addresses"],
+      tags: (payload.tags ?? []) as Contact["tags"],
     };
-    const exported = contactToVCard4(contact);
+    const exported = contactToVCard4(contact as Contact);
     expect(exported).toContain("Round Trip Test");
     expect(exported).toContain("round@trip.com");
   });

@@ -14,7 +14,6 @@ import {
   useContactsImportPstExecute,
   useCreateContact,
 } from "@/queries/hooks";
-import type { Contact } from "@satyrsmc/shared/client";
 import { Upload, FileText, Mail } from "lucide-react";
 
 interface ImportContactsDialogProps {
@@ -26,8 +25,8 @@ interface ImportContactsDialogProps {
 type ImportMode = "vcard" | "csv" | "pst" | null;
 
 interface PstPreviewItem {
-  payload: Partial<Contact> & { display_name: string };
-  status: "new" | "duplicate";
+  payload: Record<string, unknown> & { display_name: string };
+  status: string;
   existingContact?: { id: string; display_name: string };
 }
 
@@ -38,7 +37,7 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
   const [mode, setMode] = useState<ImportMode>(null);
   const [parsed, setParsed] = useState<ParsedVCardContact[]>([]);
   const [pstPreview, setPstPreview] = useState<PstPreviewItem[]>([]);
-  const [pstSelected, setPstSelected] = useState<Set<number>>(new Set());
+  const [pstSelected, setPstSelected] = useState<Set<number>>(() => new Set());
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,9 +69,7 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
           const { contacts } = await importPstPreviewMutation.mutateAsync(file);
           setPstPreview(contacts);
           const newIndices = new Set(
-            contacts
-              .map((c, i) => (c.status === "new" ? i : -1))
-              .filter((i) => i >= 0)
+            contacts.map((c, i) => (c.status === "new" ? i : -1)).filter((i) => i >= 0),
           );
           setPstSelected(newIndices);
           if (contacts.length === 0) setError("No contacts found in PST file.");
@@ -87,13 +84,15 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
         setMode("csv");
         setParsed([]);
         setPstPreview([]);
-        setError("CSV import: parse file and map columns. For now, use vCard (.vcf) or PST (.pst) for import.");
+        setError(
+          "CSV import: parse file and map columns. For now, use vCard (.vcf) or PST (.pst) for import.",
+        );
       } else {
         setError("Please select a .vcf, .vcard, .pst, or .csv file.");
       }
       e.target.value = "";
     },
-    [importPstPreviewMutation]
+    [importPstPreviewMutation],
   );
 
   const togglePstSelected = (index: number) => {
@@ -110,16 +109,14 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
       setPstSelected(new Set(pstPreview.map((_, i) => i)));
     } else {
       setPstSelected(
-        new Set(pstPreview.map((c, i) => (c.status === "new" ? i : -1)).filter((i) => i >= 0))
+        new Set(pstPreview.map((c, i) => (c.status === "new" ? i : -1)).filter((i) => i >= 0)),
       );
     }
   };
 
   const handleImport = async () => {
     if (mode === "pst") {
-      const toCreate = pstPreview
-        .filter((_, i) => pstSelected.has(i))
-        .map((c) => c.payload);
+      const toCreate = pstPreview.filter((_, i) => pstSelected.has(i)).map((c) => c.payload);
       if (toCreate.length === 0) return;
       setImporting(true);
       try {
@@ -138,7 +135,7 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
         for (const p of parsed) {
           const payload = parsedToContactPayload(p);
           await createContactMutation.mutateAsync(
-            payload as Parameters<typeof createContactMutation.mutateAsync>[0]
+            payload as Parameters<typeof createContactMutation.mutateAsync>[0],
           );
         }
         onOpenChange(false);
@@ -160,8 +157,7 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
     onOpenChange(false);
   };
 
-  const importCount =
-    mode === "pst" ? pstSelected.size : parsed.length;
+  const importCount = mode === "pst" ? pstSelected.size : parsed.length;
   const canImport = mode === "pst" ? pstSelected.size > 0 : parsed.length > 0;
 
   return (
@@ -206,8 +202,10 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
                 {parsed.length} contact{parsed.length !== 1 ? "s" : ""} ready to import
               </p>
               <ul className="mt-2 max-h-40 overflow-y-auto text-sm text-muted-foreground">
-                {parsed.slice(0, 10).map((p, i) => (
-                  <li key={i}>{p.fn || p.org || "Unknown"}</li>
+                {parsed.slice(0, 10).map((p) => (
+                  <li key={p.fn || p.org || `unknown-${Math.random()}`}>
+                    {p.fn || p.org || "Unknown"}
+                  </li>
                 ))}
                 {parsed.length > 10 && <li>... and {parsed.length - 10} more</li>}
               </ul>
@@ -227,18 +225,10 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
                   )}
                 </p>
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => selectAllPst(false)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => selectAllPst(false)}>
                     Select new only
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => selectAllPst(true)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => selectAllPst(true)}>
                     Select all
                   </Button>
                 </div>
@@ -246,7 +236,7 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
               <ul className="mt-2 max-h-48 overflow-y-auto space-y-1">
                 {pstPreview.map((c, i) => (
                   <li
-                    key={i}
+                    key={`${c.payload.display_name}-${c.status}`}
                     className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/50 text-sm"
                   >
                     <input
@@ -256,10 +246,7 @@ export function ImportContactsDialog({ open, onOpenChange, onSuccess }: ImportCo
                       onChange={() => togglePstSelected(i)}
                       className="h-4 w-4 rounded border-input"
                     />
-                    <label
-                      htmlFor={`pst-${i}`}
-                      className="flex-1 cursor-pointer truncate"
-                    >
+                    <label htmlFor={`pst-${i}`} className="flex-1 cursor-pointer truncate">
                       {c.payload.display_name || "Unknown"}
                       {c.status === "duplicate" && c.existingContact && (
                         <span className="ml-2 text-xs text-muted-foreground">

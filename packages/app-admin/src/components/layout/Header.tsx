@@ -17,7 +17,7 @@ export function Header() {
       "inline-flex h-10 items-center justify-center border-b-2 px-4 text-sm font-medium transition-colors",
       isActive
         ? "border-primary text-foreground"
-        : "border-transparent text-muted-foreground hover:border-muted-foreground/30 hover:text-foreground"
+        : "border-transparent text-muted-foreground hover:border-muted-foreground/30 hover:text-foreground",
     );
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -25,7 +25,7 @@ export function Header() {
       "flex h-12 items-center rounded-md px-4 text-base font-medium transition-colors",
       isActive
         ? "bg-muted text-foreground"
-        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
     );
 
   return (

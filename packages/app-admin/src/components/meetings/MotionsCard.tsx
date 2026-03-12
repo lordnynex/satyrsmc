@@ -17,6 +17,7 @@ import {
   useMotionDelete,
 } from "@/queries/hooks";
 import { MemberChip } from "@/components/members/MemberChip";
+import { MotionResult } from "@satyrsmc/shared/client";
 import type { MeetingMotion } from "@satyrsmc/shared/client";
 
 interface MotionsCardProps {
@@ -34,7 +35,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
   const [description, setDescription] = useState("");
   const [moverMemberId, setMoverMemberId] = useState("");
   const [seconderMemberId, setSeconderMemberId] = useState("");
-  const [result, setResult] = useState<"pass" | "fail">("pass");
+  const [result, setResult] = useState<MotionResult>(MotionResult.Pass);
 
   const handleAdd = async () => {
     if (!moverMemberId || !seconderMemberId) return;
@@ -51,7 +52,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription("");
     setMoverMemberId("");
     setSeconderMemberId("");
-    setResult("pass");
+    setResult(MotionResult.Pass);
     setAdding(false);
   };
 
@@ -83,7 +84,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription(m.description ?? "");
     setMoverMemberId(m.mover_member_id ?? "");
     setSeconderMemberId(m.seconder_member_id ?? "");
-    setResult(m.result);
+    setResult(m.result ?? MotionResult.Pass);
   };
 
   const resetForm = () => {
@@ -92,13 +93,16 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription("");
     setMoverMemberId("");
     setSeconderMemberId("");
-    setResult("pass");
+    setResult(MotionResult.Pass);
   };
 
-  const getMember = (id: string | null) => (id ? members.find((x) => x.id === id) ?? null : null);
-  const moverName = (id: string | null) => (id ? members.find((x) => x.id === id)?.name ?? id : "—");
+  const getMember = (id: string | null | undefined) =>
+    id ? (members.find((x) => x.id === id) ?? null) : null;
+  const moverName = (id: string | null | undefined) =>
+    id ? (members.find((x) => x.id === id)?.name ?? id) : "—";
   const canSaveAdd = moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
-  const canSaveEdit = editingId && moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
+  const canSaveEdit =
+    editingId && moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
 
   return (
     <Card>
@@ -141,7 +145,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
               onChange={(e) => setDescription(e.target.value)}
               className="min-w-[160px] flex-1"
             />
-            <Select value={result} onValueChange={(v) => setResult(v as "pass" | "fail")}>
+            <Select value={result} onValueChange={(v) => setResult(v as MotionResult)}>
               <SelectTrigger className="w-[100px]">
                 <SelectValue />
               </SelectTrigger>
@@ -162,10 +166,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
       <CardContent>
         <ul className="space-y-2">
           {motions.map((m) => (
-            <li
-              key={m.id}
-              className="flex items-start justify-between gap-2 rounded-md border p-3"
-            >
+            <li key={m.id} className="flex items-start justify-between gap-2 rounded-md border p-3">
               {editingId === m.id ? (
                 <div className="flex flex-1 flex-wrap gap-2">
                   <Select value={moverMemberId} onValueChange={setMoverMemberId}>
@@ -198,7 +199,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
                     onChange={(e) => setDescription(e.target.value)}
                     className="min-w-[160px] flex-1"
                   />
-                  <Select value={result} onValueChange={(v) => setResult(v as "pass" | "fail")}>
+                  <Select value={result} onValueChange={(v) => setResult(v as MotionResult)}>
                     <SelectTrigger className="w-[100px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -225,7 +226,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
                           <MemberChip
                             memberId={mover.id}
                             name={mover.name}
-                            photo={mover.photo_thumbnail_url}
+                            photo={mover.photo_thumbnail_url ?? null}
                           />
                         ) : (
                           <span>{m.mover_name ?? moverName(m.mover_member_id)}</span>
@@ -238,7 +239,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
                           <MemberChip
                             memberId={seconder.id}
                             name={seconder.name}
-                            photo={seconder.photo_thumbnail_url}
+                            photo={seconder.photo_thumbnail_url ?? null}
                           />
                         ) : (
                           <span>{m.seconder_name ?? moverName(m.seconder_member_id)}</span>

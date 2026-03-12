@@ -15,6 +15,7 @@ import {
   useMailingListAddAllContacts,
   useMailingListAddAllHellenics,
 } from "@/queries/hooks";
+import { ContactStatusFilter } from "@satyrsmc/shared/client";
 
 interface AddContactToMailingListDialogProps {
   open: boolean;
@@ -23,10 +24,15 @@ interface AddContactToMailingListDialogProps {
   onSuccess: () => void;
 }
 
-export function AddContactToMailingListDialog({ open, onOpenChange, listId, onSuccess }: AddContactToMailingListDialogProps) {
+export function AddContactToMailingListDialog({
+  open,
+  onOpenChange,
+  listId,
+  onSuccess,
+}: AddContactToMailingListDialogProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -41,11 +47,11 @@ export function AddContactToMailingListDialog({ open, onOpenChange, listId, onSu
   const { data: contactsResult, isLoading: loading } = useContactsOptional(
     {
       q: debouncedSearch || undefined,
-      status: "active",
+      status: ContactStatusFilter.Active,
       excludeDeceased: true,
       limit: 50,
     },
-    { enabled: open }
+    { enabled: open },
   );
   const contacts = contactsResult?.contacts ?? [];
 
@@ -111,20 +117,10 @@ export function AddContactToMailingListDialog({ open, onOpenChange, listId, onSu
           <DialogTitle>Add Contacts</DialogTitle>
         </DialogHeader>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAddAllContacts}
-            disabled={saving}
-          >
+          <Button variant="outline" size="sm" onClick={handleAddAllContacts} disabled={saving}>
             {saving ? "Adding..." : "Add ALL contacts"}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAddAllHellenics}
-            disabled={saving}
-          >
+          <Button variant="outline" size="sm" onClick={handleAddAllHellenics} disabled={saving}>
             {saving ? "Adding..." : "Add all Hellenics"}
           </Button>
         </div>
@@ -164,7 +160,9 @@ export function AddContactToMailingListDialog({ open, onOpenChange, listId, onSu
             ))
           )}
           {availableContacts.length > 30 && (
-            <p className="text-sm text-muted-foreground">Showing first 30. Refine search for more.</p>
+            <p className="text-sm text-muted-foreground">
+              Showing first 30. Refine search for more.
+            </p>
           )}
         </div>
         <DialogFooter>
@@ -172,7 +170,9 @@ export function AddContactToMailingListDialog({ open, onOpenChange, listId, onSu
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={selectedIds.size === 0 || saving}>
-            {saving ? "Adding..." : `Add ${selectedIds.size} contact${selectedIds.size !== 1 ? "s" : ""}`}
+            {saving
+              ? "Adding..."
+              : `Add ${selectedIds.size} contact${selectedIds.size !== 1 ? "s" : ""}`}
           </Button>
         </DialogFooter>
       </DialogContent>

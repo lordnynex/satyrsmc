@@ -2,6 +2,7 @@ import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
 import type { Event } from "@satyrsmc/shared/dto/admin/event";
 import type { MailingList } from "@satyrsmc/shared/dto/admin/mailingList";
 import type { Member } from "@satyrsmc/shared/dto/admin/member";
+import { MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 import type { Api } from "../api";
 
 /** Non-existent UUID for negative tests (never inserted). */
@@ -89,10 +90,15 @@ export async function createMeeting(
 
 export async function createMeetingTemplate(
   api: Api,
-  overrides: { name?: string; type?: string; content?: string; [key: string]: unknown } = {},
+  overrides: {
+    name?: string;
+    type?: MeetingTemplateType;
+    content?: string;
+    [key: string]: unknown;
+  } = {},
 ) {
   const name = overrides.name ?? unique("Template");
-  const type = (overrides.type as string) ?? "agenda";
+  const type = overrides.type ?? MeetingTemplateType.Agenda;
   const content = (overrides.content as string) ?? "";
   const template = await api.meetingTemplates.create({ ...overrides, name, type, content });
   return template;
@@ -125,7 +131,12 @@ export async function createSitePage(
 
 export async function createBlogPost(
   api: Api,
-  overrides: { slug?: string; title?: string; published_at?: string | null; [key: string]: unknown } = {},
+  overrides: {
+    slug?: string;
+    title?: string;
+    published_at?: string | null;
+    [key: string]: unknown;
+  } = {},
 ) {
   const slug = (overrides.slug as string) ?? unique("post").toLowerCase().replace(/\s/g, "-");
   const title = (overrides.title as string) ?? unique("Post");

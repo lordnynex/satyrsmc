@@ -1,5 +1,6 @@
-import React from 'react';
-import PhotoAlbum, { Photo } from 'react-photo-album';
+import React from "react";
+import type { Photo } from "react-photo-album";
+import PhotoAlbum from "react-photo-album";
 
 type Props = {
   photos: Photo[];

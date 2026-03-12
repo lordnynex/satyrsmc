@@ -11,10 +11,6 @@ export class WebsiteApiClient {
     return this.client.admin.website.getPageById.query({ id });
   }
 
-  getPageBySlug(slug: string) {
-    return this.client.admin.website.getPageBySlug.query({ slug });
-  }
-
   createPage(body: Record<string, unknown>) {
     return this.client.admin.website.createPage.mutate(body as never);
   }
@@ -74,7 +70,15 @@ export class WebsiteApiClient {
     return this.client.admin.website.getMenus.query();
   }
 
-  updateMenu(key: string, items: unknown[]) {
+  updateMenu(
+    key: string,
+    items: {
+      label: string;
+      url?: string | null;
+      internal_ref?: string | null;
+      sort_order?: number;
+    }[],
+  ) {
     return this.client.admin.website.updateMenu.mutate({ key, items });
   }
 

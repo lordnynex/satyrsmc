@@ -56,7 +56,7 @@ export const WebsiteAdminUpdateMenuInputSchema = z.object({
       url: z.string().nullable().optional(),
       internal_ref: z.string().nullable().optional(),
       sort_order: z.number().optional(),
-    })
+    }),
   ),
 });
 
@@ -125,7 +125,10 @@ export const WebsiteAdminGetBlogByIdOutputSchema = BlogPostResponseSchema;
 export const WebsiteAdminCreateBlogPostOutputSchema = BlogPostResponseSchema;
 export const WebsiteAdminUpdateBlogPostOutputSchema = BlogPostResponseSchema;
 export const WebsiteAdminDeleteBlogPostOutputSchema = z.object({ ok: z.literal(true) });
-export const WebsiteAdminGetMenusOutputSchema = z.record(z.string(), z.array(MenuItemResponseSchema));
+export const WebsiteAdminGetMenusOutputSchema = z.record(
+  z.string(),
+  z.array(MenuItemResponseSchema),
+);
 export const WebsiteAdminUpdateMenuOutputSchema = z.array(MenuItemResponseSchema);
 export const WebsiteAdminGetSettingsOutputSchema = SiteSettingsResponseSchema;
 export const WebsiteAdminUpdateSettingsOutputSchema = SiteSettingsResponseSchema;
@@ -138,7 +141,7 @@ export const WebsiteAdminListContactSubmissionsOutputSchema = z.array(
     message: z.string(),
     status: z.string(),
     created_at: z.string(),
-  })
+  }),
 );
 export const WebsiteAdminListContactMemberSubmissionsOutputSchema = z.array(
   z.object({
@@ -149,7 +152,7 @@ export const WebsiteAdminListContactMemberSubmissionsOutputSchema = z.array(
     message: z.string(),
     status: z.string(),
     created_at: z.string(),
-  })
+  }),
 );
 
 // ----- Inferred output types -----
@@ -161,15 +164,27 @@ export type WebsiteAdminUpdatePageOutput = z.infer<typeof WebsiteAdminUpdatePage
 export type WebsiteAdminDeletePageOutput = z.infer<typeof WebsiteAdminDeletePageOutputSchema>;
 export type WebsiteAdminListBlogAllOutput = z.infer<typeof WebsiteAdminListBlogAllOutputSchema>;
 export type WebsiteAdminGetBlogByIdOutput = z.infer<typeof WebsiteAdminGetBlogByIdOutputSchema>;
-export type WebsiteAdminCreateBlogPostOutput = z.infer<typeof WebsiteAdminCreateBlogPostOutputSchema>;
-export type WebsiteAdminUpdateBlogPostOutput = z.infer<typeof WebsiteAdminUpdateBlogPostOutputSchema>;
-export type WebsiteAdminDeleteBlogPostOutput = z.infer<typeof WebsiteAdminDeleteBlogPostOutputSchema>;
+export type WebsiteAdminCreateBlogPostOutput = z.infer<
+  typeof WebsiteAdminCreateBlogPostOutputSchema
+>;
+export type WebsiteAdminUpdateBlogPostOutput = z.infer<
+  typeof WebsiteAdminUpdateBlogPostOutputSchema
+>;
+export type WebsiteAdminDeleteBlogPostOutput = z.infer<
+  typeof WebsiteAdminDeleteBlogPostOutputSchema
+>;
 export type WebsiteAdminGetMenusOutput = z.infer<typeof WebsiteAdminGetMenusOutputSchema>;
 export type WebsiteAdminUpdateMenuOutput = z.infer<typeof WebsiteAdminUpdateMenuOutputSchema>;
 export type WebsiteAdminGetSettingsOutput = z.infer<typeof WebsiteAdminGetSettingsOutputSchema>;
-export type WebsiteAdminUpdateSettingsOutput = z.infer<typeof WebsiteAdminUpdateSettingsOutputSchema>;
-export type WebsiteAdminListContactSubmissionsOutput = z.infer<typeof WebsiteAdminListContactSubmissionsOutputSchema>;
-export type WebsiteAdminListContactMemberSubmissionsOutput = z.infer<typeof WebsiteAdminListContactMemberSubmissionsOutputSchema>;
+export type WebsiteAdminUpdateSettingsOutput = z.infer<
+  typeof WebsiteAdminUpdateSettingsOutputSchema
+>;
+export type WebsiteAdminListContactSubmissionsOutput = z.infer<
+  typeof WebsiteAdminListContactSubmissionsOutputSchema
+>;
+export type WebsiteAdminListContactMemberSubmissionsOutput = z.infer<
+  typeof WebsiteAdminListContactMemberSubmissionsOutputSchema
+>;
 
 // Aliases for API services
 export type SitePageResponse = WebsiteAdminGetPageByIdOutput;
@@ -182,4 +197,6 @@ export type BlogPostUpdateInput = z.infer<typeof WebsiteAdminUpdateBlogPostInput
 export type SitePageCreateInput = z.infer<typeof WebsiteAdminCreatePageInputSchema>;
 export type SitePageUpdateInput = z.infer<typeof WebsiteAdminUpdatePageInputSchema>;
 export type SiteSettingsUpdateInput = z.infer<typeof WebsiteAdminUpdateSettingsInputSchema>;
-export type MenuItemUpdateInput = z.infer<typeof WebsiteAdminUpdateMenuInputSchema>["items"][number];
+export type MenuItemUpdateInput = z.infer<
+  typeof WebsiteAdminUpdateMenuInputSchema
+>["items"][number];

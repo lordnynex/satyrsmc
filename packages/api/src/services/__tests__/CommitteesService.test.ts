@@ -6,12 +6,12 @@ import { BAD_ID, createCommittee, createMember } from "./helpers";
 
 describe("CommitteesService", () => {
   let api: Api;
-  let ds: DataSource;
+  let _ds: DataSource;
 
   beforeAll(async () => {
     const result = await setupTestDb();
     api = result.api;
-    ds = result.ds;
+    _ds = result.ds;
   });
 
   describe("list", () => {
@@ -132,7 +132,9 @@ describe("CommitteesService", () => {
       const got = await api.committees.getMeeting(committee!.id, meeting!.id);
       expect(got).not.toBeNull();
       expect(got!.id).toBe(meeting!.id);
-      const updated = await api.committees.updateMeeting(committee!.id, meeting!.id, { location: "Room B" });
+      const updated = await api.committees.updateMeeting(committee!.id, meeting!.id, {
+        location: "Room B",
+      });
       expect(updated).not.toBeNull();
       expect(updated!.location).toBe("Room B");
       const delOk = await api.committees.deleteMeeting(committee!.id, meeting!.id);

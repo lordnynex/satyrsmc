@@ -5,7 +5,4 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Returns true if the string is a valid UUID (e.g. from crypto.randomUUID()). */
-export function isValidUuid(s: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
-}
+export { isValidUuid } from "@satyrsmc/shared/lib/uuid";
