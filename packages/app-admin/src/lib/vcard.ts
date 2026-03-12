@@ -1,3 +1,4 @@
+import { ContactType } from "@satyrsmc/shared/client";
 import type { Contact, ContactEmail, ContactAddress } from "@satyrsmc/shared/client";
 
 export function escapeVCardValue(s: string): string {
@@ -353,7 +354,7 @@ export function parsedToContactPayload(
   const [given, family] = p.n ? [p.n.given, p.n.family] : [undefined, undefined];
 
   return {
-    type: p.org && !p.n?.given && !p.n?.family ? "organization" : "person",
+    type: p.org && !p.n?.given && !p.n?.family ? ContactType.Organization : ContactType.Person,
     display_name: displayName,
     first_name: given ?? null,
     last_name: family ?? null,

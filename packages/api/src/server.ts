@@ -5,6 +5,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { Api } from "./services/api";
 import type { createContextFn } from "./trpc/context";
 import { appRouter } from "./trpc/root";
+import { MemberPhotoSize, ContactPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { logger } from "./logger";
 
 const TRPC_PREFIX = "/trpc";
@@ -90,7 +91,7 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
     const memberPhotoMatch = path.match(/^\/api\/members\/([^/]+)\/photo$/);
     if (request.method === "GET" && memberPhotoMatch) {
       const id = memberPhotoMatch[1];
-      const size = (url.searchParams.get("size") as "thumbnail" | "medium" | "full") ?? "full";
+      const size = (url.searchParams.get("size") as MemberPhotoSize) ?? MemberPhotoSize.Full;
       const buffer = await api.members.getPhoto(id, size);
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";
@@ -111,7 +112,7 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
     if (request.method === "GET" && contactPhotoMatch) {
       const contactId = contactPhotoMatch[1];
       const photoId = contactPhotoMatch[2];
-      const size = (url.searchParams.get("size") as "thumbnail" | "display" | "full") ?? "full";
+      const size = (url.searchParams.get("size") as ContactPhotoSize) ?? ContactPhotoSize.Full;
       const buffer = await api.contacts.getPhoto(contactId, photoId, size);
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";

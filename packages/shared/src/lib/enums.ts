@@ -1,85 +1,211 @@
 /**
  * Domain string enums — single source of truth for string literal unions.
  *
- * Pattern: define a `const` array, derive the TypeScript type from it.
- * DTOs consume these via `z.enum(CONST_ARRAY)`, entities via `import type`.
+ * Pattern: TypeScript string enums with Object.values() arrays for iteration.
+ * DTOs consume these via `z.nativeEnum(Enum)`, entities via `@Column({ type: "enum", enum: Enum })`.
  */
 
 // --- Meeting ---
 
-export const MOTION_RESULTS = ["pass", "fail"] as const;
-export type MotionResult = (typeof MOTION_RESULTS)[number];
+export enum MotionResult {
+  Pass = "pass",
+  Fail = "fail",
+}
+export const MOTION_RESULTS = Object.values(MotionResult);
 
-export const ACTION_ITEM_STATUSES = ["open", "completed"] as const;
-export type ActionItemStatus = (typeof ACTION_ITEM_STATUSES)[number];
+export enum ActionItemStatus {
+  Open = "open",
+  Completed = "completed",
+}
+export const ACTION_ITEM_STATUSES = Object.values(ActionItemStatus);
 
-export const OLD_BUSINESS_STATUSES = ["open", "closed"] as const;
-export type OldBusinessStatus = (typeof OLD_BUSINESS_STATUSES)[number];
+export enum OldBusinessStatus {
+  Open = "open",
+  Closed = "closed",
+}
+export const OLD_BUSINESS_STATUSES = Object.values(OldBusinessStatus);
 
-export const MEETING_TEMPLATE_TYPES = ["agenda", "minutes"] as const;
-export type MeetingTemplateType = (typeof MEETING_TEMPLATE_TYPES)[number];
+export enum MeetingTemplateType {
+  Agenda = "agenda",
+  Minutes = "minutes",
+}
+export const MEETING_TEMPLATE_TYPES = Object.values(MeetingTemplateType);
 
-export const MEETING_SORT_FIELDS = ["date", "meeting_number"] as const;
-export type MeetingSortField = (typeof MEETING_SORT_FIELDS)[number];
+export enum MeetingSortField {
+  Date = "date",
+  MeetingNumber = "meeting_number",
+}
+export const MEETING_SORT_FIELDS = Object.values(MeetingSortField);
 
 // --- Committee ---
 
-export const COMMITTEE_STATUSES = ["active", "closed"] as const;
-export type CommitteeStatus = (typeof COMMITTEE_STATUSES)[number];
+export enum CommitteeStatus {
+  Active = "active",
+  Closed = "closed",
+}
+export const COMMITTEE_STATUSES = Object.values(CommitteeStatus);
 
-export const COMMITTEE_SORT_FIELDS = ["formed_date", "name"] as const;
-export type CommitteeSortField = (typeof COMMITTEE_SORT_FIELDS)[number];
+export enum CommitteeSortField {
+  FormedDate = "formed_date",
+  Name = "name",
+}
+export const COMMITTEE_SORT_FIELDS = Object.values(CommitteeSortField);
 
 // --- Event ---
 
-export const EVENT_TYPES = ["badger", "anniversary", "pioneer_run", "rides"] as const;
-export type EventType = (typeof EVENT_TYPES)[number];
+export enum EventType {
+  Badger = "badger",
+  Anniversary = "anniversary",
+  PioneerRun = "pioneer_run",
+  Rides = "rides",
+}
+export const EVENT_TYPES = Object.values(EventType);
 
-export const EVENT_ASSIGNMENT_CATEGORIES = ["planning", "during"] as const;
-export type EventAssignmentCategory = (typeof EVENT_ASSIGNMENT_CATEGORIES)[number];
+export enum EventAssignmentCategory {
+  Planning = "planning",
+  During = "during",
+}
+export const EVENT_ASSIGNMENT_CATEGORIES = Object.values(EventAssignmentCategory);
 
 // --- Contact ---
 
-export const CONTACT_TYPES = ["person", "organization"] as const;
-export type ContactType = (typeof CONTACT_TYPES)[number];
+export enum ContactType {
+  Person = "person",
+  Organization = "organization",
+}
+export const CONTACT_TYPES = Object.values(ContactType);
 
-export const CONTACT_STATUSES = ["active", "inactive", "deleted"] as const;
-export type ContactStatus = (typeof CONTACT_STATUSES)[number];
+export enum ContactStatus {
+  Active = "active",
+  Inactive = "inactive",
+  Deleted = "deleted",
+}
+export const CONTACT_STATUSES = Object.values(ContactStatus);
 
-export const CONTACT_STATUS_FILTERS = ["active", "deleted", "all"] as const;
-export type ContactStatusFilter = (typeof CONTACT_STATUS_FILTERS)[number];
+export enum ContactStatusFilter {
+  Active = "active",
+  Deleted = "deleted",
+  All = "all",
+}
+export const CONTACT_STATUS_FILTERS = Object.values(ContactStatusFilter);
 
-export const CONSENT_STATUSES = ["yes", "no", "unknown"] as const;
-export type ConsentStatus = (typeof CONSENT_STATUSES)[number];
+export enum ConsentStatus {
+  Yes = "yes",
+  No = "no",
+  Unknown = "unknown",
+}
+export const CONSENT_STATUSES = Object.values(ConsentStatus);
 
-export const SORT_DIRECTIONS = ["asc", "desc"] as const;
-export type SortDirection = (typeof SORT_DIRECTIONS)[number];
+export enum SortDirection {
+  Asc = "asc",
+  Desc = "desc",
+}
+export const SORT_DIRECTIONS = Object.values(SortDirection);
+
+// --- Contact Detail Types ---
+
+export enum ContactPhotoType {
+  Profile = "profile",
+  Contact = "contact",
+}
+export const CONTACT_PHOTO_TYPES = Object.values(ContactPhotoType);
+
+export enum ContactEmailType {
+  Work = "work",
+  Home = "home",
+  Other = "other",
+}
+export const CONTACT_EMAIL_TYPES = Object.values(ContactEmailType);
+
+export enum ContactPhoneType {
+  Work = "work",
+  Home = "home",
+  Cell = "cell",
+  Other = "other",
+}
+export const CONTACT_PHONE_TYPES = Object.values(ContactPhoneType);
+
+export enum ContactAddressType {
+  Home = "home",
+  Work = "work",
+  Postal = "postal",
+  Other = "other",
+}
+export const CONTACT_ADDRESS_TYPES = Object.values(ContactAddressType);
 
 // --- Member ---
 
-export const MEMBER_POSITIONS = [
-  "President",
-  "Vice President",
-  "Road Captain",
-  "Treasurer",
-  "Recording Secretary",
-  "Correspondence Secretary",
-  "Member",
-] as const;
-export type MemberPosition = (typeof MEMBER_POSITIONS)[number];
+export enum MemberPosition {
+  President = "President",
+  VicePresident = "Vice President",
+  RoadCaptain = "Road Captain",
+  Treasurer = "Treasurer",
+  RecordingSecretary = "Recording Secretary",
+  CorrespondenceSecretary = "Correspondence Secretary",
+  Member = "Member",
+}
+export const MEMBER_POSITIONS = Object.values(MemberPosition);
 
-export const MEMBER_PHOTO_SIZES = ["thumbnail", "medium", "full"] as const;
-export type MemberPhotoSize = (typeof MEMBER_PHOTO_SIZES)[number];
+export enum MemberPhotoSize {
+  Thumbnail = "thumbnail",
+  Medium = "medium",
+  Full = "full",
+}
+export const MEMBER_PHOTO_SIZES = Object.values(MemberPhotoSize);
 
-// --- Contact Photo ---
+// --- Contact Photo Size ---
 
-export const CONTACT_PHOTO_SIZES = ["thumbnail", "display", "full"] as const;
-export type ContactPhotoSize = (typeof CONTACT_PHOTO_SIZES)[number];
+export enum ContactPhotoSize {
+  Thumbnail = "thumbnail",
+  Display = "display",
+  Full = "full",
+}
+export const CONTACT_PHOTO_SIZES = Object.values(ContactPhotoSize);
+
+// --- Mailing ---
+
+export enum MailingListType {
+  Static = "static",
+  Dynamic = "dynamic",
+  Hybrid = "hybrid",
+}
+export const MAILING_LIST_TYPES = Object.values(MailingListType);
+
+export enum MailingDeliveryType {
+  Physical = "physical",
+  Email = "email",
+  Both = "both",
+}
+export const MAILING_DELIVERY_TYPES = Object.values(MailingDeliveryType);
+
+export enum MailingMemberSource {
+  Manual = "manual",
+  Import = "import",
+  Rule = "rule",
+}
+export const MAILING_MEMBER_SOURCES = Object.values(MailingMemberSource);
+
+export enum MailingRecipientStatus {
+  Queued = "queued",
+  Printed = "printed",
+  Mailed = "mailed",
+  Returned = "returned",
+  Invalid = "invalid",
+}
+export const MAILING_RECIPIENT_STATUSES = Object.values(MailingRecipientStatus);
 
 // --- QR Code ---
 
-export const QR_ERROR_CORRECTION_LEVELS = ["L", "M", "Q", "H"] as const;
-export type QrErrorCorrectionLevel = (typeof QR_ERROR_CORRECTION_LEVELS)[number];
+export enum QrErrorCorrectionLevel {
+  L = "L",
+  M = "M",
+  Q = "Q",
+  H = "H",
+}
+export const QR_ERROR_CORRECTION_LEVELS = Object.values(QrErrorCorrectionLevel);
 
-export const QR_FORMATS = ["png", "svg"] as const;
-export type QrFormat = (typeof QR_FORMATS)[number];
+export enum QrFormat {
+  Png = "png",
+  Svg = "svg",
+}
+export const QR_FORMATS = Object.values(QrFormat);

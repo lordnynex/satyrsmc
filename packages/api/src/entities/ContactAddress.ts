@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { ContactAddressType } from "@satyrsmc/shared/lib/enums";
 
 @Entity("contact_addresses")
 export class ContactAddress {
@@ -26,8 +27,13 @@ export class ContactAddress {
   @Column({ type: "text", default: "US" })
   country!: string;
 
-  @Column({ type: "text", default: "home" })
-  type!: string;
+  @Column({
+    type: "enum",
+    enum: ContactAddressType,
+    enumName: "contact_address_type_enum",
+    default: ContactAddressType.Home,
+  })
+  type!: ContactAddressType;
 
   @Column({ name: "is_primary_mailing", type: "boolean", default: false })
   isPrimaryMailing!: boolean;

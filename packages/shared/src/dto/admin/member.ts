@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MEMBER_PHOTO_SIZES } from "../../lib/enums";
+import { MemberPhotoSize } from "../../lib/enums";
 
 // ----- Input schemas -----
 
@@ -22,7 +22,7 @@ export const MemberDeleteInputSchema = z.object({ id: z.string() });
 
 export const MemberGetPhotoInputSchema = z.object({
   id: z.string(),
-  size: z.enum(MEMBER_PHOTO_SIZES).optional(),
+  size: z.nativeEnum(MemberPhotoSize).optional(),
 });
 
 // ----- Output entity schemas -----

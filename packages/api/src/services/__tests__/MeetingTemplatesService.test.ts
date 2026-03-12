@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
+import { MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 import { BAD_ID, createMeetingTemplate } from "./helpers";
 
 describe("MeetingTemplatesService", () => {
@@ -16,16 +17,22 @@ describe("MeetingTemplatesService", () => {
 
   describe("list", () => {
     test("returns created templates", async () => {
-      const t = await createMeetingTemplate(api, { name: "List Template", type: "agenda" });
+      const t = await createMeetingTemplate(api, {
+        name: "List Template",
+        type: MeetingTemplateType.Agenda,
+      });
       if (!t) throw new Error("createMeetingTemplate failed");
       const result = await api.meetingTemplates.list();
       expect(result.some((e) => e.id === t.id)).toBe(true);
     });
 
     test("filters by type", async () => {
-      const t = await createMeetingTemplate(api, { name: "Agenda Only", type: "agenda" });
+      const t = await createMeetingTemplate(api, {
+        name: "Agenda Only",
+        type: MeetingTemplateType.Agenda,
+      });
       if (!t) throw new Error("createMeetingTemplate failed");
-      const result = await api.meetingTemplates.list("agenda");
+      const result = await api.meetingTemplates.list(MeetingTemplateType.Agenda);
       expect(result.some((e) => e.id === t.id)).toBe(true);
     });
   });
@@ -50,13 +57,13 @@ describe("MeetingTemplatesService", () => {
     test("creates template", async () => {
       const t = await createMeetingTemplate(api, {
         name: "New Template",
-        type: "minutes",
+        type: MeetingTemplateType.Minutes,
         content: "Text",
       });
       if (!t) throw new Error("createMeetingTemplate failed");
       expect(t.id).toBeDefined();
       expect(t.name).toBe("New Template");
-      expect(t.type).toBe("minutes");
+      expect(t.type).toBe(MeetingTemplateType.Minutes);
     });
   });
 
@@ -64,10 +71,13 @@ describe("MeetingTemplatesService", () => {
     test("updates template", async () => {
       const t = await createMeetingTemplate(api, { name: "Update Template" });
       if (!t) throw new Error("createMeetingTemplate failed");
-      const updated = await api.meetingTemplates.update(t.id, { name: "Updated", type: "minutes" });
+      const updated = await api.meetingTemplates.update(t.id, {
+        name: "Updated",
+        type: MeetingTemplateType.Minutes,
+      });
       expect(updated).not.toBeNull();
       expect(updated!.name).toBe("Updated");
-      expect(updated!.type).toBe("minutes");
+      expect(updated!.type).toBe(MeetingTemplateType.Minutes);
     });
 
     test("update(badId) returns null", async () => {

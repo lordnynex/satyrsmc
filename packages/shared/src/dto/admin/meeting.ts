@@ -1,16 +1,16 @@
 import { z } from "zod";
 import {
-  MOTION_RESULTS,
-  ACTION_ITEM_STATUSES,
-  OLD_BUSINESS_STATUSES,
-  MEETING_TEMPLATE_TYPES,
-  MEETING_SORT_FIELDS,
+  MotionResult,
+  ActionItemStatus,
+  OldBusinessStatus,
+  MeetingTemplateType,
+  MeetingSortField,
 } from "../../lib/enums";
 
 // ----- Input schemas (meetings) -----
 
 export const MeetingListInputSchema = z
-  .object({ sort: z.enum(MEETING_SORT_FIELDS).optional() })
+  .object({ sort: z.nativeEnum(MeetingSortField).optional() })
   .optional();
 
 export const MeetingGetInputSchema = z.object({ id: z.string() });
@@ -62,7 +62,7 @@ export const MeetingListMotionsInputSchema = z
 export const MeetingCreateMotionInputSchema = z.object({
   meetingId: z.string(),
   description: z.string().nullable().optional(),
-  result: z.enum(MOTION_RESULTS),
+  result: z.nativeEnum(MotionResult),
   order_index: z.number().optional(),
   mover_member_id: z.string(),
   seconder_member_id: z.string(),
@@ -72,7 +72,7 @@ export const MeetingUpdateMotionInputSchema = z.object({
   meetingId: z.string(),
   motionId: z.string(),
   description: z.string().nullable().optional(),
-  result: z.enum(MOTION_RESULTS).optional(),
+  result: z.nativeEnum(MotionResult).optional(),
   order_index: z.number().optional(),
   mover_member_id: z.string().optional(),
   seconder_member_id: z.string().optional(),
@@ -98,7 +98,7 @@ export const MeetingUpdateActionItemInputSchema = z.object({
   assignee_member_id: z.string().nullable().optional(),
   due_date: z.string().nullable().optional(),
   order_index: z.number().optional(),
-  status: z.enum(ACTION_ITEM_STATUSES).optional(),
+  status: z.nativeEnum(ActionItemStatus).optional(),
   completed_at: z.string().nullable().optional(),
 });
 
@@ -117,7 +117,7 @@ export const MeetingUpdateOldBusinessInputSchema = z.object({
   meetingId: z.string(),
   oldBusinessId: z.string(),
   description: z.string().optional(),
-  status: z.enum(OLD_BUSINESS_STATUSES).optional(),
+  status: z.nativeEnum(OldBusinessStatus).optional(),
   closed_at: z.string().nullable().optional(),
   closed_in_meeting_id: z.string().nullable().optional(),
   order_index: z.number().optional(),
@@ -131,14 +131,14 @@ export const MeetingDeleteOldBusinessInputSchema = z.object({
 // ----- Input schemas (meetingTemplates) -----
 
 export const MeetingTemplateListInputSchema = z
-  .object({ type: z.enum(MEETING_TEMPLATE_TYPES).optional() })
+  .object({ type: z.nativeEnum(MeetingTemplateType).optional() })
   .optional();
 
 export const MeetingTemplateGetInputSchema = z.object({ id: z.string() });
 
 export const MeetingTemplateCreateInputSchema = z.object({
   name: z.string(),
-  type: z.enum(MEETING_TEMPLATE_TYPES),
+  type: z.nativeEnum(MeetingTemplateType),
   content: z.string(),
 });
 
@@ -179,7 +179,7 @@ const MeetingMotionSchema = z.object({
   id: z.string(),
   meeting_id: z.string().optional(),
   description: z.string().nullable().optional(),
-  result: z.enum(MOTION_RESULTS).optional(),
+  result: z.nativeEnum(MotionResult).optional(),
   order_index: z.number().optional(),
   mover_member_id: z.string().nullable().optional(),
   seconder_member_id: z.string().nullable().optional(),
@@ -205,7 +205,7 @@ const MeetingActionItemSchema = z.object({
   assignee_member_id: z.string().nullable().optional(),
   assignee_name: z.string().nullable().optional(),
   due_date: z.string().nullable().optional(),
-  status: z.enum(ACTION_ITEM_STATUSES).optional(),
+  status: z.nativeEnum(ActionItemStatus).optional(),
   completed_at: z.string().nullable().optional(),
   order_index: z.number().optional(),
   created_at: z.union([z.string(), z.date()]).optional(),
@@ -215,7 +215,7 @@ const OldBusinessItemSchema = z.object({
   id: z.string(),
   meeting_id: z.string().optional(),
   description: z.string().optional(),
-  status: z.enum(OLD_BUSINESS_STATUSES).optional(),
+  status: z.nativeEnum(OldBusinessStatus).optional(),
   closed_at: z.string().nullable().optional(),
   closed_in_meeting_id: z.string().nullable().optional(),
   order_index: z.number().optional(),
@@ -237,7 +237,7 @@ const MeetingDetailSchema = MeetingSummarySchema.extend({
 const MeetingTemplateSchema = z.object({
   id: z.string(),
   name: z.string(),
-  type: z.enum(MEETING_TEMPLATE_TYPES),
+  type: z.nativeEnum(MeetingTemplateType),
   document_id: z.string(),
   content: z.string(),
   created_at: z.string().optional(),

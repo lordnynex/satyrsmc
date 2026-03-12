@@ -8,7 +8,7 @@ import {
   Member,
   MeetingTemplate,
 } from "../entities";
-import type { CommitteeStatus } from "@satyrsmc/shared/lib/enums";
+import { CommitteeStatus, MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
@@ -120,7 +120,7 @@ export class CommitteesService {
       formedDate: body.formed_date,
       closedDate: null,
       chairpersonMemberId: body.chairperson_member_id ?? null,
-      status: "active",
+      status: CommitteeStatus.Active,
       createdAt: now,
       updatedAt: now,
     });
@@ -262,7 +262,7 @@ export class CommitteesService {
     let agendaContent = body.agenda_content ?? EMPTY_DOC;
     if (body.agenda_template_id) {
       const template = await this.ds.getRepository(MeetingTemplate).findOne({
-        where: { id: body.agenda_template_id, type: "agenda" },
+        where: { id: body.agenda_template_id, type: MeetingTemplateType.Agenda },
       });
       if (template) {
         const agendaDoc = await this.ds.getRepository(Document).findOne({

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useUpdateContact } from "@/queries/hooks";
 import { isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
+import { ConsentStatus } from "@satyrsmc/shared/client";
 import type { Contact } from "@satyrsmc/shared/client";
 
 interface EditContactDialogProps {
@@ -41,9 +42,9 @@ export function EditContactDialog({
   const [howWeKnow, setHowWeKnow] = useState("");
   const [clubName, setClubName] = useState("");
   const [role, setRole] = useState("");
-  const [okToEmail, setOkToEmail] = useState<Contact["ok_to_email"]>("unknown");
-  const [okToMail, setOkToMail] = useState<Contact["ok_to_mail"]>("unknown");
-  const [okToSms, setOkToSms] = useState<Contact["ok_to_sms"]>("unknown");
+  const [okToEmail, setOkToEmail] = useState<Contact["ok_to_email"]>(ConsentStatus.Unknown);
+  const [okToMail, setOkToMail] = useState<Contact["ok_to_mail"]>(ConsentStatus.Unknown);
+  const [okToSms, setOkToSms] = useState<Contact["ok_to_sms"]>(ConsentStatus.Unknown);
   const [doNotContact, setDoNotContact] = useState(false);
   const [hellenic, setHellenic] = useState(false);
   const [deceased, setDeceased] = useState(false);
@@ -82,7 +83,7 @@ export function EditContactDialog({
       setRole(contact.role ?? "");
       setOkToEmail(contact.ok_to_email);
       setOkToMail(contact.ok_to_mail);
-      setOkToSms(contact.ok_to_sms ?? "unknown");
+      setOkToSms(contact.ok_to_sms ?? ConsentStatus.Unknown);
       setDoNotContact(contact.do_not_contact);
       setHellenic(contact.hellenic ?? false);
       setDeceased(contact.deceased ?? false);

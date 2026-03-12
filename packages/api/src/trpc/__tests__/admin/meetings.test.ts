@@ -7,6 +7,7 @@
 
 import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
+import { MotionResult } from "@satyrsmc/shared/lib/enums";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
 import { BAD_ID, createMeeting, createMember } from "../helpers";
@@ -108,7 +109,7 @@ describe("admin.meetings", () => {
       const seconder = (await createMember(harness.api, { name: "Seconder" }))!;
       const created = await harness.caller.admin.meetings.createMotion({
         meetingId: meeting.id,
-        result: "pass",
+        result: MotionResult.Pass,
         mover_member_id: mover.id,
         seconder_member_id: seconder.id,
       });

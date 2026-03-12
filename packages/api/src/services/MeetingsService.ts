@@ -9,7 +9,12 @@ import {
   MeetingTemplate,
   Member,
 } from "../entities";
-import type { ActionItemStatus, MotionResult, OldBusinessStatus } from "@satyrsmc/shared/lib/enums";
+import {
+  ActionItemStatus,
+  MeetingTemplateType,
+  OldBusinessStatus,
+} from "@satyrsmc/shared/lib/enums";
+import type { MotionResult } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString, toISOStringOrNull } from "../lib/date";
 import type {
@@ -56,7 +61,7 @@ export class MeetingsService {
     let agendaContent = body.agenda_content ?? EMPTY_DOC;
     if (body.agenda_template_id) {
       const template = await this.ds.getRepository(MeetingTemplate).findOne({
-        where: { id: body.agenda_template_id, type: "agenda" },
+        where: { id: body.agenda_template_id, type: MeetingTemplateType.Agenda },
       });
       if (template) {
         const agendaDoc = await this.ds.getRepository(Document).findOne({
@@ -340,7 +345,7 @@ export class MeetingsService {
       description: body.description,
       assigneeMemberId: body.assignee_member_id ?? null,
       dueDate: body.due_date ?? null,
-      status: "open",
+      status: ActionItemStatus.Open,
       orderIndex,
       createdAt: new Date().toISOString(),
     });
@@ -371,7 +376,7 @@ export class MeetingsService {
         (body.due_date as string | null) != null ? new Date(body.due_date as string) : null;
     if (body.status !== undefined) {
       updates.status = body.status as ActionItemStatus;
-      if (body.status === "completed") updates.completedAt = new Date();
+      if (body.status === ActionItemStatus.Completed) updates.completedAt = new Date();
     }
     if (body.order_index !== undefined) updates.orderIndex = body.order_index as number;
     await this.ds.getRepository(MeetingActionItem).update(aid, updates);
@@ -411,7 +416,7 @@ export class MeetingsService {
       id: uuid(),
       meetingId,
       description: body.description,
-      status: "open",
+      status: OldBusinessStatus.Open,
       orderIndex,
       createdAt: new Date().toISOString(),
     });

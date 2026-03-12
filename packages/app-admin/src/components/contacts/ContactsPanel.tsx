@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ContactStatusFilter, SortDirection } from "@satyrsmc/shared/client";
 import type { ContactSearchParams } from "@satyrsmc/shared/client";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import { Link } from "react-router-dom";
@@ -47,11 +48,11 @@ export function ContactsPanel() {
   const deleteContactMutation = useDeleteContact();
   const fetchContactsList = useContactsListFetcher();
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<ContactSearchParams["status"]>("active");
+  const [status, setStatus] = useState<ContactSearchParams["status"]>(ContactStatusFilter.Active);
   const [hasPostal, setHasPostal] = useState<boolean | undefined>();
   const [hasEmail, setHasEmail] = useState<boolean | undefined>();
   const [sort, setSort] = useState<ContactSearchParams["sort"]>("updated_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.Desc);
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [addOpen, setAddOpen] = useState(false);
@@ -245,7 +246,7 @@ export function ContactsPanel() {
               onValueChange={(v) => {
                 const [s, d] = v.split("-");
                 setSort(s as ContactSearchParams["sort"]);
-                setSortDir((d as "asc" | "desc") ?? "desc");
+                setSortDir((d as SortDirection) ?? SortDirection.Desc);
               }}
             >
               <SelectTrigger className="w-[160px]">

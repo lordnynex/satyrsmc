@@ -1,10 +1,11 @@
 import { z } from "zod";
 import {
-  CONTACT_TYPES,
-  CONTACT_STATUSES,
-  CONTACT_STATUS_FILTERS,
-  CONSENT_STATUSES,
-  SORT_DIRECTIONS,
+  ContactType,
+  ContactStatus,
+  ContactStatusFilter,
+  ConsentStatus,
+  SortDirection,
+  ContactPhotoType,
 } from "../../lib/enums";
 
 // ----- Input schemas -----
@@ -12,7 +13,7 @@ import {
 export const ContactListInputSchema = z
   .object({
     q: z.string().optional(),
-    status: z.enum(CONTACT_STATUS_FILTERS).optional(),
+    status: z.nativeEnum(ContactStatusFilter).optional(),
     hasPostalAddress: z.boolean().optional(),
     hasEmail: z.boolean().optional(),
     tagIds: z.array(z.string()).optional(),
@@ -24,7 +25,7 @@ export const ContactListInputSchema = z
     offset: z.number().optional(),
     page: z.number().optional(),
     sort: z.string().optional(),
-    sortDir: z.enum(SORT_DIRECTIONS).optional(),
+    sortDir: z.nativeEnum(SortDirection).optional(),
   })
   .optional();
 
@@ -32,16 +33,16 @@ export const ContactGetInputSchema = z.object({ id: z.string() });
 
 const ContactCreateUpdateFieldsSchema = z.object({
   display_name: z.string().optional(),
-  type: z.enum(CONTACT_TYPES).optional(),
-  status: z.enum(CONTACT_STATUSES).optional(),
+  type: z.nativeEnum(ContactType).optional(),
+  status: z.nativeEnum(ContactStatus).optional(),
   first_name: z.string().nullable().optional(),
   last_name: z.string().nullable().optional(),
   organization_name: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   how_we_know_them: z.string().nullable().optional(),
-  ok_to_email: z.enum(CONSENT_STATUSES).optional(),
-  ok_to_mail: z.enum(CONSENT_STATUSES).optional(),
-  ok_to_sms: z.enum(CONSENT_STATUSES).optional(),
+  ok_to_email: z.nativeEnum(ConsentStatus).optional(),
+  ok_to_mail: z.nativeEnum(ConsentStatus).optional(),
+  ok_to_sms: z.nativeEnum(ConsentStatus).optional(),
   do_not_contact: z.boolean().optional(),
   club_name: z.string().nullable().optional(),
   role: z.string().nullable().optional(),
@@ -98,17 +99,17 @@ export const ContactRestoreInputSchema = z.object({ id: z.string() });
 
 const ContactSchema = z.object({
   id: z.string(),
-  type: z.enum(CONTACT_TYPES),
-  status: z.enum(CONTACT_STATUSES),
+  type: z.nativeEnum(ContactType),
+  status: z.nativeEnum(ContactStatus),
   display_name: z.string(),
   first_name: z.string().nullable(),
   last_name: z.string().nullable(),
   organization_name: z.string().nullable(),
   notes: z.string().nullable(),
   how_we_know_them: z.string().nullable(),
-  ok_to_email: z.enum(CONSENT_STATUSES),
-  ok_to_mail: z.enum(CONSENT_STATUSES),
-  ok_to_sms: z.enum(CONSENT_STATUSES),
+  ok_to_email: z.nativeEnum(ConsentStatus),
+  ok_to_mail: z.nativeEnum(ConsentStatus),
+  ok_to_sms: z.nativeEnum(ConsentStatus),
   do_not_contact: z.boolean(),
   club_name: z.string().nullable(),
   role: z.string().nullable(),
@@ -175,7 +176,7 @@ const ContactSchema = z.object({
       z.object({
         id: z.string(),
         contact_id: z.string(),
-        type: z.enum(["profile", "contact"]),
+        type: z.nativeEnum(ContactPhotoType),
         sort_order: z.number(),
         photo_url: z.string(),
         photo_thumbnail_url: z.string(),

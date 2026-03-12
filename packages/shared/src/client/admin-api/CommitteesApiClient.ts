@@ -1,4 +1,5 @@
 import type { TrpcClient } from "../trpc";
+import type { CommitteeSortField } from "../../lib/enums";
 import type {
   CommitteeListOutput,
   CommitteeGetOutput,
@@ -9,7 +10,7 @@ import type {
 export class CommitteesApiClient {
   constructor(private client: TrpcClient) {}
 
-  list(options?: { sort?: "formed_date" | "name" }): Promise<CommitteeListOutput> {
+  list(options?: { sort?: CommitteeSortField }): Promise<CommitteeListOutput> {
     return this.client.admin.committees.list.query(
       options?.sort ? { sort: options.sort } : undefined,
     ) as Promise<CommitteeListOutput>;

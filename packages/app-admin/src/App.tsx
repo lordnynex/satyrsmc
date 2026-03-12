@@ -1,6 +1,7 @@
 import { Suspense, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AppStateProvider, useAppState } from "@/state/AppState";
+import { EventType } from "@satyrsmc/shared/client";
 import { Header } from "@/components/layout/Header";
 import { Main } from "@/components/layout/Main";
 import { BudgetingLayout } from "@/components/layout/BudgetingLayout";
@@ -156,7 +157,7 @@ function AppContent() {
                 path="badger"
                 element={
                   <Suspense fallback={<PageLoading />}>
-                    <EventsPage type="badger" />
+                    <EventsPage type={EventType.Badger} />
                   </Suspense>
                 }
               />
@@ -164,7 +165,7 @@ function AppContent() {
                 path="anniversary"
                 element={
                   <Suspense fallback={<PageLoading />}>
-                    <EventsPage type="anniversary" />
+                    <EventsPage type={EventType.Anniversary} />
                   </Suspense>
                 }
               />
@@ -172,7 +173,7 @@ function AppContent() {
                 path="pioneer-run"
                 element={
                   <Suspense fallback={<PageLoading />}>
-                    <EventsPage type="pioneer_run" />
+                    <EventsPage type={EventType.PioneerRun} />
                   </Suspense>
                 }
               />
@@ -180,7 +181,7 @@ function AppContent() {
                 path="rides"
                 element={
                   <Suspense fallback={<PageLoading />}>
-                    <EventsPage type="rides" />
+                    <EventsPage type={EventType.Rides} />
                   </Suspense>
                 }
               />

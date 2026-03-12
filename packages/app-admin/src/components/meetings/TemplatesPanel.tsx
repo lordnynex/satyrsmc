@@ -18,6 +18,7 @@ import {
   useMeetingTemplatesSuspense,
   unwrapSuspenseData,
 } from "@/queries/hooks";
+import { MeetingTemplateType } from "@satyrsmc/shared/client";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 
@@ -28,7 +29,7 @@ export function TemplatesPanel() {
   const deleteTemplateMutation = useDeleteMeetingTemplate();
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
-  const [type, setType] = useState<"agenda" | "minutes">("agenda");
+  const [type, setType] = useState<MeetingTemplateType>(MeetingTemplateType.Agenda);
   const [content, setContent] = useState(EMPTY_DOC);
   const [saving, setSaving] = useState(false);
 
@@ -142,7 +143,7 @@ export function TemplatesPanel() {
             </div>
             <div className="space-y-2">
               <Label>Type</Label>
-              <Select value={type} onValueChange={(v) => setType(v as "agenda" | "minutes")}>
+              <Select value={type} onValueChange={(v) => setType(v as MeetingTemplateType)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

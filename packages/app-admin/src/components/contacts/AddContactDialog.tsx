@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateContact } from "@/queries/hooks";
 import { isValidPhoneNumber, normalizePhoneForStorage } from "@/lib/phone";
+import { ContactType } from "@satyrsmc/shared/client";
 import type { Contact } from "@satyrsmc/shared/client";
 
 interface AddContactDialogProps {
@@ -35,7 +36,7 @@ export function AddContactDialog({
   defaultHellenic,
 }: AddContactDialogProps) {
   const createContactMutation = useCreateContact();
-  const [type, setType] = useState<Contact["type"]>("person");
+  const [type, setType] = useState<Contact["type"]>(ContactType.Person);
   const [displayName, setDisplayName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -62,7 +63,7 @@ export function AddContactDialog({
   }, [open, defaultHellenic]);
 
   const reset = () => {
-    setType("person");
+    setType(ContactType.Person);
     setDisplayName("");
     setFirstName("");
     setLastName("");

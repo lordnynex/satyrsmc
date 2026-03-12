@@ -17,7 +17,8 @@ import {
   useMotionDelete,
 } from "@/queries/hooks";
 import { MemberChip } from "@/components/members/MemberChip";
-import type { MeetingMotion, MotionResult } from "@satyrsmc/shared/client";
+import { MotionResult } from "@satyrsmc/shared/client";
+import type { MeetingMotion } from "@satyrsmc/shared/client";
 
 interface MotionsCardProps {
   meetingId: string;
@@ -34,7 +35,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
   const [description, setDescription] = useState("");
   const [moverMemberId, setMoverMemberId] = useState("");
   const [seconderMemberId, setSeconderMemberId] = useState("");
-  const [result, setResult] = useState<MotionResult>("pass");
+  const [result, setResult] = useState<MotionResult>(MotionResult.Pass);
 
   const handleAdd = async () => {
     if (!moverMemberId || !seconderMemberId) return;
@@ -51,7 +52,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription("");
     setMoverMemberId("");
     setSeconderMemberId("");
-    setResult("pass");
+    setResult(MotionResult.Pass);
     setAdding(false);
   };
 
@@ -83,7 +84,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription(m.description ?? "");
     setMoverMemberId(m.mover_member_id ?? "");
     setSeconderMemberId(m.seconder_member_id ?? "");
-    setResult(m.result ?? "pass");
+    setResult(m.result ?? MotionResult.Pass);
   };
 
   const resetForm = () => {
@@ -92,7 +93,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription("");
     setMoverMemberId("");
     setSeconderMemberId("");
-    setResult("pass");
+    setResult(MotionResult.Pass);
   };
 
   const getMember = (id: string | null | undefined) =>

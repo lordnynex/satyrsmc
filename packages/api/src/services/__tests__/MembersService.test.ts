@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
+import { MemberPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { BAD_ID, MINIMAL_JPEG_BUFFER, createMember } from "./helpers";
 
 describe("MembersService", () => {
@@ -83,20 +84,20 @@ describe("MembersService", () => {
         name: "Photo Member",
         photo: MINIMAL_JPEG_BUFFER.toString("base64"),
       } as Record<string, unknown>);
-      const thumb = await api.members.getPhoto(m.id, "thumbnail");
-      const full = await api.members.getPhoto(m.id, "full");
+      const thumb = await api.members.getPhoto(m.id, MemberPhotoSize.Thumbnail);
+      const full = await api.members.getPhoto(m.id, MemberPhotoSize.Full);
       expect(thumb).toBeInstanceOf(Buffer);
       expect(full).toBeInstanceOf(Buffer);
     });
 
     test("getPhoto(badId) returns null", async () => {
-      const result = await api.members.getPhoto(BAD_ID, "full");
+      const result = await api.members.getPhoto(BAD_ID, MemberPhotoSize.Full);
       expect(result).toBeNull();
     });
 
     test("getPhoto(id) when no photo returns null", async () => {
       const m = await createMember(api, { name: "No Photo Member" });
-      const result = await api.members.getPhoto(m.id, "full");
+      const result = await api.members.getPhoto(m.id, MemberPhotoSize.Full);
       expect(result).toBeNull();
     });
   });

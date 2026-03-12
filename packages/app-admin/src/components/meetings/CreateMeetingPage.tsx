@@ -17,12 +17,13 @@ import {
   useCreateMeeting,
 } from "@/queries/hooks";
 import { ArrowLeft } from "lucide-react";
+import { MeetingTemplateType } from "@satyrsmc/shared/client";
 
 export function CreateMeetingPage() {
   const createMeetingMutation = useCreateMeeting();
   const navigate = useNavigate();
   const { data: meetings = [] } = useMeetingsOptional();
-  const { data: templates = [] } = useMeetingTemplatesOptional("agenda");
+  const { data: templates = [] } = useMeetingTemplatesOptional(MeetingTemplateType.Agenda);
 
   const [date, setDate] = useState("");
   const [meetingNumber, setMeetingNumber] = useState<number | "">("");

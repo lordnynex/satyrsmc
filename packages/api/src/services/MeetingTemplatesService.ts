@@ -21,7 +21,7 @@ export class MeetingTemplatesService {
     return {
       id: t.id,
       name: t.name,
-      type: t.type as "agenda" | "minutes",
+      type: t.type as MeetingTemplateType,
       document_id: t.documentId,
       content: doc?.content ?? EMPTY_DOC,
       created_at: toISOString(t.createdAt),
@@ -29,7 +29,7 @@ export class MeetingTemplatesService {
     };
   }
 
-  async list(type?: "agenda" | "minutes"): Promise<MeetingTemplateListOutput> {
+  async list(type?: MeetingTemplateType): Promise<MeetingTemplateListOutput> {
     const repo = this.ds.getRepository(MeetingTemplate);
     const findOptions: Parameters<typeof repo.find>[0] = {
       order: { name: "ASC" },

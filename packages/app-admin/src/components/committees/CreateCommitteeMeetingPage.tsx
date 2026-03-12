@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useMeetingTemplatesOptional, useCreateCommitteeMeeting } from "@/queries/hooks";
+import { MeetingTemplateType } from "@satyrsmc/shared/client";
 import { ArrowLeft } from "lucide-react";
 
 export function CreateCommitteeMeetingPage() {
@@ -20,7 +21,7 @@ export function CreateCommitteeMeetingPage() {
   const { id: committeeId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const committee = unwrapSuspenseData(useCommitteeSuspense(committeeId!))!;
-  const { data: templates = [] } = useMeetingTemplatesOptional("agenda");
+  const { data: templates = [] } = useMeetingTemplatesOptional(MeetingTemplateType.Agenda);
 
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [meetingNumber, setMeetingNumber] = useState<number | "">("");

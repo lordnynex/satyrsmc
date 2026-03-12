@@ -13,6 +13,7 @@ import {
 import { Plus, Trash2, FileCheck, Users } from "lucide-react";
 import { useMembersOptional, useContactsListFetcher } from "@/queries/hooks";
 import { MemberChipPopover } from "@/components/members/MemberChipPopover";
+import { ContactStatusFilter } from "@satyrsmc/shared/client";
 import type { EventAttendee, RideMemberAttendee, Contact, Member } from "@satyrsmc/shared/client";
 
 interface RideAttendeesCardProps {
@@ -59,7 +60,7 @@ export function RideAttendeesCard({
       setLoading(true);
       fetchContactsList({
         q: search || undefined,
-        status: "active",
+        status: ContactStatusFilter.Active,
         excludeDeceased: true,
         limit: 50,
       })

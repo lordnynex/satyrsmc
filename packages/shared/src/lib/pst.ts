@@ -5,6 +5,7 @@
 
 import type { PSTFolder } from "pst-extractor";
 import { PSTFile } from "pst-extractor";
+import { ContactType } from "./enums";
 import type { Contact, ContactEmail, ContactPhone, ContactAddress } from "../dto/admin/contact";
 
 /** Minimal interface for PST contact items (IPM.Contact) from getNextChild */
@@ -207,7 +208,7 @@ export function pstContactToPayload(contact: PstContactLike): PstContactPayload 
     }
   }
 
-  const type = company && !given && !surname ? "organization" : "person";
+  const type = company && !given && !surname ? ContactType.Organization : ContactType.Person;
 
   return {
     type,

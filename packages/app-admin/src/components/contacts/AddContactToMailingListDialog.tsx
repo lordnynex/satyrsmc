@@ -15,6 +15,7 @@ import {
   useMailingListAddAllContacts,
   useMailingListAddAllHellenics,
 } from "@/queries/hooks";
+import { ContactStatusFilter } from "@satyrsmc/shared/client";
 
 interface AddContactToMailingListDialogProps {
   open: boolean;
@@ -46,7 +47,7 @@ export function AddContactToMailingListDialog({
   const { data: contactsResult, isLoading: loading } = useContactsOptional(
     {
       q: debouncedSearch || undefined,
-      status: "active",
+      status: ContactStatusFilter.Active,
       excludeDeceased: true,
       limit: 50,
     },

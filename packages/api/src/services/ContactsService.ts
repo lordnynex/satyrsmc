@@ -29,6 +29,7 @@ import {
   Tag as TagEntity,
   ContactTag,
 } from "../entities";
+import { ContactPhotoType as ContactPhotoTypeEnum } from "@satyrsmc/shared/lib/enums";
 import type { ContactPhotoSize } from "@satyrsmc/shared/lib/enums";
 import { ImageService } from "./ImageService";
 import { uuid } from "./utils";
@@ -353,7 +354,7 @@ export class ContactsService {
   async addPhoto(
     contactId: string,
     imageBuffer: Buffer,
-    type: "profile" | "contact" = "contact",
+    type: ContactPhotoTypeEnum = ContactPhotoTypeEnum.Contact,
     setAsProfile = false,
   ): Promise<ContactPhotoType | null> {
     const contact = await this.ds
@@ -366,7 +367,7 @@ export class ContactsService {
     const thumbnailBlob = await ImageService.createThumbnail(photoBlob);
 
     const id = uuid();
-    const finalType = setAsProfile ? "profile" : type;
+    const finalType = setAsProfile ? ContactPhotoTypeEnum.Profile : type;
     const sortOrder = setAsProfile ? 0 : 999;
 
     if (setAsProfile) {

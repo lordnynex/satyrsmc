@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ContactType, ContactStatus, ConsentStatus } from "@satyrsmc/shared/client";
 import type { MailingBatchRecipient } from "@satyrsmc/shared/client";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import { formatDateTime } from "@/lib/date-utils";
@@ -31,17 +32,17 @@ function recipientToContact(
 ): Parameters<typeof contactsToVCardFileAsync>[0][number] {
   return {
     id: "",
-    type: "person",
-    status: "active",
+    type: ContactType.Person,
+    status: ContactStatus.Active,
     display_name: r.snapshot_name,
     first_name: null,
     last_name: null,
     organization_name: r.snapshot_organization,
     notes: null,
     how_we_know_them: null,
-    ok_to_email: "unknown",
-    ok_to_mail: "unknown",
-    ok_to_sms: "unknown",
+    ok_to_email: ConsentStatus.Unknown,
+    ok_to_mail: ConsentStatus.Unknown,
+    ok_to_sms: ConsentStatus.Unknown,
     do_not_contact: false,
     club_name: null,
     role: null,

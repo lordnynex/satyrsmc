@@ -9,15 +9,16 @@ import type {
   QrCodeListOutput,
   QrCodeUpdateOutput,
 } from "@satyrsmc/shared/dto/admin/qrCode";
+import { QrErrorCorrectionLevel, QrFormat } from "@satyrsmc/shared/lib/enums";
 
 const DEFAULT_CONFIG: Required<Omit<QrCodeConfig, "color">> & {
   color: { dark: string; light: string };
 } = {
-  errorCorrectionLevel: "M",
+  errorCorrectionLevel: QrErrorCorrectionLevel.M,
   width: 256,
   margin: 4,
   color: { dark: "#000000", light: "#ffffff" },
-  format: "png",
+  format: QrFormat.Png,
 };
 
 function mergeConfig(partial?: QrCodeConfig | null): QrCodeConfig {
@@ -35,14 +36,16 @@ function mergeConfig(partial?: QrCodeConfig | null): QrCodeConfig {
 }
 
 async function generateQrImage(url: string, config: QrCodeConfig): Promise<Buffer> {
+  const errorCorrectionLevel = (config.errorCorrectionLevel ??
+    "M") as QRCode.QRCodeErrorCorrectionLevel;
   const opts = {
-    errorCorrectionLevel: config.errorCorrectionLevel ?? "M",
+    errorCorrectionLevel,
     width: config.width ?? 256,
     margin: config.margin ?? 4,
     color: config.color ?? { dark: "#000000", light: "#ffffff" },
   };
 
-  if (config.format === "svg") {
+  if (config.format === QrFormat.Svg) {
     const svg = await QRCode.toString(url, {
       type: "svg",
       errorCorrectionLevel: opts.errorCorrectionLevel,

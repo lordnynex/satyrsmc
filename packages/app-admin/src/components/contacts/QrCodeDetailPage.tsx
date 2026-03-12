@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { QrErrorCorrectionLevel, QrFormat } from "@satyrsmc/shared/client";
 import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/client";
 
 const SIZE_PRESETS = [
@@ -30,11 +31,11 @@ const SIZE_PRESETS = [
 ];
 
 const DEFAULT_CONFIG: QrCodeConfig = {
-  errorCorrectionLevel: "M",
+  errorCorrectionLevel: QrErrorCorrectionLevel.M,
   width: 256,
   margin: 4,
   color: { dark: "#000000", light: "#ffffff" },
-  format: "png",
+  format: QrFormat.Png,
 };
 
 export function QrCodeDetailPage() {

@@ -1,5 +1,6 @@
 import type { TrpcClient } from "../trpc";
 import type { Member } from "@satyrsmc/shared/dto/admin/member";
+import type { MemberPhotoSize } from "../../lib/enums";
 
 export type CreateMemberBody = {
   name: string;
@@ -41,7 +42,7 @@ export class MembersApiClient {
   async getPhoto(id: string, size?: string): Promise<Uint8Array | null> {
     const b64 = await this.client.admin.members.getPhoto.query({
       id,
-      size: size as "thumbnail" | "medium" | "full",
+      size: size as MemberPhotoSize,
     });
     return b64 ? new Uint8Array(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))) : null;
   }

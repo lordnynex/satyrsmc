@@ -23,12 +23,8 @@ import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { MemberSelectCombobox } from "@/components/members/MemberSelectCombobox";
 import { ALL_MEMBERS_ID } from "@satyrsmc/shared/lib/constants";
 import { useMembersOptional } from "@/queries/hooks";
-import type {
-  Event,
-  EventAssignment,
-  EventAssignmentCategory,
-  Member,
-} from "@satyrsmc/shared/client";
+import { EventAssignmentCategory } from "@satyrsmc/shared/client";
+import type { Event, EventAssignment, Member } from "@satyrsmc/shared/client";
 
 const CATEGORY_LABELS: Record<EventAssignmentCategory, string> = {
   planning: "Event Planning",
@@ -54,7 +50,9 @@ export function EventAssignmentsCard({
   const [addRoleOpen, setAddRoleOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState<string | null>(null);
   const [roleName, setRoleName] = useState("");
-  const [roleCategory, setRoleCategory] = useState<EventAssignmentCategory>("planning");
+  const [roleCategory, setRoleCategory] = useState<EventAssignmentCategory>(
+    EventAssignmentCategory.Planning,
+  );
 
   const assignments = event.assignments ?? [];
   const planning = assignments
@@ -68,7 +66,7 @@ export function EventAssignmentsCard({
     if (!roleName.trim()) return;
     await onCreateRole({ name: roleName.trim(), category: roleCategory });
     setRoleName("");
-    setRoleCategory("planning");
+    setRoleCategory(EventAssignmentCategory.Planning);
     setAddRoleOpen(false);
   };
 

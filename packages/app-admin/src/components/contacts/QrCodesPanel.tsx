@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { QrErrorCorrectionLevel, QrFormat } from "@satyrsmc/shared/client";
 import type { QrCode, QrCodeConfig } from "@satyrsmc/shared/client";
 import {
   useQrCodesSuspense,
@@ -31,11 +32,11 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Pencil, Trash2, Download, ExternalLink } from "lucide-react";
 
 const DEFAULT_CONFIG: QrCodeConfig = {
-  errorCorrectionLevel: "M",
+  errorCorrectionLevel: QrErrorCorrectionLevel.M,
   width: 256,
   margin: 4,
   color: { dark: "#000000", light: "#ffffff" },
-  format: "png",
+  format: QrFormat.Png,
 };
 
 export function QrCodesPanel() {
@@ -378,7 +379,7 @@ function QrCodeForm({
           <Select
             value={config.errorCorrectionLevel ?? "M"}
             onValueChange={(v) =>
-              setConfig({ ...config, errorCorrectionLevel: v as "L" | "M" | "Q" | "H" })
+              setConfig({ ...config, errorCorrectionLevel: v as QrErrorCorrectionLevel })
             }
           >
             <SelectTrigger>
@@ -396,7 +397,7 @@ function QrCodeForm({
           <Label>Format</Label>
           <Select
             value={config.format ?? "png"}
-            onValueChange={(v) => setConfig({ ...config, format: v as "png" | "svg" })}
+            onValueChange={(v) => setConfig({ ...config, format: v as QrFormat })}
           >
             <SelectTrigger>
               <SelectValue />

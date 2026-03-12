@@ -4,7 +4,8 @@ import { useCommitteesSuspense, unwrapSuspenseData } from "@/queries/hooks";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { formatDateOnly } from "@/lib/date-utils";
-import type { CommitteeSummary, CommitteeStatus } from "@satyrsmc/shared/client";
+import { CommitteeStatus } from "@satyrsmc/shared/client";
+import type { CommitteeSummary } from "@satyrsmc/shared/client";
 
 function CommitteeRow({ c }: { c: CommitteeSummary }) {
   return (
@@ -71,14 +72,14 @@ export function CommitteesPanel() {
         <Button
           variant={filter === "active" ? "secondary" : "ghost"}
           size="sm"
-          onClick={() => setFilter("active")}
+          onClick={() => setFilter(CommitteeStatus.Active)}
         >
           Active
         </Button>
         <Button
           variant={filter === "closed" ? "secondary" : "ghost"}
           size="sm"
-          onClick={() => setFilter("closed")}
+          onClick={() => setFilter(CommitteeStatus.Closed)}
         >
           Closed
         </Button>

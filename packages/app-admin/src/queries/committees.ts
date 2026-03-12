@@ -2,9 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
 import { queryKeys } from "@/queries/keys";
+import type { CommitteeSortField } from "@satyrsmc/shared/client";
 
 /** Data: CommitteeSummary[] */
-export function useCommitteesSuspense(sort?: "formed_date" | "name") {
+export function useCommitteesSuspense(sort?: CommitteeSortField) {
   return trpc.admin.committees.list.useSuspenseQuery(sort ? { sort } : undefined);
 }
 

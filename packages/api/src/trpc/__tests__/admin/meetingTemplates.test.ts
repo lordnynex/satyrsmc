@@ -5,6 +5,7 @@
 
 import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
+import { MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
 import { BAD_ID, createMeetingTemplate } from "../helpers";
@@ -20,7 +21,7 @@ describe("admin.meetingTemplates", () => {
     test("returns created templates", async () => {
       const tpl = await createMeetingTemplate(harness.api, {
         name: "List Tpl",
-        type: "agenda",
+        type: MeetingTemplateType.Agenda,
         content: "",
       });
       const result = await harness.caller.admin.meetingTemplates.list();
@@ -29,7 +30,9 @@ describe("admin.meetingTemplates", () => {
     });
 
     test("filters by type when provided", async () => {
-      const result = await harness.caller.admin.meetingTemplates.list({ type: "agenda" });
+      const result = await harness.caller.admin.meetingTemplates.list({
+        type: MeetingTemplateType.Agenda,
+      });
       expect(Array.isArray(result)).toBe(true);
     });
   });
@@ -38,7 +41,7 @@ describe("admin.meetingTemplates", () => {
     test("returns template by id", async () => {
       const tpl = await createMeetingTemplate(harness.api, {
         name: "Get Tpl",
-        type: "agenda",
+        type: MeetingTemplateType.Agenda,
         content: "C",
       });
       const result = await harness.caller.admin.meetingTemplates.get({ id: tpl.id });
@@ -59,7 +62,7 @@ describe("admin.meetingTemplates", () => {
     test("creates template and returns it", async () => {
       const result = await harness.caller.admin.meetingTemplates.create({
         name: "New Tpl",
-        type: "minutes",
+        type: MeetingTemplateType.Minutes,
         content: "Content",
       });
       expect(result.id).toBeDefined();
@@ -71,7 +74,7 @@ describe("admin.meetingTemplates", () => {
     test("updates template and returns it", async () => {
       const tpl = await createMeetingTemplate(harness.api, {
         name: "To Update",
-        type: "agenda",
+        type: MeetingTemplateType.Agenda,
         content: "",
       });
       const result = await harness.caller.admin.meetingTemplates.update({
@@ -95,7 +98,7 @@ describe("admin.meetingTemplates", () => {
     test("deletes template and returns ok", async () => {
       const tpl = await createMeetingTemplate(harness.api, {
         name: "To Delete",
-        type: "agenda",
+        type: MeetingTemplateType.Agenda,
         content: "",
       });
       const result = await harness.caller.admin.meetingTemplates.delete({ id: tpl.id });

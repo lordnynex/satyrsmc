@@ -1,14 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
-import type { MotionResult } from "@satyrsmc/shared/client";
+import type { MotionResult, MeetingSortField } from "@satyrsmc/shared/client";
 
 function useTrpcUtils() {
   return trpc.useUtils();
 }
 
 /** Data: MeetingSummary[] */
-export function useMeetingsSuspense(sort?: "date" | "meeting_number") {
+export function useMeetingsSuspense(sort?: MeetingSortField) {
   return trpc.admin.meetings.list.useSuspenseQuery(sort ? { sort } : undefined);
 }
 
@@ -18,7 +18,7 @@ export function useMeetingSuspense(id: string) {
 }
 
 /** Data: MeetingSummary[] */
-export function useMeetingsOptional(sort?: "date" | "meeting_number") {
+export function useMeetingsOptional(sort?: MeetingSortField) {
   return trpc.admin.meetings.list.useQuery(sort ? { sort } : undefined);
 }
 

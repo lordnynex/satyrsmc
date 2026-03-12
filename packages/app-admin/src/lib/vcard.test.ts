@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { parseVCardFile, contactToVCard4, parsedToContactPayload } from "./vcard";
+import { ContactType, ContactStatus, ConsentStatus } from "@satyrsmc/shared/client";
 import type { Contact } from "@satyrsmc/shared/client";
 
 describe("vCard parsing", () => {
@@ -60,17 +61,17 @@ describe("vCard export round-trip", () => {
   test("contactToVCard4 produces valid vCard 4.0", () => {
     const contact = {
       id: "test-1",
-      type: "person" as const,
-      status: "active" as const,
+      type: ContactType.Person,
+      status: ContactStatus.Active,
       display_name: "Test User",
       first_name: "Test",
       last_name: "User",
       organization_name: null,
       notes: null,
       how_we_know_them: null,
-      ok_to_email: "yes" as const,
-      ok_to_mail: "yes" as const,
-      ok_to_sms: "unknown" as const,
+      ok_to_email: ConsentStatus.Yes,
+      ok_to_mail: ConsentStatus.Yes,
+      ok_to_sms: ConsentStatus.Unknown,
       do_not_contact: false,
       club_name: null,
       role: null,
@@ -122,13 +123,13 @@ END:VCARD`;
     const contact = {
       ...payload,
       id: "rt-1",
-      type: "person" as const,
+      type: ContactType.Person,
       uid: "rt-1@badger",
-      status: "active" as const,
+      status: ContactStatus.Active,
       how_we_know_them: null,
-      ok_to_email: "unknown" as const,
-      ok_to_mail: "unknown" as const,
-      ok_to_sms: "unknown" as const,
+      ok_to_email: ConsentStatus.Unknown,
+      ok_to_mail: ConsentStatus.Unknown,
+      ok_to_sms: ConsentStatus.Unknown,
       do_not_contact: false,
       club_name: null,
       role: null,

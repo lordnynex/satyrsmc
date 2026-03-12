@@ -5,6 +5,12 @@
 
 import type { TRPCError } from "@trpc/server";
 import { describe, test, expect, beforeAll } from "bun:test";
+import {
+  ContactStatus,
+  ContactStatusFilter,
+  ContactType,
+  SortDirection,
+} from "@satyrsmc/shared/lib/enums";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";
 import { BAD_ID, createContact } from "../helpers";
@@ -29,9 +35,9 @@ describe("admin.contacts", () => {
     test("accepts optional filters (q, status, sort)", async () => {
       const result = await harness.caller.admin.contacts.list({
         q: "test",
-        status: "active",
+        status: ContactStatusFilter.Active,
         sort: "name",
-        sortDir: "asc",
+        sortDir: SortDirection.Asc,
       });
       expect(result).toBeDefined();
       expect(Array.isArray(result.contacts)).toBe(true);
@@ -59,7 +65,7 @@ describe("admin.contacts", () => {
     test("creates contact and returns it", async () => {
       const result = await harness.caller.admin.contacts.create({
         display_name: "New Contact",
-        type: "person",
+        type: ContactType.Person,
         first_name: "New",
         last_name: "Contact",
         emails: [],
@@ -68,7 +74,7 @@ describe("admin.contacts", () => {
       });
       expect(result.id).toBeDefined();
       expect(result.display_name).toBe("New Contact");
-      expect(result.type).toBe("person");
+      expect(result.type).toBe(ContactType.Person);
     });
   });
 
@@ -100,7 +106,7 @@ describe("admin.contacts", () => {
       const c = await createContact(harness.api, { display_name: "To Delete" });
       const result = await harness.caller.admin.contacts.delete({ id: c.id });
       expect(result.ok).toBe(true);
-      const list = await harness.caller.admin.contacts.list({ status: "active" });
+      const list = await harness.caller.admin.contacts.list({ status: ContactStatusFilter.Active });
       expect(list.contacts.some((x) => x.id === c.id)).toBe(false);
     });
   });
@@ -112,7 +118,7 @@ describe("admin.contacts", () => {
       const result = await harness.caller.admin.contacts.restore({ id: c.id });
       expect(result).toBeDefined();
       const got = await harness.caller.admin.contacts.get({ id: c.id });
-      expect(got.status).toBe("active");
+      expect(got.status).toBe(ContactStatus.Active);
     });
   });
 

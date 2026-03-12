@@ -6,7 +6,7 @@ import { useEventsSuspense, useInvalidateQueries, unwrapSuspenseData } from "@/q
 import { EVENT_TYPE_LABELS } from "@/lib/event-constants";
 import { Calendar, ChevronRight, BarChart3, Plus } from "lucide-react";
 import { AddEventDialog } from "./AddEventDialog";
-import type { EventType } from "@satyrsmc/shared/client";
+import { EventType } from "@satyrsmc/shared/client";
 import { formatDateOnly } from "@/lib/date-utils";
 
 interface EventsPanelProps {
@@ -56,7 +56,7 @@ export function EventsPanel({ type }: EventsPanelProps) {
         open={addOpen}
         onOpenChange={setAddOpen}
         onSuccess={handleCreateSuccess}
-        defaultEventType={type ?? "badger"}
+        defaultEventType={type ?? EventType.Badger}
       />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {events.map((e) => (

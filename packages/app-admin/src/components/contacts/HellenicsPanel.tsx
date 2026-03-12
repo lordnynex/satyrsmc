@@ -22,6 +22,7 @@ import { Plus, Search, Download, List } from "lucide-react";
 import { AddContactDialog } from "./AddContactDialog";
 import { AddToMailingListDialog } from "./AddToMailingListDialog";
 import { ContactDirectoryTable } from "./ContactDirectoryTable";
+import { ContactStatusFilter, SortDirection } from "@satyrsmc/shared/client";
 import type { ContactSearchParams } from "@satyrsmc/shared/client";
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -51,10 +52,10 @@ export function HellenicsPanel() {
 
   const params: ContactSearchParams = {
     q: debouncedSearch || undefined,
-    status: "active",
+    status: ContactStatusFilter.Active,
     hellenic: true,
     sort: "name",
-    sortDir: "asc",
+    sortDir: SortDirection.Asc,
     page,
     limit: 25,
   };
