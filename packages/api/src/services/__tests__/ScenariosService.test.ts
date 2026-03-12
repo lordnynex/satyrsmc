@@ -42,10 +42,26 @@ describe("ScenariosService", () => {
 
   describe("create", () => {
     test("creates with inputs", async () => {
-      const s = await createScenario(api, { name: "With Inputs", inputs: { foo: 1 } });
+      const customInputs = {
+        profitTarget: 5000,
+        staffCount: 10,
+        maxOccupancy: 100,
+        complimentaryTickets: 5,
+        dayPassPrice: 75,
+        dayPassesSold: 10,
+        ticketPrices: {
+          proposedPrice1: 250,
+          proposedPrice2: 300,
+          proposedPrice3: 350,
+          staffPrice1: 175,
+          staffPrice2: 150,
+          staffPrice3: 125,
+        },
+      };
+      const s = await createScenario(api, { name: "With Inputs", inputs: customInputs });
       if (!s) throw new Error("createScenario failed");
       expect(s.id).toBeDefined();
-      expect(s.inputs).toEqual({ foo: 1 });
+      expect(s.inputs).toEqual(customInputs);
     });
 
     test("creates without inputs (default)", async () => {

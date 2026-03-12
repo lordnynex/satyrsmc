@@ -3,19 +3,21 @@ import type { DbLike } from "../db/dbAdapter";
 import { Scenario } from "../entities";
 import { uuid, DEFAULT_SCENARIO_INPUTS } from "./utils";
 import { toISOString } from "../lib/date";
-import type {
-  ScenarioCreateOutput,
-  ScenarioDeleteOutput,
-  ScenarioGetOutput,
-  ScenarioListOutput,
-  ScenarioUpdateOutput,
+import {
+  ScenarioInputsSchema,
+  type ScenarioInputs,
+  type ScenarioCreateOutput,
+  type ScenarioDeleteOutput,
+  type ScenarioGetOutput,
+  type ScenarioListOutput,
+  type ScenarioUpdateOutput,
 } from "@satyrsmc/shared/dto/admin/scenario";
 
-function safeParseInputs(raw: string): Record<string, unknown> {
+function safeParseInputs(raw: string): ScenarioInputs {
   try {
-    return JSON.parse(raw) as Record<string, unknown>;
+    return ScenarioInputsSchema.parse(JSON.parse(raw));
   } catch {
-    return {};
+    return DEFAULT_SCENARIO_INPUTS as ScenarioInputs;
   }
 }
 
@@ -53,7 +55,7 @@ export class ScenariosService {
   async create(body: {
     name: string;
     description?: string;
-    inputs?: Record<string, unknown>;
+    inputs?: ScenarioInputs;
   }): Promise<ScenarioCreateOutput> {
     const id = uuid();
     const inputs = body.inputs ?? DEFAULT_SCENARIO_INPUTS;
@@ -68,7 +70,7 @@ export class ScenariosService {
 
   async update(
     id: string,
-    body: { name?: string; description?: string; inputs?: Record<string, unknown> },
+    body: { name?: string; description?: string; inputs?: ScenarioInputs },
   ): Promise<ScenarioUpdateOutput | null> {
     /* Original: SELECT * FROM scenarios WHERE id = ? */
     const existing = await this.ds.getRepository(Scenario).findOne({ where: { id } });
