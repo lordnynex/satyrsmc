@@ -81,11 +81,13 @@ export function WebsiteEventsFeedPanel() {
                 Public feed preview ({feedEvents.length} events)
               </p>
               <ul className="text-sm text-muted-foreground list-disc list-inside">
-                {(feedEvents as { name: string; year?: number }[]).slice(0, 5).map((e) => (
-                  <li key={`${e.name}-${e.year ?? "no-year"}`}>
-                    {e.name} {e.year != null ? `(${e.year})` : ""}
-                  </li>
-                ))}
+                {(feedEvents as { id: string; name: string; year?: number }[])
+                  .slice(0, 5)
+                  .map((e) => (
+                    <li key={e.id}>
+                      {e.name} {e.year != null ? `(${e.year})` : ""}
+                    </li>
+                  ))}
                 {feedEvents.length > 5 && <li>…and {feedEvents.length - 5} more</li>}
               </ul>
             </div>
