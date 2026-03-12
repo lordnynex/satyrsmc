@@ -70,14 +70,14 @@ export function CommitteesPanel() {
           All
         </Button>
         <Button
-          variant={filter === "active" ? "secondary" : "ghost"}
+          variant={filter === CommitteeStatus.Active ? "secondary" : "ghost"}
           size="sm"
           onClick={() => setFilter(CommitteeStatus.Active)}
         >
           Active
         </Button>
         <Button
-          variant={filter === "closed" ? "secondary" : "ghost"}
+          variant={filter === CommitteeStatus.Closed ? "secondary" : "ghost"}
           size="sm"
           onClick={() => setFilter(CommitteeStatus.Closed)}
         >

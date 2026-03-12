@@ -18,8 +18,8 @@ export function WebsiteMenusPanel() {
   useEffect(() => {
     const list = menus[selectedKey] ?? [];
     setItems(
-      list.map((it, i) => ({
-        id: `server-${i}`,
+      list.map((it) => ({
+        id: it.id,
         label: it.label,
         url: it.url ?? "",
         internal_ref: it.internal_ref ?? "",
