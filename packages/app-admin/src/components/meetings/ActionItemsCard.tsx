@@ -84,7 +84,7 @@ export function ActionItemsCard({ meetingId, actionItems }: ActionItemsCardProps
 
   const startEdit = (a: MeetingActionItem) => {
     setEditingId(a.id);
-    setDescription(a.description);
+    setDescription(a.description ?? "");
     setAssigneeMemberId(a.assignee_member_id ?? "");
     setDueDate(toDateOnly(a.due_date) || "");
   };

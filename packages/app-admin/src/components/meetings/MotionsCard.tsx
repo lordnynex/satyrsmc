@@ -83,7 +83,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setDescription(m.description ?? "");
     setMoverMemberId(m.mover_member_id ?? "");
     setSeconderMemberId(m.seconder_member_id ?? "");
-    setResult(m.result);
+    setResult(m.result ?? "pass");
   };
 
   const resetForm = () => {
@@ -95,8 +95,9 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
     setResult("pass");
   };
 
-  const getMember = (id: string | null) => (id ? (members.find((x) => x.id === id) ?? null) : null);
-  const moverName = (id: string | null) =>
+  const getMember = (id: string | null | undefined) =>
+    id ? (members.find((x) => x.id === id) ?? null) : null;
+  const moverName = (id: string | null | undefined) =>
     id ? (members.find((x) => x.id === id)?.name ?? id) : "—";
   const canSaveAdd = moverMemberId && seconderMemberId && moverMemberId !== seconderMemberId;
   const canSaveEdit =
@@ -224,7 +225,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
                           <MemberChip
                             memberId={mover.id}
                             name={mover.name}
-                            photo={mover.photo_thumbnail_url}
+                            photo={mover.photo_thumbnail_url ?? null}
                           />
                         ) : (
                           <span>{m.mover_name ?? moverName(m.mover_member_id)}</span>
@@ -237,7 +238,7 @@ export function MotionsCard({ meetingId, motions }: MotionsCardProps) {
                           <MemberChip
                             memberId={seconder.id}
                             name={seconder.name}
-                            photo={seconder.photo_thumbnail_url}
+                            photo={seconder.photo_thumbnail_url ?? null}
                           />
                         ) : (
                           <span>{m.seconder_name ?? moverName(m.seconder_member_id)}</span>

@@ -138,7 +138,7 @@ export const MeetingTemplateGetInputSchema = z.object({ id: z.string() });
 
 export const MeetingTemplateCreateInputSchema = z.object({
   name: z.string(),
-  type: z.string(),
+  type: z.enum(MEETING_TEMPLATE_TYPES),
   content: z.string(),
 });
 

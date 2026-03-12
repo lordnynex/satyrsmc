@@ -57,7 +57,7 @@ export function OldBusinessPanel() {
 
   const handleUpdate = async (ob: OldBusinessItemWithMeeting) => {
     const trimmed = description.trim();
-    if (!trimmed) return;
+    if (!trimmed || !ob.meeting_id) return;
     setSaving(true);
     try {
       await updateMutation.mutateAsync({
@@ -73,6 +73,7 @@ export function OldBusinessPanel() {
   };
 
   const handleClose = async (ob: OldBusinessItemWithMeeting) => {
+    if (!ob.meeting_id) return;
     await updateMutation.mutateAsync({
       meetingId: ob.meeting_id,
       id: ob.id,
@@ -81,13 +82,14 @@ export function OldBusinessPanel() {
   };
 
   const handleDelete = async (ob: OldBusinessItemWithMeeting) => {
+    if (!ob.meeting_id) return;
     if (!confirm("Delete this open business item?")) return;
     await deleteMutation.mutateAsync({ meetingId: ob.meeting_id, id: ob.id });
   };
 
   const startEdit = (ob: OldBusinessItemWithMeeting) => {
     setEditingId(ob.id);
-    setDescription(ob.description);
+    setDescription(ob.description ?? "");
   };
 
   const meetingLabel = (m: { id: string; meeting_number: number; date: string }) =>

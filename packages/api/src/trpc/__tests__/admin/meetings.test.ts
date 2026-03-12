@@ -20,7 +20,7 @@ describe("admin.meetings", () => {
 
   describe("list", () => {
     test("returns created meetings", async () => {
-      const m = await createMeeting(harness.api, { date: "2025-01-15", meeting_number: 1 });
+      const m = (await createMeeting(harness.api, { date: "2025-01-15", meeting_number: 1 }))!;
       const result = await harness.caller.admin.meetings.list();
       expect(Array.isArray(result)).toBe(true);
       expect(result.some((x) => x.id === m.id)).toBe(true);
@@ -29,7 +29,7 @@ describe("admin.meetings", () => {
 
   describe("get", () => {
     test("returns meeting by id", async () => {
-      const m = await createMeeting(harness.api, { date: "2025-02-01", meeting_number: 2 });
+      const m = (await createMeeting(harness.api, { date: "2025-02-01", meeting_number: 2 }))!;
       const result = await harness.caller.admin.meetings.get({ id: m.id });
       expect(result.id).toBe(m.id);
     });
@@ -56,7 +56,7 @@ describe("admin.meetings", () => {
 
   describe("update", () => {
     test("updates meeting and returns it", async () => {
-      const m = await createMeeting(harness.api, { date: "2025-04-01", meeting_number: 1 });
+      const m = (await createMeeting(harness.api, { date: "2025-04-01", meeting_number: 1 }))!;
       const result = await harness.caller.admin.meetings.update({
         id: m.id,
         location: "Hall",
@@ -75,7 +75,7 @@ describe("admin.meetings", () => {
 
   describe("delete", () => {
     test("deletes meeting and returns", async () => {
-      const m = await createMeeting(harness.api, { date: "2025-05-01", meeting_number: 1 });
+      const m = (await createMeeting(harness.api, { date: "2025-05-01", meeting_number: 1 }))!;
       await harness.caller.admin.meetings.delete({ id: m.id });
       const list = await harness.caller.admin.meetings.list();
       expect(list.some((x) => x.id === m.id)).toBe(false);
@@ -100,9 +100,12 @@ describe("admin.meetings", () => {
 
   describe("createMotion, updateMotion, deleteMotion", () => {
     test("full motion crud", async () => {
-      const meeting = await createMeeting(harness.api, { date: "2025-06-01", meeting_number: 1 });
-      const mover = await createMember(harness.api, { name: "Mover" });
-      const seconder = await createMember(harness.api, { name: "Seconder" });
+      const meeting = (await createMeeting(harness.api, {
+        date: "2025-06-01",
+        meeting_number: 1,
+      }))!;
+      const mover = (await createMember(harness.api, { name: "Mover" }))!;
+      const seconder = (await createMember(harness.api, { name: "Seconder" }))!;
       const created = await harness.caller.admin.meetings.createMotion({
         meetingId: meeting.id,
         result: "pass",
@@ -125,7 +128,10 @@ describe("admin.meetings", () => {
 
   describe("createActionItem, updateActionItem, deleteActionItem", () => {
     test("full action item crud", async () => {
-      const meeting = await createMeeting(harness.api, { date: "2025-07-01", meeting_number: 1 });
+      const meeting = (await createMeeting(harness.api, {
+        date: "2025-07-01",
+        meeting_number: 1,
+      }))!;
       const created = await harness.caller.admin.meetings.createActionItem({
         meetingId: meeting.id,
         description: "Do something",
@@ -146,7 +152,10 @@ describe("admin.meetings", () => {
 
   describe("createOldBusiness, updateOldBusiness, deleteOldBusiness", () => {
     test("full old business crud", async () => {
-      const meeting = await createMeeting(harness.api, { date: "2025-08-01", meeting_number: 1 });
+      const meeting = (await createMeeting(harness.api, {
+        date: "2025-08-01",
+        meeting_number: 1,
+      }))!;
       const created = await harness.caller.admin.meetings.createOldBusiness({
         meetingId: meeting.id,
         description: "Old item",

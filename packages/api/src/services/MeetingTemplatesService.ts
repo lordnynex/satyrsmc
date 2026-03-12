@@ -1,6 +1,7 @@
 import { In } from "typeorm";
 import type { DataSource } from "typeorm";
 import { Document, MeetingTemplate } from "../entities";
+import type { MeetingTemplateType } from "@satyrsmc/shared/lib/enums";
 import { uuid } from "./utils";
 import { toISOString } from "../lib/date";
 import type {
@@ -57,7 +58,7 @@ export class MeetingTemplatesService {
 
   async create(body: {
     name: string;
-    type: string;
+    type: MeetingTemplateType;
     content: string;
   }): Promise<MeetingTemplateCreateOutput> {
     const now = new Date().toISOString();
@@ -88,7 +89,7 @@ export class MeetingTemplatesService {
     if (!template) return null;
     const updates: Partial<MeetingTemplate> = {};
     if (body.name !== undefined) updates.name = body.name as string;
-    if (body.type !== undefined) updates.type = body.type as string;
+    if (body.type !== undefined) updates.type = body.type as MeetingTemplateType;
     updates.updatedAt = new Date();
     await this.ds.getRepository(MeetingTemplate).update(id, updates);
     const updated = await this.ds.getRepository(MeetingTemplate).findOne({ where: { id } });

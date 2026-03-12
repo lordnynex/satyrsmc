@@ -53,14 +53,14 @@ export function CommitteeDetailPage() {
   const [name, setName] = useState(committee.name);
   const [description, setDescription] = useState(committee.description ?? "");
   const [purpose, setPurpose] = useState(committee.purpose ?? "");
-  const [formedDate, setFormedDate] = useState(committee.formed_date);
+  const [formedDate, setFormedDate] = useState(committee.formed_date?.toString() ?? "");
   const [closedDate, setClosedDate] = useState(committee.closed_date ?? "");
   const [chairpersonMemberId, setChairpersonMemberId] = useState(
     committee.chairperson_member_id ?? "",
   );
-  const [status, setStatus] = useState(committee.status);
+  const [status, setStatus] = useState<string>(committee.status ?? "active");
 
-  const memberIdsInCommittee = new Set(committee.members.map((m) => m.member_id));
+  const memberIdsInCommittee = new Set((committee.members ?? []).map((m) => m.member_id));
 
   const handleSave = async () => {
     setSaving(true);
@@ -87,10 +87,10 @@ export function CommitteeDetailPage() {
     setName(committee.name);
     setDescription(committee.description ?? "");
     setPurpose(committee.purpose ?? "");
-    setFormedDate(committee.formed_date);
+    setFormedDate(committee.formed_date?.toString() ?? "");
     setClosedDate(committee.closed_date ?? "");
     setChairpersonMemberId(committee.chairperson_member_id ?? "");
-    setStatus(committee.status);
+    setStatus(committee.status ?? "active");
     setEditing(false);
   };
 
@@ -193,7 +193,7 @@ export function CommitteeDetailPage() {
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                 <h1 className="text-2xl font-semibold">{committee.name}</h1>
                 <span className="text-muted-foreground">
-                  Formed {formatDateOnly(committee.formed_date)}
+                  Formed {formatDateOnly(committee.formed_date?.toString() ?? "")}
                 </span>
                 {committee.closed_date && (
                   <span className="text-muted-foreground">
@@ -249,8 +249,8 @@ export function CommitteeDetailPage() {
         <CardContent>
           {(() => {
             const allMembersList = members as Member[];
-            const memberIdsInList = new Set(committee.members.map((cm) => cm.member_id));
-            const membersFromCommittee = committee.members
+            const memberIdsInList = new Set((committee.members ?? []).map((cm) => cm.member_id));
+            const membersFromCommittee = (committee.members ?? [])
               .map((cm) => allMembersList.find((m) => m.id === cm.member_id))
               .filter((m): m is Member => m != null);
             const chairId = committee.chairperson_member_id;
@@ -309,7 +309,7 @@ export function CommitteeDetailPage() {
           )}
         </CardHeader>
         <CardContent>
-          {committee.meetings.length === 0 ? (
+          {(committee.meetings ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">No meetings yet.</p>
           ) : (
             <table className="w-full text-sm">
@@ -322,7 +322,7 @@ export function CommitteeDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {committee.meetings.map((m) => (
+                {(committee.meetings ?? []).map((m) => (
                   <tr key={m.id} className="border-b last:border-0">
                     <td className="py-2">
                       <Link
@@ -330,7 +330,7 @@ export function CommitteeDetailPage() {
                         className="flex items-center gap-2 text-primary hover:underline"
                       >
                         <Calendar className="size-4" />
-                        {formatDateOnly(m.date)}
+                        {formatDateOnly(m.date?.toString() ?? "")}
                       </Link>
                     </td>
                     <td className="py-2">{m.meeting_number}</td>

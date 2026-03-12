@@ -79,6 +79,8 @@ function MailingBatchContent({ batchId }: { batchId: string }) {
   const [pdfFontSize, setPdfFontSize] = useState(10);
   const [pdfIncludeOrg, setPdfIncludeOrg] = useState(false);
 
+  if (!batch) return null;
+
   const handleExportVCard = async () => {
     if (!batch?.recipients?.length) return;
     const contacts = batch.recipients.map(recipientToContact);

@@ -26,8 +26,23 @@ function BudgetScenarioListsSync({ children }: { children: ReactNode }) {
   const isProjections = location.pathname === PROJECTIONS_PATH;
 
   useEffect(() => {
-    dispatch({ type: "SET_BUDGETS", payload: budgets });
-    dispatch({ type: "SET_SCENARIOS", payload: scenarios });
+    dispatch({
+      type: "SET_BUDGETS",
+      payload: budgets.map((b) => ({
+        id: b.id,
+        name: b.name,
+        year: b.year,
+        description: b.description ?? null,
+      })),
+    });
+    dispatch({
+      type: "SET_SCENARIOS",
+      payload: scenarios.map((s) => ({
+        id: s.id,
+        name: s.name,
+        description: s.description ?? null,
+      })),
+    });
   }, [budgets, scenarios, dispatch]);
 
   // Sync URL params to selection when on budget/:id or scenarios/:id

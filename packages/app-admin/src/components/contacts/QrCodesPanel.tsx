@@ -206,7 +206,7 @@ function CreateQrCodeDialog({
   const createMutation = useCreateQrCode();
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const [config, setConfig] = useState<QrCodeConfig>({ ...DEFAULT_CONFIG });
+  const [config, setConfig] = useState<NonNullable<QrCodeConfig>>({ ...DEFAULT_CONFIG });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -277,7 +277,9 @@ function EditQrCodeDialog({
   const updateMutation = useUpdateQrCode();
   const [name, setName] = useState(qr.name ?? "");
   const [url, setUrl] = useState(qr.url);
-  const [config, setConfig] = useState<QrCodeConfig>(qr.config ?? { ...DEFAULT_CONFIG });
+  const [config, setConfig] = useState<NonNullable<QrCodeConfig>>(
+    qr.config ?? { ...DEFAULT_CONFIG },
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -347,8 +349,8 @@ function QrCodeForm({
   setName: (v: string) => void;
   url: string;
   setUrl: (v: string) => void;
-  config: QrCodeConfig;
-  setConfig: (c: QrCodeConfig) => void;
+  config: NonNullable<QrCodeConfig>;
+  setConfig: (c: NonNullable<QrCodeConfig>) => void;
   error: string | null;
 }) {
   return (

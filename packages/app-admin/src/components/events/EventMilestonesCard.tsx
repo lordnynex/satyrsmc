@@ -77,10 +77,12 @@ export function EventMilestonesCard({
 
   const openEdit = (m: EventPlanningMilestone) => {
     setEditingId(m.id);
-    setMilestoneMonth(m.month);
-    setMilestoneYear(m.year);
-    setMilestoneDesc(m.description);
-    setMilestoneDueDate(toDateOnly(m.due_date) || getLastDayOfMonth(m.year, m.month));
+    setMilestoneMonth(m.month ?? 1);
+    setMilestoneYear(m.year ?? new Date().getFullYear());
+    setMilestoneDesc(m.description ?? "");
+    setMilestoneDueDate(
+      toDateOnly(m.due_date) || getLastDayOfMonth(m.year ?? new Date().getFullYear(), m.month ?? 1),
+    );
     setOpen(true);
   };
 
@@ -234,7 +236,9 @@ export function EventMilestonesCard({
                                             memberId={mm.member.id}
                                             name={mm.member.name}
                                             photo={
-                                              mm.member.photo_thumbnail_url ?? mm.member.photo_url
+                                              mm.member.photo_thumbnail_url ??
+                                              mm.member.photo_url ??
+                                              null
                                             }
                                             onRemove={() => onRemoveMember(m.id, mm.member_id)}
                                             removeContextLabel="milestone"

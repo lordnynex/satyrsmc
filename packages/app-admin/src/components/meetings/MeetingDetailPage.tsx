@@ -450,7 +450,7 @@ export function MeetingDetailPage() {
           <CollapsibleContent>
             <div className="border-t px-3 py-2">
               <RichDocumentEditor
-                value={meeting.agenda_content}
+                value={meeting.agenda_content ?? ""}
                 onChange={() => {}}
                 placeholder="No agenda yet."
                 editable={false}

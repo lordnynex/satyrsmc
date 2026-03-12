@@ -234,41 +234,32 @@ export const EventRemoveAssignmentMemberInputSchema = z.object({
 
 // ----- Output entity schemas -----
 
-const EventSchema = z.object({
+const MemberRefSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string().nullable(),
-  year: z.number().nullable(),
-  event_date: z.string().nullable(),
-  event_url: z.string().nullable(),
-  event_location: z.string().nullable(),
-  event_location_embed: z.string().nullable(),
-  ga_ticket_cost: z.number().nullable(),
-  day_pass_cost: z.number().nullable(),
-  ga_tickets_sold: z.number().nullable(),
-  day_passes_sold: z.number().nullable(),
-  budget_id: z.string().nullable(),
-  scenario_id: z.string().nullable(),
-  planning_notes: z.string().nullable(),
-  event_type: z.enum(EVENT_TYPES),
-  show_on_website: z.boolean().optional(),
-  start_location: z.string().nullable().optional(),
-  end_location: z.string().nullable().optional(),
-  facebook_event_url: z.string().nullable().optional(),
-  pre_ride_event_id: z.string().nullable().optional(),
-  ride_cost: z.number().nullable().optional(),
-  created_at: z.string().optional(),
-  milestones: z.array(z.unknown()).optional(),
-  event_attendees: z.array(z.unknown()).optional(),
-  ride_member_attendees: z.array(z.unknown()).optional(),
-  event_assets: z.array(z.unknown()).optional(),
-  ride_schedule_items: z.array(z.unknown()).optional(),
-  incidents: z.array(z.unknown()).optional(),
-  packingCategories: z.array(z.unknown()).optional(),
-  packingItems: z.array(z.unknown()).optional(),
-  volunteers: z.array(z.unknown()).optional(),
-  assignments: z.array(z.unknown()).optional(),
-  event_photos: z.array(z.unknown()).optional(),
+  photo_url: z.string().nullable().optional(),
+  photo_thumbnail_url: z.string().nullable().optional(),
+});
+
+const ContactRefSchema = z.object({
+  id: z.string(),
+  display_name: z.string(),
+});
+
+const MilestoneMemberSchema = z.object({
+  id: z.string(),
+  milestone_id: z.string(),
+  member_id: z.string(),
+  sort_order: z.number(),
+  member: MemberRefSchema.optional(),
+});
+
+const AssignmentMemberSchema = z.object({
+  id: z.string(),
+  assignment_id: z.string(),
+  member_id: z.string(),
+  sort_order: z.number(),
+  member: MemberRefSchema.optional(),
 });
 
 const EventPhotoSchema = z.object({
@@ -297,7 +288,7 @@ const EventAttendeeSchema = z.object({
   contact_id: z.string(),
   sort_order: z.number(),
   waiver_signed: z.boolean(),
-  contact: z.unknown().optional(),
+  contact: ContactRefSchema.optional(),
 });
 
 const RideMemberAttendeeSchema = z.object({
@@ -306,7 +297,13 @@ const RideMemberAttendeeSchema = z.object({
   member_id: z.string(),
   sort_order: z.number(),
   waiver_signed: z.boolean(),
-  member: z.unknown().optional(),
+  member: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      photo_thumbnail_url: z.string().nullable(),
+    })
+    .optional(),
 });
 
 const IncidentSchema = z.object({
@@ -320,8 +317,8 @@ const IncidentSchema = z.object({
   details: z.string().nullable(),
   occurred_at: z.string().nullable(),
   created_at: z.string().optional(),
-  contact: z.unknown().optional(),
-  member: z.unknown().optional(),
+  contact: ContactRefSchema.optional(),
+  member: z.object({ id: z.string(), name: z.string() }).optional(),
   event_name: z.string().optional(),
   event_type: z.string().optional(),
 });
@@ -344,7 +341,7 @@ const EventPlanningMilestoneSchema = z.object({
   sort_order: z.number().optional(),
   completed: z.boolean().optional(),
   due_date: dateLike.optional().nullable(),
-  members: z.array(z.unknown()).optional(),
+  members: z.array(MilestoneMemberSchema).optional(),
 });
 
 const EventPackingCategorySchema = z.object({
@@ -379,7 +376,44 @@ const EventAssignmentSchema = z.object({
   name: z.string(),
   category: z.enum(EVENT_ASSIGNMENT_CATEGORIES),
   sort_order: z.number(),
-  members: z.array(z.unknown()).optional(),
+  members: z.array(AssignmentMemberSchema).optional(),
+});
+
+const EventSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  year: z.number().nullable(),
+  event_date: z.string().nullable(),
+  event_url: z.string().nullable(),
+  event_location: z.string().nullable(),
+  event_location_embed: z.string().nullable(),
+  ga_ticket_cost: z.number().nullable(),
+  day_pass_cost: z.number().nullable(),
+  ga_tickets_sold: z.number().nullable(),
+  day_passes_sold: z.number().nullable(),
+  budget_id: z.string().nullable(),
+  scenario_id: z.string().nullable(),
+  planning_notes: z.string().nullable(),
+  event_type: z.enum(EVENT_TYPES),
+  show_on_website: z.boolean().optional(),
+  start_location: z.string().nullable().optional(),
+  end_location: z.string().nullable().optional(),
+  facebook_event_url: z.string().nullable().optional(),
+  pre_ride_event_id: z.string().nullable().optional(),
+  ride_cost: z.number().nullable().optional(),
+  created_at: z.string().optional(),
+  milestones: z.array(EventPlanningMilestoneSchema).optional(),
+  event_attendees: z.array(EventAttendeeSchema).optional(),
+  ride_member_attendees: z.array(RideMemberAttendeeSchema).optional(),
+  event_assets: z.array(EventAssetSchema).optional(),
+  ride_schedule_items: z.array(RideScheduleItemSchema).optional(),
+  incidents: z.array(IncidentSchema).optional(),
+  packingCategories: z.array(EventPackingCategorySchema).optional(),
+  packingItems: z.array(EventPackingItemSchema).optional(),
+  volunteers: z.array(EventVolunteerSchema).optional(),
+  assignments: z.array(EventAssignmentSchema).optional(),
+  event_photos: z.array(EventPhotoSchema).optional(),
 });
 
 // ----- Procedure output schemas -----

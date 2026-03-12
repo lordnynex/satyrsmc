@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -257,7 +257,7 @@ function BudgetDetail({
   onSaveEdit,
   editOpen,
   setEditOpen,
-  _editingBudget,
+  editingBudget: _editingBudget,
   setEditingBudget,
   editName,
   setEditName,
@@ -265,20 +265,20 @@ function BudgetDetail({
   setEditDescription,
 }: {
   budgetId: string;
-  onBack: () => void;
+  onBack: () => void | Promise<void>;
   onEdit: (b: { id: string; name: string; year: number; description: string | null }) => void;
-  onDelete: (id: string) => void;
-  onSaveEdit: () => void;
+  onDelete: (id: string) => void | Promise<void>;
+  onSaveEdit: () => void | Promise<void>;
   editOpen: boolean;
   setEditOpen: (open: boolean) => void;
-  _editingBudget: { id: string; name: string; year: number; description: string | null } | null;
+  editingBudget: { id: string; name: string; year: number; description: string | null } | null;
   setEditingBudget: (
     b: { id: string; name: string; year: number; description: string | null } | null,
   ) => void;
   editName: string;
-  setEditName: (s: string) => void;
+  setEditName: Dispatch<SetStateAction<string>>;
   editDescription: string;
-  setEditDescription: (s: string) => void;
+  setEditDescription: Dispatch<SetStateAction<string>>;
 }) {
   const { currentBudget } = useAppState();
   const handleEditDialogChange = (open: boolean) => {
@@ -317,7 +317,17 @@ function BudgetDetail({
           Back to Budgets
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onEdit(currentBudget)}>
+          <Button
+            variant="outline"
+            onClick={() =>
+              onEdit({
+                id: currentBudget.id,
+                name: currentBudget.name,
+                year: currentBudget.year,
+                description: currentBudget.description ?? null,
+              })
+            }
+          >
             <Pencil className="size-4" />
             Edit
           </Button>

@@ -94,8 +94,18 @@ export function useWebsiteUpdateMenu() {
   const api = useApi();
   const _qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ key, items }: { key: string; items: unknown[] }) =>
-      api.website.updateMenu(key, items),
+    mutationFn: ({
+      key,
+      items,
+    }: {
+      key: string;
+      items: {
+        label: string;
+        url?: string | null;
+        internal_ref?: string | null;
+        sort_order?: number;
+      }[];
+    }) => api.website.updateMenu(key, items),
     onSuccess: () => {},
   });
 }

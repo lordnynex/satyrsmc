@@ -31,10 +31,10 @@ export function CreateCommitteeMeetingPage() {
   const [agendaTemplateId, setAgendaTemplateId] = useState("__none__");
   const [saving, setSaving] = useState(false);
 
-  const meetings = committee.meetings;
+  const meetings = committee.meetings ?? [];
   useEffect(() => {
     const nextNum =
-      meetings.length > 0 ? Math.max(...meetings.map((m) => m.meeting_number), 0) + 1 : 1;
+      meetings.length > 0 ? Math.max(...meetings.map((m) => m.meeting_number ?? 0), 0) + 1 : 1;
     setMeetingNumber(nextNum);
   }, [meetings]);
 

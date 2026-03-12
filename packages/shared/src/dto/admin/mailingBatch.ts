@@ -43,7 +43,7 @@ const MailingBatchSchema = z.object({
   created_by: z.string().nullable(),
   created_at: z.string(),
   recipient_count: z.number(),
-  list: z.unknown().optional(),
+  list: z.object({ id: z.string(), name: z.string() }).optional(),
   event: z.object({ id: z.string(), name: z.string() }).optional(),
   recipients: z.array(MailingBatchRecipientSchema).optional(),
 });

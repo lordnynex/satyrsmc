@@ -1,6 +1,6 @@
 import type { MigrationInterface } from "typeorm";
 import type { QueryRunner } from "typeorm";
-import { uuid } from "../../services/utils";
+import { uuid } from "../../../services/utils";
 
 const EMPTY_DOC = JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] });
 

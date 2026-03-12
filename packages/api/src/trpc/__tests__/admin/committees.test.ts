@@ -19,7 +19,7 @@ describe("admin.committees", () => {
 
   describe("list", () => {
     test("returns created committees", async () => {
-      const c = await createCommittee(harness.api, { name: "List Committee" });
+      const c = (await createCommittee(harness.api, { name: "List Committee" }))!;
       const result = await harness.caller.admin.committees.list();
       expect(Array.isArray(result)).toBe(true);
       expect(result.some((x) => x.id === c.id)).toBe(true);
@@ -28,7 +28,7 @@ describe("admin.committees", () => {
 
   describe("get", () => {
     test("returns committee by id", async () => {
-      const c = await createCommittee(harness.api, { name: "Get Committee" });
+      const c = (await createCommittee(harness.api, { name: "Get Committee" }))!;
       const result = await harness.caller.admin.committees.get({ id: c.id });
       expect(result.id).toBe(c.id);
       expect(result.name).toBe("Get Committee");
@@ -56,7 +56,7 @@ describe("admin.committees", () => {
 
   describe("update", () => {
     test("updates committee and returns it", async () => {
-      const c = await createCommittee(harness.api, { name: "To Update" });
+      const c = (await createCommittee(harness.api, { name: "To Update" }))!;
       const result = await harness.caller.admin.committees.update({
         id: c.id,
         name: "Updated Committee",
@@ -76,7 +76,7 @@ describe("admin.committees", () => {
 
   describe("delete", () => {
     test("deletes committee and returns ok", async () => {
-      const c = await createCommittee(harness.api, { name: "To Delete" });
+      const c = (await createCommittee(harness.api, { name: "To Delete" }))!;
       const result = await harness.caller.admin.committees.delete({ id: c.id });
       expect(result.ok).toBe(true);
       const list = await harness.caller.admin.committees.list();
@@ -86,8 +86,8 @@ describe("admin.committees", () => {
 
   describe("addMember, removeMember", () => {
     test("adds and removes member from committee", async () => {
-      const committee = await createCommittee(harness.api, { name: "Members Committee" });
-      const member = await createMember(harness.api, { name: "CM Member" });
+      const committee = (await createCommittee(harness.api, { name: "Members Committee" }))!;
+      const member = (await createMember(harness.api, { name: "CM Member" }))!;
       await harness.caller.admin.committees.addMember({
         committeeId: committee.id,
         memberId: member.id,
@@ -102,7 +102,7 @@ describe("admin.committees", () => {
 
   describe("listMeetings", () => {
     test("returns meetings for committee", async () => {
-      const c = await createCommittee(harness.api, { name: "Meetings Committee" });
+      const c = (await createCommittee(harness.api, { name: "Meetings Committee" }))!;
       const result = await harness.caller.admin.committees.listMeetings({ committeeId: c.id });
       expect(Array.isArray(result)).toBe(true);
     });
@@ -110,7 +110,7 @@ describe("admin.committees", () => {
 
   describe("createMeeting, getMeeting, updateMeeting, deleteMeeting", () => {
     test("full meeting crud under committee", async () => {
-      const c = await createCommittee(harness.api, { name: "Meeting Committee" });
+      const c = (await createCommittee(harness.api, { name: "Meeting Committee" }))!;
       const created = await harness.caller.admin.committees.createMeeting({
         committeeId: c.id,
         date: "2025-06-01",
@@ -142,7 +142,7 @@ describe("admin.committees", () => {
     });
 
     test("getMeeting throws NOT_FOUND when meeting does not exist", async () => {
-      const c = await createCommittee(harness.api, { name: "Bad Meeting Committee" });
+      const c = (await createCommittee(harness.api, { name: "Bad Meeting Committee" }))!;
       try {
         await harness.caller.admin.committees.getMeeting({
           committeeId: c.id,

@@ -65,7 +65,6 @@ describe("admin.contacts", () => {
         emails: [],
         phones: [],
         addresses: [],
-        tags: [],
       });
       expect(result.id).toBeDefined();
       expect(result.display_name).toBe("New Contact");

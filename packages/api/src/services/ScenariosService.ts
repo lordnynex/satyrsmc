@@ -24,7 +24,7 @@ export class ScenariosService {
       id: e.id,
       name: e.name,
       description: e.description,
-      inputs: e.inputs,
+      inputs: JSON.parse(e.inputs) as Record<string, unknown>,
       created_at: toISOString(e.createdAt) ?? "",
     }));
   }

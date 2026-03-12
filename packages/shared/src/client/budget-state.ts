@@ -24,10 +24,10 @@ export interface LineItem {
   id: string;
   name: string;
   category: string;
-  comments?: string;
+  comments?: string | null;
   unitCost: number;
   quantity: number;
-  historicalCosts?: Record<string, number>;
+  historicalCosts?: Record<string, number> | null;
 }
 
 export interface AttendanceScenarios {

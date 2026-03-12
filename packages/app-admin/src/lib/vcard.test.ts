@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { parseVCardFile, contactToVCard4, parsedToContactPayload } from "./vcard";
+import type { Contact } from "@satyrsmc/shared/client";
 
 describe("vCard parsing", () => {
   test("parses single vCard 3.0", () => {
@@ -51,7 +52,7 @@ END:VCARD`;
     expect(payload.display_name).toBe("Jane Smith");
     expect(payload.first_name).toBe("Jane");
     expect(payload.last_name).toBe("Smith");
-    expect(payload.emails[0]?.email).toBe("jane@test.com");
+    expect(payload.emails?.[0]?.email).toBe("jane@test.com");
   });
 });
 
@@ -121,13 +122,22 @@ END:VCARD`;
     const contact = {
       ...payload,
       id: "rt-1",
+      type: "person" as const,
       uid: "rt-1@badger",
-      emails: payload.emails ?? [],
-      phones: payload.phones ?? [],
-      addresses: payload.addresses ?? [],
-      tags: payload.tags ?? [],
+      status: "active" as const,
+      how_we_know_them: null,
+      ok_to_email: "unknown" as const,
+      ok_to_mail: "unknown" as const,
+      ok_to_sms: "unknown" as const,
+      do_not_contact: false,
+      club_name: null,
+      role: null,
+      emails: (payload.emails ?? []) as Contact["emails"],
+      phones: (payload.phones ?? []) as Contact["phones"],
+      addresses: (payload.addresses ?? []) as Contact["addresses"],
+      tags: (payload.tags ?? []) as Contact["tags"],
     };
-    const exported = contactToVCard4(contact);
+    const exported = contactToVCard4(contact as Contact);
     expect(exported).toContain("Round Trip Test");
     expect(exported).toContain("round@trip.com");
   });

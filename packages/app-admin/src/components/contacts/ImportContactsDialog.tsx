@@ -14,7 +14,6 @@ import {
   useContactsImportPstExecute,
   useCreateContact,
 } from "@/queries/hooks";
-import type { Contact } from "@satyrsmc/shared/client";
 import { Upload, FileText, Mail } from "lucide-react";
 
 interface ImportContactsDialogProps {
@@ -26,8 +25,8 @@ interface ImportContactsDialogProps {
 type ImportMode = "vcard" | "csv" | "pst" | null;
 
 interface PstPreviewItem {
-  payload: Partial<Contact> & { display_name: string };
-  status: "new" | "duplicate";
+  payload: Record<string, unknown> & { display_name: string };
+  status: string;
   existingContact?: { id: string; display_name: string };
 }
 

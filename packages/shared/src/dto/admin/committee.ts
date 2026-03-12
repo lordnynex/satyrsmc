@@ -93,27 +93,8 @@ export const CommitteeDeleteMeetingInputSchema = z.object({
 
 // ----- Output entity schemas -----
 
-const CommitteeSummarySchema = z.object({
+const MeetingSummarySchema = z.object({
   id: z.string(),
-  name: z.string(),
-  description: z.string().nullable().optional(),
-  purpose: z.string().nullable().optional(),
-  formed_date: dateLike.optional(),
-  closed_date: dateLike.nullable().optional(),
-  chairperson_member_id: z.string().nullable().optional(),
-  status: z.enum(COMMITTEE_STATUSES).optional(),
-  created_at: dateLike.optional(),
-  updated_at: dateLike.optional(),
-  member_count: z.number().optional(),
-  meeting_count: z.number().optional(),
-  chairperson_name: z.string().nullable().optional(),
-  members: z.array(z.unknown()).optional(),
-  meetings: z.array(z.unknown()).optional(),
-});
-
-const CommitteeMeetingDetailSchema = z.object({
-  id: z.string(),
-  committee_id: z.string().optional(),
   date: dateLike.optional(),
   meeting_number: z.number().optional(),
   location: z.string().nullable().optional(),
@@ -129,8 +110,37 @@ const CommitteeMeetingDetailSchema = z.object({
   updated_at: dateLike.optional(),
 });
 
-const MeetingSummarySchema = z.object({
+const CommitteeSummarySchema = z.object({
   id: z.string(),
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  purpose: z.string().nullable().optional(),
+  formed_date: dateLike.optional(),
+  closed_date: dateLike.nullable().optional(),
+  chairperson_member_id: z.string().nullable().optional(),
+  status: z.enum(COMMITTEE_STATUSES).optional(),
+  created_at: dateLike.optional(),
+  updated_at: dateLike.optional(),
+  member_count: z.number().optional(),
+  meeting_count: z.number().optional(),
+  chairperson_name: z.string().nullable().optional(),
+  members: z
+    .array(
+      z.object({
+        id: z.string(),
+        committee_id: z.string(),
+        member_id: z.string(),
+        member_name: z.string().nullable(),
+        sort_order: z.number(),
+      }),
+    )
+    .optional(),
+  meetings: z.array(MeetingSummarySchema).optional(),
+});
+
+const CommitteeMeetingDetailSchema = z.object({
+  id: z.string(),
+  committee_id: z.string().optional(),
   date: dateLike.optional(),
   meeting_number: z.number().optional(),
   location: z.string().nullable().optional(),

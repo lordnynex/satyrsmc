@@ -53,7 +53,7 @@ export function OldBusinessCard({ meetingId, oldBusiness }: OldBusinessCardProps
 
   const startEdit = (ob: OldBusinessItem) => {
     setEditingId(ob.id);
-    setDescription(ob.description);
+    setDescription(ob.description ?? "");
   };
 
   const openItems = oldBusiness.filter((ob) => ob.status === "open");

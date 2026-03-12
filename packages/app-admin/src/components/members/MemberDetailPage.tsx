@@ -58,7 +58,7 @@ function MemberDetailContent({ id }: { id: string }) {
       setEditMemberSinceMonth("");
       setEditMemberSinceYear("");
     }
-    setEditIsBaby(member.is_baby);
+    setEditIsBaby(member.is_baby ?? false);
     setEditPosition(member.position ?? "");
     setEditEmergencyName(member.emergency_contact_name ?? "");
     setEditEmergencyPhone(member.emergency_contact_phone ?? "");

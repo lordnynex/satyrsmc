@@ -170,8 +170,30 @@ const ContactSchema = z.object({
     )
     .optional(),
   tags: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
-  contact_photos: z.array(z.unknown()).optional(),
-  contact_notes: z.array(z.unknown()).optional(),
+  contact_photos: z
+    .array(
+      z.object({
+        id: z.string(),
+        contact_id: z.string(),
+        type: z.enum(["profile", "contact"]),
+        sort_order: z.number(),
+        photo_url: z.string(),
+        photo_thumbnail_url: z.string(),
+        photo_display_url: z.string(),
+        created_at: z.string().nullable(),
+      }),
+    )
+    .optional(),
+  contact_notes: z
+    .array(
+      z.object({
+        id: z.string(),
+        contact_id: z.string(),
+        content: z.string(),
+        created_at: z.string().nullable(),
+      }),
+    )
+    .optional(),
 });
 
 const TagSchema = z.object({ id: z.string(), name: z.string() });
@@ -205,7 +227,7 @@ export type ContactListTagsOutput = z.infer<typeof ContactListTagsOutputSchema>;
 
 // Aliases for API (procedure output types are the source of truth)
 export type Contact = ContactGetOutput;
-export type ContactSearchParams = z.infer<typeof ContactListInputSchema>;
+export type ContactSearchParams = NonNullable<z.infer<typeof ContactListInputSchema>>;
 export type ContactSearchResult = ContactListOutput;
 export type Tag = z.infer<typeof TagSchema>;
 export type ContactEmail = NonNullable<ContactGetOutput["emails"]>[number];

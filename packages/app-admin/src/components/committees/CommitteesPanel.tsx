@@ -17,7 +17,9 @@ function CommitteeRow({ c }: { c: CommitteeSummary }) {
           {c.name}
         </Link>
       </td>
-      <td className="px-4 py-3 text-muted-foreground">{formatDateOnly(c.formed_date)}</td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {formatDateOnly(c.formed_date?.toString() ?? "")}
+      </td>
       <td className="px-4 py-3">
         <span
           className={

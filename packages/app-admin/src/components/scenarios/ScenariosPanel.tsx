@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -270,18 +270,18 @@ function ScenarioDetail({
   editSaved,
 }: {
   scenarioId: string;
-  onBack: () => void;
+  onBack: () => void | Promise<void>;
   onEdit: (s: { id: string; name: string; description: string | null }) => void;
-  onDelete: (id: string) => void;
-  onSaveEdit: () => void;
+  onDelete: (id: string) => void | Promise<void>;
+  onSaveEdit: () => void | Promise<void>;
   editOpen: boolean;
   setEditOpen: (open: boolean) => void;
   editingScenario: { id: string; name: string; description: string | null } | null;
   setEditingScenario: (s: { id: string; name: string; description: string | null } | null) => void;
   editName: string;
-  setEditName: (s: string) => void;
+  setEditName: Dispatch<SetStateAction<string>>;
   editDescription: string;
-  setEditDescription: (s: string) => void;
+  setEditDescription: Dispatch<SetStateAction<string>>;
   editSaved: boolean;
 }) {
   const { currentScenario } = useAppState();
@@ -306,7 +306,16 @@ function ScenarioDetail({
           Back to Scenarios
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onEdit(currentScenario)}>
+          <Button
+            variant="outline"
+            onClick={() =>
+              onEdit({
+                id: currentScenario.id,
+                name: currentScenario.name,
+                description: currentScenario.description ?? null,
+              })
+            }
+          >
             <Pencil className="size-4" />
             Edit
           </Button>

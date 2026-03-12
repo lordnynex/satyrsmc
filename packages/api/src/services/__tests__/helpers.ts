@@ -89,10 +89,15 @@ export async function createMeeting(
 
 export async function createMeetingTemplate(
   api: Api,
-  overrides: { name?: string; type?: string; content?: string; [key: string]: unknown } = {},
+  overrides: {
+    name?: string;
+    type?: "agenda" | "minutes";
+    content?: string;
+    [key: string]: unknown;
+  } = {},
 ) {
   const name = overrides.name ?? unique("Template");
-  const type = (overrides.type as string) ?? "agenda";
+  const type = overrides.type ?? "agenda";
   const content = (overrides.content as string) ?? "";
   const template = await api.meetingTemplates.create({ ...overrides, name, type, content });
   return template;

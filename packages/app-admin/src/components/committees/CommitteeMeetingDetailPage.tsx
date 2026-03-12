@@ -50,8 +50,8 @@ export function CommitteeMeetingDetailPage() {
   const [metadataSaving, setMetadataSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [meetingNumber, setMeetingNumber] = useState(meeting.meeting_number);
-  const [date, setDate] = useState(meeting.date);
+  const [meetingNumber, setMeetingNumber] = useState<number | "">(meeting.meeting_number ?? "");
+  const [date, setDate] = useState(meeting.date?.toString() ?? "");
   const [location, setLocation] = useState(meeting.location ?? "");
   const [startTime, setStartTime] = useState(meeting.start_time ?? "");
   const [endTime, setEndTime] = useState(meeting.end_time ?? "");
@@ -63,7 +63,7 @@ export function CommitteeMeetingDetailPage() {
   const handleMetadataSave = async () => {
     const num = Number(meetingNumber);
     if (Number.isNaN(num) || num < 1) {
-      setMeetingNumber(meeting.meeting_number);
+      setMeetingNumber(meeting.meeting_number ?? "");
       setEditingMetadata(false);
       return;
     }
@@ -88,8 +88,8 @@ export function CommitteeMeetingDetailPage() {
   };
 
   const handleMetadataCancel = () => {
-    setMeetingNumber(meeting.meeting_number);
-    setDate(meeting.date);
+    setMeetingNumber(meeting.meeting_number ?? "");
+    setDate(meeting.date?.toString() ?? "");
     setLocation(meeting.location ?? "");
     setStartTime(meeting.start_time ?? "");
     setEndTime(meeting.end_time ?? "");
@@ -225,7 +225,9 @@ export function CommitteeMeetingDetailPage() {
                 <h1 className="text-2xl font-semibold">
                   {committee.name} – Meeting #{meeting.meeting_number}
                 </h1>
-                <span className="text-muted-foreground">{formatDateOnly(meeting.date)}</span>
+                <span className="text-muted-foreground">
+                  {formatDateOnly(meeting.date?.toString() ?? "")}
+                </span>
                 {meeting.location && (
                   <span className="text-muted-foreground">• {meeting.location}</span>
                 )}
@@ -265,7 +267,7 @@ export function CommitteeMeetingDetailPage() {
           <span className="flex items-center gap-2 text-sm">
             <Calendar className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Date</span>
-            <span className="font-medium">{formatDateOnly(meeting.date)}</span>
+            <span className="font-medium">{formatDateOnly(meeting.date?.toString() ?? "")}</span>
           </span>
           {(meeting.start_time || meeting.end_time) && (
             <span className="flex items-center gap-2 text-sm">
@@ -355,7 +357,7 @@ export function CommitteeMeetingDetailPage() {
           <CollapsibleContent>
             <div className="border-t px-3 py-2">
               <RichDocumentEditor
-                value={meeting.agenda_content}
+                value={meeting.agenda_content ?? ""}
                 onChange={() => {}}
                 placeholder="No agenda yet."
                 editable={false}

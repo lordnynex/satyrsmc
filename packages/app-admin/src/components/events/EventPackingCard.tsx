@@ -115,7 +115,7 @@ export function EventPackingCard({
                       <FolderPlus className="size-4" />
                       Add Category
                     </Button>
-                    <Button variant="outline" size="sm" onClick={openAddItem}>
+                    <Button variant="outline" size="sm" onClick={() => openAddItem()}>
                       <Plus className="size-4" />
                       Add Item
                     </Button>
@@ -139,7 +139,7 @@ export function EventPackingCard({
                       <FolderPlus className="size-4" />
                       Add Category
                     </Button>
-                    <Button variant="outline" size="sm" onClick={openAddItem}>
+                    <Button variant="outline" size="sm" onClick={() => openAddItem()}>
                       <Plus className="size-4" />
                       Add Item
                     </Button>

@@ -43,7 +43,7 @@ export function ScenarioInputsCard() {
 
   useEffect(() => {
     if (currentScenario?.inputs) {
-      setInputs(currentScenario.inputs);
+      setInputs(currentScenario.inputs as unknown as Inputs);
     } else if (!selectedScenarioId) {
       setInputs(DEFAULT_INPUTS);
     }
@@ -75,7 +75,7 @@ export function ScenarioInputsCard() {
     try {
       await updateScenarioMutation.mutateAsync({
         id: selectedScenarioId,
-        body: { inputs },
+        body: { inputs: inputs as unknown as Record<string, unknown> },
       });
       await refreshScenario(selectedScenarioId);
       showSaved();

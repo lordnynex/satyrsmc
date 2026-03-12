@@ -59,7 +59,7 @@ export class EventsService {
       order: { year: "DESC", name: "ASC" },
     };
     if (type) {
-      findOptions.where = { eventType: type };
+      findOptions.where = { eventType: type as EventType };
     }
     const entities = await repo.find(findOptions);
     return entities.map((e) => ({
@@ -269,7 +269,7 @@ export class EventsService {
           id: a.id,
           event_id: a.eventId,
           name: a.name,
-          category: a.category,
+          category: a.category as EventAssignmentCategory,
           sort_order: a.sortOrder ?? 0,
           members: amList.map((am) => ({
             id: am.id,
@@ -1051,7 +1051,11 @@ export class EventsService {
         member_id: body.member_id,
         sort_order: sortOrder,
         waiver_signed: body.waiver_signed ?? false,
-        member: { id: member.id, name: member.name },
+        member: {
+          id: member.id,
+          name: member.name,
+          photo_thumbnail_url: memberEntityToApi(member).photo_thumbnail_url,
+        },
       };
     },
     update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) => {

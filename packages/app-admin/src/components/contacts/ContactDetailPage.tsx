@@ -260,7 +260,12 @@ function ContactDetailContent({ id }: { id: string }) {
   const toEmergencyContactPayload = (
     ec:
       | ContactEmergencyContact
-      | { name?: string; phone?: string; email?: string; relationship?: string },
+      | {
+          name?: string;
+          phone?: string;
+          email?: string | null;
+          relationship?: string | null;
+        },
   ) => ({
     name: String(ec.name ?? "").trim(),
     phone: normalizePhoneForStorage(ec.phone ?? ""),

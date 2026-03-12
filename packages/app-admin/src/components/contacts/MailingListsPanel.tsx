@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MailingList } from "@satyrsmc/shared/client";
+import type { MailingList, Contact } from "@satyrsmc/shared/client";
 import {
   useCreateMailingList,
   useDeleteMailingList,
@@ -26,6 +26,13 @@ import {
   useMailingListRemoveMember,
   useMailingListReinstateMember,
   useInvalidateQueries,
+  useMailingListsSuspense,
+  useEventsSuspense,
+  useMailingListSuspense,
+  useMailingListPreview,
+  useMailingListStats,
+  useMailingListIncluded,
+  unwrapSuspenseData,
 } from "@/queries/hooks";
 import { contactsToVCardFileAsync } from "@/lib/vcard";
 import {
@@ -45,16 +52,6 @@ import {
 import { AddContactToMailingListDialog } from "./AddContactToMailingListDialog";
 import { ContactDirectoryTable } from "./ContactDirectoryTable";
 import { CreateMailLabelsDialog } from "./CreateMailLabelsDialog";
-import {
-  useMailingListsSuspense,
-  useEventsSuspense,
-  useMailingListSuspense,
-  useMailingListPreview,
-  useMailingListStats,
-  useMailingListIncluded,
-  useInvalidateQueries,
-  unwrapSuspenseData,
-} from "@/queries/hooks";
 import { PageLoading } from "@/components/layout/PageLoading";
 
 export function MailingListsPanel() {
@@ -318,7 +315,7 @@ function MailingListDetail({
 
   const handleExportVCard = async () => {
     if (!preview || preview.included.length === 0) return;
-    const contacts = preview.included.map((i) => i.contact);
+    const contacts = preview.included.map((i) => i.contact as Contact);
     const vcf = await contactsToVCardFileAsync(contacts);
     const blob = new Blob([vcf], { type: "text/vcard;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -532,49 +529,54 @@ function MailingListDetail({
                     </div>
                   </div>
                 )}
-              <div>
-                <h4 className="font-medium flex items-center gap-2 mb-2">
-                  <Copy className="size-4" />
-                  Duplicate addresses
-                </h4>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {stats.duplicateAddresses.totalDuplicateContacts} contacts share an address with
-                  others across {stats.duplicateAddresses.uniqueAddressesWithDuplicates} unique
-                  addresses.
-                </p>
-                {stats.duplicateAddresses.groups.length > 0 && (
-                  <div className="rounded-lg border p-3 max-h-48 overflow-y-auto space-y-3">
-                    {stats.duplicateAddresses.groups.map((group) => (
-                      <div key={group.address} className="text-sm">
-                        <p
-                          className="font-medium text-muted-foreground truncate"
-                          title={group.address}
-                        >
-                          {group.address}
-                        </p>
-                        <ul className="mt-1 space-y-0.5 pl-2">
-                          {group.contacts.map((c) => (
-                            <li key={c.id}>
-                              <button
-                                type="button"
-                                className="text-primary hover:underline"
-                                onClick={() => navigate(`/contacts/${c.id}`)}
+              {stats.duplicateAddresses &&
+                (() => {
+                  const dupAddrs = stats.duplicateAddresses;
+                  return (
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <Copy className="size-4" />
+                        Duplicate addresses
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {dupAddrs.totalDuplicateContacts} contacts share an address with others
+                        across {dupAddrs.uniqueAddressesWithDuplicates} unique addresses.
+                      </p>
+                      {dupAddrs.groups.length > 0 && (
+                        <div className="rounded-lg border p-3 max-h-48 overflow-y-auto space-y-3">
+                          {dupAddrs.groups.map((group) => (
+                            <div key={group.address} className="text-sm">
+                              <p
+                                className="font-medium text-muted-foreground truncate"
+                                title={group.address}
                               >
-                                {c.display_name}
-                              </button>
-                            </li>
+                                {group.address}
+                              </p>
+                              <ul className="mt-1 space-y-0.5 pl-2">
+                                {group.contacts.map((c) => (
+                                  <li key={c.id}>
+                                    <button
+                                      type="button"
+                                      className="text-primary hover:underline"
+                                      onClick={() => navigate(`/contacts/${c.id}`)}
+                                    >
+                                      {c.display_name}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {stats.duplicateAddresses.groups.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    No duplicate addresses in this list.
-                  </p>
-                )}
-              </div>
+                        </div>
+                      )}
+                      {dupAddrs.groups.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          No duplicate addresses in this list.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
             </>
           )}
           {!stats && <p className="text-sm text-muted-foreground">Loading stats…</p>}
@@ -610,7 +612,7 @@ function MailingListDetail({
                 <>
                   <ContactDirectoryTable
                     rows={includedPage.contacts.map(({ contact, canRemoveFromList }) => ({
-                      contact,
+                      contact: contact as Contact,
                       canRemoveFromList,
                     }))}
                     columns={["name", "phone", "address", "email", "actions"]}
@@ -689,7 +691,7 @@ function MailingListDetail({
         open={labelsDialogOpen}
         onOpenChange={setLabelsDialogOpen}
         listName={selectedList.name}
-        contacts={(preview?.included ?? []).map((i) => i.contact)}
+        contacts={(preview?.included ?? []).map((i) => i.contact as Contact)}
       />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -708,10 +710,7 @@ function MailingListDetail({
             </div>
             <div>
               <Label>Delivery type</Label>
-              <Select
-                value={editDeliveryType}
-                onValueChange={(v) => setEditDeliveryType(v as MailingList["delivery_type"])}
-              >
+              <Select value={editDeliveryType} onValueChange={(v) => setEditDeliveryType(v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

@@ -27,7 +27,7 @@ export function CommitteeMeetingDocumentEditPage({ documentType }: { documentTyp
   const documentId =
     documentType === "agenda" ? meeting.agenda_document_id : meeting.minutes_document_id;
   const content =
-    documentType === "agenda" ? meeting.agenda_content : (meeting.minutes_content ?? "");
+    documentType === "agenda" ? (meeting.agenda_content ?? "") : (meeting.minutes_content ?? "");
   const title = documentType === "agenda" ? "Agenda" : "Minutes";
   const placeholder =
     documentType === "agenda" ? "Enter meeting agenda..." : "Transcribe meeting minutes...";

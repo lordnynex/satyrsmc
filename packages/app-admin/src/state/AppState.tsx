@@ -216,12 +216,27 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const refreshBudgets = useCallback(async () => {
     const list = await utils.admin.budgets.list.fetch();
-    dispatch({ type: "SET_BUDGETS", payload: list });
+    dispatch({
+      type: "SET_BUDGETS",
+      payload: list.map((b) => ({
+        id: b.id,
+        name: b.name,
+        year: b.year,
+        description: b.description ?? null,
+      })),
+    });
   }, [utils]);
 
   const refreshScenarios = useCallback(async () => {
     const list = await utils.admin.scenarios.list.fetch();
-    dispatch({ type: "SET_SCENARIOS", payload: list });
+    dispatch({
+      type: "SET_SCENARIOS",
+      payload: list.map((s) => ({
+        id: s.id,
+        name: s.name,
+        description: s.description ?? null,
+      })),
+    });
   }, [utils]);
 
   const updateScenarioInputs = useCallback(
