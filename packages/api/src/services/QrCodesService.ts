@@ -37,7 +37,7 @@ function mergeConfig(partial?: QrCodeConfig | null): QrCodeConfig {
 
 async function generateQrImage(url: string, config: QrCodeConfig): Promise<Buffer> {
   const errorCorrectionLevel = (config.errorCorrectionLevel ??
-    "M") as QRCode.QRCodeErrorCorrectionLevel;
+    DEFAULT_CONFIG.errorCorrectionLevel) as QRCode.QRCodeErrorCorrectionLevel;
   const opts = {
     errorCorrectionLevel,
     width: config.width ?? 256,
