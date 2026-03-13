@@ -11,7 +11,7 @@ if (existsSync(outdir)) {
   await rm(outdir, { recursive: true, force: true });
 }
 
-const entrypoints = [path.join(process.cwd(), "src", "index.html")];
+const entrypoints = [path.join(process.cwd(), "index.html")];
 
 const isDev = process.env.BUILD_DEV === "1";
 const apiOrigin = process.env.API_ORIGIN ?? process.env.VITE_API_ORIGIN ?? "";
