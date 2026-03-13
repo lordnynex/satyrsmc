@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import plugin from "bun-plugin-tailwind";
 import { existsSync } from "fs";
-import { rm } from "fs/promises";
+import { copyFile, rm } from "fs/promises";
 import path from "path";
 
 const outdir = process.env.OUTDIR
@@ -33,4 +33,9 @@ const result = await Bun.build({
 if (!result.success) {
   console.error("Build failed:", result.logs);
   process.exit(1);
+}
+
+const favicon = path.join(process.cwd(), "public", "favicon.ico");
+if (existsSync(favicon)) {
+  await copyFile(favicon, path.join(outdir, "favicon.ico"));
 }
