@@ -17,8 +17,13 @@ import { SiteSettingsService } from "./SiteSettingsService";
 import { SiteMenusService } from "./SiteMenusService";
 import { BlogService } from "./BlogService";
 import { ContactSubmissionsService } from "./ContactSubmissionsService";
+import { AuthService } from "./AuthService";
+import { UsersService } from "./UsersService";
+import { ConsoleEmailService } from "./EmailService";
+import type { EmailService } from "./EmailService";
 
-export function createApi(db: DbLike, ds: DataSource) {
+export function createApi(db: DbLike, ds: DataSource, emailService?: EmailService) {
+  const email = emailService ?? new ConsoleEmailService();
   const eventsService = new EventsService(db, ds);
   const budgetsService = new BudgetsService(db, ds);
   const membersService = new MembersService(db, ds);
@@ -50,6 +55,8 @@ export function createApi(db: DbLike, ds: DataSource) {
     siteMenus: new SiteMenusService(ds),
     blog: new BlogService(ds),
     contactSubmissions: new ContactSubmissionsService(ds),
+    auth: new AuthService(ds, email),
+    users: new UsersService(ds, email),
   };
 }
 

@@ -50,9 +50,15 @@ import {
   ContactSubmission,
   ContactMemberSubmission,
   Incident,
+  User,
+  Registration,
 } from "../entities";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
 import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
+import { AddContactIdToMembers1800000002000 } from "./migrations/1800000002000-AddContactIdToMembers.ts";
+import { CreateUsersAndRegistrations1800000003000 } from "./migrations/1800000003000-CreateUsersAndRegistrations.ts";
+import { MigrateMemberDataToContacts1800000004000 } from "./migrations/1800000004000-MigrateMemberDataToContacts.ts";
+import { DropRedundantMemberColumns1800000005000 } from "./migrations/1800000005000-DropRedundantMemberColumns.ts";
 
 export function getProjectRoot(): string {
   return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
@@ -107,6 +113,8 @@ const entities = [
   ContactSubmission,
   ContactMemberSubmission,
   Incident,
+  User,
+  Registration,
 ];
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -114,7 +122,14 @@ export const dataSourceOptions: DataSourceOptions = {
   type: "postgres",
   url: process.env.DATABASE_URL,
   synchronize: false,
-  migrations: [PostgresBaseline1800000000000, ConvertTextToEnumTypes1800000001000],
+  migrations: [
+    PostgresBaseline1800000000000,
+    ConvertTextToEnumTypes1800000001000,
+    AddContactIdToMembers1800000002000,
+    CreateUsersAndRegistrations1800000003000,
+    MigrateMemberDataToContacts1800000004000,
+    DropRedundantMemberColumns1800000005000,
+  ],
   migrationsRun: true,
   entities,
 };

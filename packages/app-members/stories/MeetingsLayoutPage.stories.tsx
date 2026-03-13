@@ -1,0 +1,46 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Routes, Route } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
+import { Header } from "@app-members/components/layout/Header";
+import { MeetingsLayout } from "@app-members/components/layout/MeetingsLayout";
+
+import "@app-members/index.css";
+
+const meta: Meta = {
+  title: "App Admin/Pages/MeetingsLayout",
+  tags: ["autodocs"],
+};
+
+export default meta;
+
+type Story = StoryObj;
+
+/** Meetings section layout (sidebar + content). Content area shows placeholder; real content requires API. */
+export const LayoutOnly: Story = {
+  render: () => (
+    <MemoryRouter initialEntries={["/meetings"]} basename="/admin">
+      <div className="min-h-screen bg-background">
+        <div className="sticky top-0 z-40 bg-background">
+          <Header />
+        </div>
+        <main className="space-y-6 p-4 md:p-6">
+          <Routes>
+            <Route path="/meetings" element={<MeetingsLayout />}>
+              <Route
+                index
+                element={
+                  <div className="rounded-lg border border-dashed bg-muted/30 p-8 text-center text-muted-foreground">
+                    <p className="text-sm">Meetings list would load here (requires API).</p>
+                    <p className="mt-2 text-xs">
+                      Sidebar shows Meetings sub-navigation (Bylaws, Old Business, etc.).
+                    </p>
+                  </div>
+                }
+              />
+            </Route>
+          </Routes>
+        </main>
+      </div>
+    </MemoryRouter>
+  ),
+};

@@ -14,28 +14,32 @@
     "start": "NODE_ENV=production bun run src/index.ts",
     "start:api-only": "NODE_ENV=production bun run src/api-only.ts",
     "migrate": "bun run scripts/migrate.ts",
+    "seed": "bun run scripts/seed-users.ts",
     "test": "bun test src/",
     "test:coverage": "bun test --coverage --coverage-reporter=lcov src/"
   },
   "dependencies": {
     "@satyrsmc/shared": "workspace:*",
     "@trpc/server": "^11.0.0-rc.0",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.1",
     "jspdf": "^4.1.0",
+    "pg": "^8.13.3",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
     "pst-extractor": "^1.12.0",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
-    "pg": "^8.13.3",
     "sharp": "^0.34.5",
     "typeorm": "^0.3.28",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
-    "trpc-ui": "^1.0.15",
+    "@types/bcryptjs": "^3.0.0",
     "@types/bun": "latest",
     "@types/qrcode": "^1.5.6",
+    "trpc-ui": "^1.0.15",
     "typeorm-pglite": "^0.3.1"
   }
 }

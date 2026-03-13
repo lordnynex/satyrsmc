@@ -1,0 +1,8 @@
+/* Satyrs M/C brand tokens — shared across app-public and app-members */
+@theme {
+  --color-satyrs-blue: #0b4f8a;
+  --color-satyrs-gold: #d4af37;
+  --color-satyrs-dark: #0f172a;
+  --color-satyrs-dark-alt: #1e293b;
+  --font-family-script: "Great Vibes", cursive;
+}

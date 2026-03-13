@@ -37,13 +37,42 @@ import type {
 } from "@satyrsmc/shared/dto/admin/event";
 import type { GetEventsFeedOutput } from "@satyrsmc/shared/dto/website";
 
-function memberEntityToApi(m: Member) {
-  return memberRowToApi({
-    id: m.id,
-    name: m.name,
-    photo: m.photo,
-    photo_thumbnail: m.photoThumbnail,
-  } as Record<string, unknown>);
+/**
+ * Load member display info (name + photo) by joining through contacts.
+ * Returns a map of memberId → { id, name, photo_url, photo_thumbnail_url }.
+ */
+async function loadMemberDisplayMap(
+  ds: DataSource,
+  memberIds: string[],
+): Promise<
+  Map<
+    string,
+    { id: string; name: string; photo_url: string | null; photo_thumbnail_url: string | null }
+  >
+> {
+  const result = new Map<
+    string,
+    { id: string; name: string; photo_url: string | null; photo_thumbnail_url: string | null }
+  >();
+  if (memberIds.length === 0) return result;
+
+  const rows = await ds
+    .getRepository(Member)
+    .createQueryBuilder("m")
+    .select("m.id", "id")
+    .leftJoin("contacts", "c", "c.id = m.contact_id")
+    .addSelect("c.display_name", "name")
+    .addSelect(
+      `EXISTS(SELECT 1 FROM contact_photos cph WHERE cph.contact_id = m.contact_id AND cph.type = 'profile')`,
+      "has_photo",
+    )
+    .where("m.id IN (:...ids)", { ids: memberIds })
+    .getRawMany<Record<string, unknown>>();
+
+  for (const row of rows) {
+    result.set(row.id as string, memberRowToApi(row));
+  }
+  return result;
 }
 
 export class EventsService {
@@ -129,18 +158,7 @@ export class EventsService {
         })
       : [];
     const milestoneMemberIds = [...new Set(milestoneMembers.map((mm) => mm.memberId))];
-    const memberRepo = this.ds.getRepository(Member);
-    const milestoneMembersMap = new Map<
-      string,
-      { id: string; name: string; photo_url: string | null; photo_thumbnail_url: string | null }
-    >();
-    for (const mid of milestoneMemberIds) {
-      const m = await memberRepo.findOne({
-        where: { id: mid },
-        select: ["id", "name", "photo", "photoThumbnail"],
-      });
-      if (m) milestoneMembersMap.set(mid, memberEntityToApi(m));
-    }
+    const milestoneMembersMap = await loadMemberDisplayMap(this.ds, milestoneMemberIds);
     const membersByMilestone = new Map<string, EventMilestoneMember[]>();
     for (const mm of milestoneMembers) {
       const list = membersByMilestone.get(mm.milestoneId) ?? [];
@@ -175,17 +193,7 @@ export class EventsService {
         })
       : [];
     const memberIds = [...new Set(assignmentMembers.map((am) => am.memberId))];
-    const membersMap = new Map<
-      string,
-      { id: string; name: string; photo_url: string | null; photo_thumbnail_url: string | null }
-    >();
-    for (const mid of memberIds) {
-      const m = await memberRepo.findOne({
-        where: { id: mid },
-        select: ["id", "name", "photo", "photoThumbnail"],
-      });
-      if (m) membersMap.set(mid, memberEntityToApi(m));
-    }
+    const membersMap = await loadMemberDisplayMap(this.ds, memberIds);
     const membersByAssignment = new Map<string, EventAssignmentMember[]>();
     for (const am of assignmentMembers) {
       const list = membersByAssignment.get(am.assignmentId) ?? [];
@@ -331,37 +339,25 @@ export class EventsService {
       where: { eventId },
       order: { sortOrder: "ASC" },
     });
-    const memberRepo = this.ds.getRepository(Member);
-    return Promise.all(
-      attendees.map(async (a) => {
-        const m = await memberRepo.findOne({
-          where: { id: a.memberId },
-          select: ["id", "name", "photo", "photoThumbnail"],
-        });
-        const memberApi = m
-          ? memberRowToApi({
-              id: m.id,
-              name: m.name,
-              photo: m.photo,
-              photo_thumbnail: m.photoThumbnail,
-            } as Record<string, unknown>)
-          : undefined;
-        return {
-          id: a.id,
-          event_id: a.eventId,
-          member_id: a.memberId,
-          sort_order: a.sortOrder ?? 0,
-          waiver_signed: a.waiverSigned,
-          member: memberApi
-            ? {
-                id: memberApi.id,
-                name: memberApi.name,
-                photo_thumbnail_url: memberApi.photo_thumbnail_url,
-              }
-            : undefined,
-        };
-      }),
-    );
+    const attendeeMemberIds = [...new Set(attendees.map((a) => a.memberId))];
+    const displayMap = await loadMemberDisplayMap(this.ds, attendeeMemberIds);
+    return attendees.map((a) => {
+      const memberApi = displayMap.get(a.memberId);
+      return {
+        id: a.id,
+        event_id: a.eventId,
+        member_id: a.memberId,
+        sort_order: a.sortOrder ?? 0,
+        waiver_signed: a.waiverSigned,
+        member: memberApi
+          ? {
+              id: memberApi.id,
+              name: memberApi.name,
+              photo_thumbnail_url: memberApi.photo_thumbnail_url,
+            }
+          : undefined,
+      };
+    });
   }
 
   private async getAssets(eventId: string) {
@@ -410,21 +406,15 @@ export class EventsService {
     ];
 
     const contactRepo = this.ds.getRepository(Contact);
-    const memberRepo = this.ds.getRepository(Member);
 
-    const [contacts, members] = await Promise.all([
+    const [contacts, memberDisplayMap] = await Promise.all([
       contactIds.length
         ? contactRepo.find({
             where: { id: In(contactIds) },
             select: ["id", "displayName"],
           })
         : Promise.resolve([]),
-      memberIds.length
-        ? memberRepo.find({
-            where: { id: In(memberIds) },
-            select: ["id", "name", "photo", "photoThumbnail"],
-          })
-        : Promise.resolve([]),
+      loadMemberDisplayMap(this.ds, memberIds),
     ]);
 
     const contactsMap = new Map<string, { id: string; display_name: string }>();
@@ -432,38 +422,23 @@ export class EventsService {
       contactsMap.set(c.id, { id: c.id, display_name: c.displayName });
     }
 
-    const membersMap = new Map<
-      string,
-      { id: string; name: string; photo_thumbnail_url: string | null }
-    >();
-    for (const m of members) {
-      const api = memberEntityToApi(m);
-      membersMap.set(m.id, {
-        id: api.id,
-        name: api.name,
-        photo_thumbnail_url: api.photo_thumbnail_url,
-      });
-    }
-
-    return incidents.map((i) => ({
-      id: i.id,
-      event_id: i.eventId,
-      contact_id: i.contactId,
-      member_id: i.memberId,
-      type: i.type,
-      severity: i.severity,
-      summary: i.summary,
-      details: i.details ?? null,
-      occurred_at: toISOStringOrNull(i.occurredAt),
-      created_at: toISOString(i.createdAt),
-      contact: i.contactId ? contactsMap.get(i.contactId) : undefined,
-      member: i.memberId
-        ? membersMap.get(i.memberId) && {
-            id: membersMap.get(i.memberId)!.id,
-            name: membersMap.get(i.memberId)!.name,
-          }
-        : undefined,
-    }));
+    return incidents.map((i) => {
+      const memberInfo = i.memberId ? memberDisplayMap.get(i.memberId) : undefined;
+      return {
+        id: i.id,
+        event_id: i.eventId,
+        contact_id: i.contactId,
+        member_id: i.memberId,
+        type: i.type,
+        severity: i.severity,
+        summary: i.summary,
+        details: i.details ?? null,
+        occurred_at: toISOStringOrNull(i.occurredAt),
+        created_at: toISOString(i.createdAt),
+        contact: i.contactId ? contactsMap.get(i.contactId) : undefined,
+        member: memberInfo ? { id: memberInfo.id, name: memberInfo.name } : undefined,
+      };
+    });
   }
 
   async listIncidents(page: number, perPage: number): Promise<IncidentListOutput> {
@@ -491,21 +466,15 @@ export class EventsService {
     const memberIds = [...new Set(rows.map((i) => i.memberId).filter((id): id is string => !!id))];
 
     const contactRepo = this.ds.getRepository(Contact);
-    const memberRepo = this.ds.getRepository(Member);
 
-    const [contacts, members] = await Promise.all([
+    const [contacts, memberDisplayMap] = await Promise.all([
       contactIds.length
         ? contactRepo.find({
             where: { id: In(contactIds) },
             select: ["id", "displayName"],
           })
         : Promise.resolve([]),
-      memberIds.length
-        ? memberRepo.find({
-            where: { id: In(memberIds) },
-            select: ["id", "name", "photo", "photoThumbnail"],
-          })
-        : Promise.resolve([]),
+      loadMemberDisplayMap(this.ds, memberIds),
     ]);
 
     const contactsMap = new Map<string, { id: string; display_name: string }>();
@@ -513,21 +482,9 @@ export class EventsService {
       contactsMap.set(c.id, { id: c.id, display_name: c.displayName });
     }
 
-    const membersMap = new Map<
-      string,
-      { id: string; name: string; photo_thumbnail_url: string | null }
-    >();
-    for (const m of members) {
-      const api = memberEntityToApi(m);
-      membersMap.set(m.id, {
-        id: api.id,
-        name: api.name,
-        photo_thumbnail_url: api.photo_thumbnail_url,
-      });
-    }
-
     const items = rows.map((i) => {
       const event = eventsMap.get(i.eventId);
+      const memberInfo = i.memberId ? memberDisplayMap.get(i.memberId) : undefined;
       return {
         id: i.id,
         event_id: i.eventId,
@@ -542,12 +499,7 @@ export class EventsService {
         event_name: event?.name,
         event_type: (event?.eventType ?? "badger") as EventType,
         contact: i.contactId ? contactsMap.get(i.contactId) : undefined,
-        member: i.memberId
-          ? membersMap.get(i.memberId) && {
-              id: membersMap.get(i.memberId)!.id,
-              name: membersMap.get(i.memberId)!.name,
-            }
-          : undefined,
+        member: memberInfo ? { id: memberInfo.id, name: memberInfo.name } : undefined,
       };
     });
 
@@ -1026,8 +978,10 @@ export class EventsService {
     add: async (eventId: string, body: { member_id: string; waiver_signed?: boolean }) => {
       const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
       if (!event) return null;
-      const member = await this.ds.getRepository(Member).findOne({ where: { id: body.member_id } });
-      if (!member) return null;
+      const memberExists = await this.ds
+        .getRepository(Member)
+        .findOne({ where: { id: body.member_id }, select: ["id"] });
+      if (!memberExists) return null;
       const existing = await this.ds
         .getRepository(EventRideMemberAttendee)
         .findOne({ where: { eventId, memberId: body.member_id } });
@@ -1045,17 +999,21 @@ export class EventsService {
         "INSERT INTO event_ride_member_attendees (id, event_id, member_id, sort_order, waiver_signed) VALUES (?, ?, ?, ?, ?)",
         [id, eventId, body.member_id, sortOrder, waiverSigned],
       );
+      const memberDisplay = await loadMemberDisplayMap(this.ds, [body.member_id]);
+      const memberInfo = memberDisplay.get(body.member_id);
       return {
         id,
         event_id: eventId,
         member_id: body.member_id,
         sort_order: sortOrder,
         waiver_signed: body.waiver_signed ?? false,
-        member: {
-          id: member.id,
-          name: member.name,
-          photo_thumbnail_url: memberEntityToApi(member).photo_thumbnail_url,
-        },
+        member: memberInfo
+          ? {
+              id: memberInfo.id,
+              name: memberInfo.name,
+              photo_thumbnail_url: memberInfo.photo_thumbnail_url,
+            }
+          : undefined,
       };
     },
     update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) => {
@@ -1183,22 +1141,15 @@ export class EventsService {
         where: { assignmentId: aid },
         order: { sortOrder: "ASC" },
       });
-      const memberRepo = this.ds.getRepository(Member);
-      const members = await Promise.all(
-        amList.map(async (am) => {
-          const m = await memberRepo.findOne({
-            where: { id: am.memberId },
-            select: ["id", "name", "photo", "photoThumbnail"],
-          });
-          return {
-            id: am.id,
-            assignment_id: am.assignmentId,
-            member_id: am.memberId,
-            sort_order: am.sortOrder ?? 0,
-            member: m ? memberEntityToApi(m) : undefined,
-          };
-        }),
-      );
+      const amMemberIds = [...new Set(amList.map((am) => am.memberId))];
+      const amMemberMap = await loadMemberDisplayMap(this.ds, amMemberIds);
+      const members = amList.map((am) => ({
+        id: am.id,
+        assignment_id: am.assignmentId,
+        member_id: am.memberId,
+        sort_order: am.sortOrder ?? 0,
+        member: amMemberMap.get(am.memberId),
+      }));
       return {
         id: aid,
         event_id: eventId,

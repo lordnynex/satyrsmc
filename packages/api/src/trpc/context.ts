@@ -1,24 +1,53 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { Api } from "../services/api";
+import type { UserType } from "@satyrsmc/shared/lib/enums";
+
+export type Session = {
+  userId: string;
+  userType: UserType;
+  memberId: string | null;
+  contactId: string;
+};
 
 export type ContextOptions = {
   api: Api;
 };
 
+function parseCookie(header: string | null, name: string): string | null {
+  if (!header) return null;
+  const match = header.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]!) : null;
+}
+
 /**
  * Creates a per-request context for tRPC procedures.
- * Pass api (and later session) from the server entry so procedures can use ctx.api.
- * Auth: session is a placeholder; protected procedures will later check ctx.session.
+ * Parses the JWT access token from cookies to populate the session.
  */
 export function createContextFn(options: ContextOptions) {
   const { api } = options;
-  return function createContext({ req, resHeaders }: FetchCreateContextFnOptions) {
+  return async function createContext({ req, resHeaders }: FetchCreateContextFnOptions) {
+    let session: Session | null = null;
+
+    const cookieHeader = req.headers.get("cookie");
+    const accessToken = parseCookie(cookieHeader, "satyrs_access");
+
+    if (accessToken) {
+      const payload = await api.auth.verifyAccessToken(accessToken);
+      if (payload) {
+        session = {
+          userId: payload.userId,
+          userType: payload.userType,
+          memberId: payload.memberId,
+          contactId: payload.contactId,
+        };
+      }
+    }
+
     return {
       req,
       resHeaders,
       api,
-      /** Placeholder for auth; protected procedures will later check this. */
-      session: null as { userId: string } | null,
+      session,
     };
   };
 }
@@ -27,5 +56,5 @@ export type Context = {
   req: Request;
   resHeaders: Headers;
   api: Api;
-  session: { userId: string } | null;
+  session: Session | null;
 };

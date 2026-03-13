@@ -2,6 +2,9 @@ import React from "react";
 import { NavLink, Link } from "react-router-dom";
 import Logo from "./Logo";
 
+declare const __BUILD_MEMBERS_URL__: string;
+const LOGIN_URL = (__BUILD_MEMBERS_URL__ || "") + "/login";
+
 export const Navbar: React.FC = () => {
   const [open, setOpen] = React.useState(false);
 
@@ -55,16 +58,10 @@ export const Navbar: React.FC = () => {
             Contact Us
           </NavLink>
 
-          {/* Social icons */}
           <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-600/40">
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                `px-2.5 py-1.5 rounded text-sm ${isActive ? "bg-satyrs-blue text-white" : "hover:bg-white/10"}`
-              }
-            >
+            <a href={LOGIN_URL} className="px-2.5 py-1.5 rounded text-sm hover:bg-white/10">
               Login
-            </NavLink>
+            </a>
           </div>
         </div>
 
@@ -109,15 +106,13 @@ export const Navbar: React.FC = () => {
           >
             Members
           </NavLink>
-          <NavLink
-            to="/login"
+          <a
+            href={LOGIN_URL}
             onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              `px-2.5 py-1.5 rounded text-sm ${isActive ? "bg-satyrs-blue text-white" : "hover:bg-white/10"}`
-            }
+            className="px-2.5 py-1.5 rounded text-sm hover:bg-white/10"
           >
             Login
-          </NavLink>
+          </a>
           <NavLink
             to="/badger"
             onClick={() => setOpen(false)}

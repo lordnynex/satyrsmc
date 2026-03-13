@@ -6,7 +6,7 @@
 graph TB
     subgraph "Frontend (Static SPAs)"
         PUB[app-public<br/>React 19 Public Site]
-        ADM[app-admin<br/>React 19 Admin CMS]
+        ADM[app-members<br/>React 19 Admin CMS]
     end
 
     subgraph "Backend (Bun.serve)"
@@ -31,12 +31,12 @@ graph TB
 
 **Packages:**
 
-| Package                | Purpose                                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| `@satyrsmc/api`        | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database                      |
-| `@satyrsmc/app-admin`  | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
-| `@satyrsmc/app-public` | React 19 public website (home, about, events, gallery, members)                                      |
-| `@satyrsmc/shared`     | Zod DTO schemas and derived TypeScript types shared across all packages                              |
+| Package                 | Purpose                                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `@satyrsmc/api`         | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database                      |
+| `@satyrsmc/app-members` | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
+| `@satyrsmc/app-public`  | React 19 public website (home, about, events, gallery, members)                                      |
+| `@satyrsmc/shared`      | Zod DTO schemas and derived TypeScript types shared across all packages                              |
 
 ## Prerequisites
 
@@ -83,11 +83,12 @@ bun run storybook     # Dev server on :6006
 # Root (from repo root)
 bun run dev              # Build frontends + start API dev server (requires DATABASE_URL)
 bun run dev:pglite       # Same as dev but in-memory PGlite, no Postgres; seeds from SQLite if present
-bun run build            # Build both SPAs (app-public + app-admin)
+bun run build            # Build both SPAs (app-public + app-members)
 bun run start            # Start API server (production mode)
 bun run start:api-only   # Start API without serving static files
 bun run test             # Run API tests
 bun run migrate          # Run TypeORM migrations
+bun run seed             # Seed sample users for manual testing
 bun run storybook        # Storybook dev server
 
 # Static site build + deploy
@@ -95,6 +96,21 @@ make build-static        # Build unified static site into dist/
 make deploy-static       # Sync dist/ to S3
 make deploy-static-dry   # Dry-run deploy
 ```
+
+## Seed Data
+
+Run `bun run seed` to create sample user accounts for manual testing. The script is idempotent — it skips users that already exist. Requires `DATABASE_URL` (or `USE_PGLITE=1`).
+
+All seed accounts use the password: **`Password1!`**
+
+| Username    | Type      | Status    | Member? | Notes                    |
+| ----------- | --------- | --------- | ------- | ------------------------ |
+| `admin`     | admin     | active    | yes     | Full admin access        |
+| `webmaster` | webmaster | active    | yes     | Webmaster access         |
+| `member`    | user      | active    | yes     | Active member user       |
+| `user`      | user      | active    | no      | Regular user (no member) |
+| `locked`    | user      | locked    | no      | Pending approval         |
+| `suspended` | user      | suspended | no      | Suspended account        |
 
 ## Running Tests
 
@@ -127,7 +143,7 @@ satyrsmc/
       scripts/
         migrate.ts          # Migration runner CLI
       Dockerfile            # Docker image for API
-    app-admin/              # Admin SPA: React 19 + TanStack Query + tRPC
+    app-members/              # Admin SPA: React 19 + TanStack Query + tRPC
       src/
         App.tsx             # Routes + layout
         entry.tsx           # Bootstrap (BrowserRouter, tRPC, ReactQuery)

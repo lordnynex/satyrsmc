@@ -8,7 +8,6 @@ import AboutPage from "./pages/AboutPage";
 import BadgerPage from "./pages/BadgerPage";
 import MembersPage from "./pages/MembersPage";
 
-import LoginPage from "./pages/LoginPage";
 import ContactPage from "./pages/ContactPage";
 
 const queryClient = new QueryClient();
@@ -26,7 +25,6 @@ function AppWithProviders() {
               <Route path="/badger" element={<BadgerPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/members/:memberId" element={<Navigate to="/members" replace />} />
-              <Route path="/login" element={<LoginPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/events" element={<Navigate to="/" replace />} />
               <Route path="/gallery" element={<Navigate to="/" replace />} />

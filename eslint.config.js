@@ -48,7 +48,7 @@ export default tseslint.config(
 
   // React packages: browser globals + React lint rules
   {
-    files: ["packages/app-admin/**/*.{ts,tsx}", "packages/app-public/**/*.{ts,tsx}"],
+    files: ["packages/app-members/**/*.{ts,tsx}", "packages/app-public/**/*.{ts,tsx}"],
     ...eslintReact.configs.recommended,
     languageOptions: {
       globals: globals.browser,

@@ -1,5 +1,5 @@
 /**
- * Type aliases for names used by app-admin that map to DTO output types.
+ * Type aliases for names used by app-members that map to DTO output types.
  * Enables dropping shared/types while keeping existing component type imports.
  */
 

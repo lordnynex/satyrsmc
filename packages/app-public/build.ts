@@ -13,6 +13,7 @@ if (existsSync(outdir)) {
 
 const entrypoints = [path.join(process.cwd(), "index.html")];
 const apiOrigin = process.env.API_ORIGIN ?? process.env.VITE_API_ORIGIN ?? "";
+const membersUrl = process.env.MEMBERS_URL ?? "";
 
 const result = await Bun.build({
   entrypoints,
@@ -25,6 +26,7 @@ const result = await Bun.build({
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
     __BUILD_API_ORIGIN__: JSON.stringify(apiOrigin),
+    __BUILD_MEMBERS_URL__: JSON.stringify(membersUrl),
   },
 });
 

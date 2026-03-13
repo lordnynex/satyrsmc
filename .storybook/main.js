@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
-const appAdminSrc = path.join(rootDir, "packages/app-admin/src");
+const appAdminSrc = path.join(rootDir, "packages/app-members/src");
 const appPublicSrc = path.join(rootDir, "packages/app-public/src");
 
 const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx"];
@@ -32,7 +32,7 @@ function aliasByImporterPlugin() {
       if (!source.startsWith("@/") || !importer) return null;
       const rel = source.slice(2);
       const normalizedImporter = path.normalize(importer).replace(/\\/g, "/");
-      if (normalizedImporter.includes("packages/app-admin")) {
+      if (normalizedImporter.includes("packages/app-members")) {
         return resolveWithExtensions(appAdminSrc, rel) ?? path.join(appAdminSrc, rel);
       }
       if (normalizedImporter.includes("packages/app-public")) {
@@ -50,8 +50,8 @@ async function viteFinal(config) {
   config.resolve = config.resolve || {};
   config.resolve.alias = {
     ...config.resolve.alias,
-    "@app-admin": appAdminSrc,
-    "@app-admin/": appAdminSrc + "/",
+    "@app-members": appAdminSrc,
+    "@app-members/": appAdminSrc + "/",
     "@app-public": appPublicSrc,
     "@app-public/": appPublicSrc + "/",
   };
@@ -65,7 +65,7 @@ const config = {
     options: {},
   },
   stories: [
-    "../packages/app-admin/stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../packages/app-members/stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
     "../packages/app-public/stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
   addons: [

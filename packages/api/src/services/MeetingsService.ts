@@ -144,11 +144,15 @@ export class MeetingsService {
     const allMemberIds = [...new Set([...assigneeIds, ...motionMemberIds])];
     const membersMap = new Map<string, { id: string; name: string }>();
     if (allMemberIds.length) {
-      const members = await this.ds.getRepository(Member).find({
-        where: { id: In(allMemberIds) },
-        select: ["id", "name"],
-      });
-      for (const m of members) membersMap.set(m.id, { id: m.id, name: m.name });
+      const memberRows = await this.ds
+        .getRepository(Member)
+        .createQueryBuilder("m")
+        .select("m.id", "id")
+        .leftJoin("contacts", "c", "c.id = m.contact_id")
+        .addSelect("c.display_name", "name")
+        .where("m.id IN (:...ids)", { ids: allMemberIds })
+        .getRawMany<{ id: string; name: string }>();
+      for (const m of memberRows) membersMap.set(m.id, { id: m.id, name: m.name });
     }
     const docMap = await this.fetchDocumentsForMeetings([meeting]);
     return {
@@ -535,11 +539,15 @@ export class MeetingsService {
     ];
     const membersMap = new Map<string, string>();
     if (motionMemberIds.length > 0) {
-      const members = await this.ds.getRepository(Member).find({
-        where: { id: In(motionMemberIds) },
-        select: ["id", "name"],
-      });
-      for (const m of members) membersMap.set(m.id, m.name);
+      const memberRows = await this.ds
+        .getRepository(Member)
+        .createQueryBuilder("m")
+        .select("m.id", "id")
+        .leftJoin("contacts", "c", "c.id = m.contact_id")
+        .addSelect("c.display_name", "name")
+        .where("m.id IN (:...ids)", { ids: motionMemberIds })
+        .getRawMany<{ id: string; name: string }>();
+      for (const m of memberRows) membersMap.set(m.id, m.name);
     }
 
     const items = rawRows.map((r) => {
