@@ -20,43 +20,39 @@ export function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle>Invalid Link</CardTitle>
-            <CardDescription>
-              This password reset link is invalid. Please request a new one.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link to="/forgot-password">
-              <Button variant="outline" className="w-full">
-                Request New Link
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Invalid Link</CardTitle>
+          <CardDescription>
+            This password reset link is invalid. Please request a new one.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link to="/forgot-password">
+            <Button variant="outline" className="w-full">
+              Request New Link
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle>Password Reset</CardTitle>
-            <CardDescription>
-              Your password has been reset successfully. You can now log in with your new password.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link to="/login">
-              <Button className="w-full">Go to Login</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Password Reset</CardTitle>
+          <CardDescription>
+            Your password has been reset successfully. You can now log in with your new password.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link to="/login">
+            <Button className="w-full">Go to Login</Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 

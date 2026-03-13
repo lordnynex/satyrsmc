@@ -33,6 +33,22 @@ export function SignupPage() {
     }
   }, [validateQuery.isSuccess, validateQuery.isError, validateQuery.data]);
 
+  if (token && tokenValid === null) {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Validating Link</CardTitle>
+          <CardDescription>Please wait while we validate your signup link.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" className="w-full" disabled>
+            Validating...
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!token || tokenValid === false) {
     return (
       <Card className="w-full max-w-sm">
@@ -78,6 +94,11 @@ export function SignupPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (tokenValid !== true) {
+      setError("Signup link is still being validated. Please wait.");
+      return;
+    }
 
     if (password !== passwordConfirm) {
       setError("Passwords do not match");

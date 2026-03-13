@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { trpc } from "@/trpc";
 import { UserStatus, UserType } from "@satyrsmc/shared/lib/enums";
@@ -21,12 +21,20 @@ export function UsersPanel() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const { data, isLoading } = trpc.admin.users.list.useQuery({
     status: statusFilter !== "all" ? (statusFilter as UserStatus) : undefined,
     user_type: typeFilter !== "all" ? (typeFilter as UserType) : undefined,
-    q: search || undefined,
+    q: debouncedSearch || undefined,
   });
 
   const users = data?.users ?? [];

@@ -23,12 +23,17 @@
     "react-router-dom": "^7.13.0"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.8.4",
     "@tanstack/react-query-devtools": "^5.91.3",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@trpc/server": "^11.0.0-rc.0",
     "@types/bun": "latest",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "bun-plugin-tailwind": "^0.1.2",
+    "happy-dom": "^20.8.4",
     "tailwindcss": "^4.1.11"
   }
 }
