@@ -27,7 +27,13 @@ import { User } from "../src/entities/User";
 import { Contact } from "../src/entities/Contact";
 import { ContactEmail } from "../src/entities/ContactEmail";
 import { Member } from "../src/entities/Member";
-import { UserType, UserStatus } from "@satyrsmc/shared/lib/enums";
+import {
+  UserType,
+  UserStatus,
+  ContactType,
+  ContactStatus,
+  ContactEmailType,
+} from "@satyrsmc/shared/lib/enums";
 import { logger } from "../src/logger";
 
 const SEED_PASSWORD = "Password1!";
@@ -134,8 +140,8 @@ async function main() {
     // Create contact
     const contact = contactRepo.create({
       id: crypto.randomUUID(),
-      type: "person" as never,
-      status: "active" as never,
+      type: ContactType.Person,
+      status: ContactStatus.Active,
       displayName: `${seed.firstName} ${seed.lastName}`,
       firstName: seed.firstName,
       lastName: seed.lastName,
@@ -147,7 +153,7 @@ async function main() {
       id: crypto.randomUUID(),
       contactId: contact.id,
       email: seed.email,
-      type: "home" as never,
+      type: ContactEmailType.Home,
       isPrimary: true,
     });
     await emailRepo.save(contactEmail);

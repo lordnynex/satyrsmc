@@ -9,11 +9,11 @@ import { UserStatus, UserType } from "@satyrsmc/shared/lib/enums";
 const sentEmails: Array<{ type: string; to: string; token?: string }> = [];
 
 class TestEmailService implements EmailService {
-  async sendRegistrationEmail(to: string, token: string): Promise<void> {
+  async sendRegistrationEmail(to: string, token: string, _name: string): Promise<void> {
     sentEmails.push({ type: "registration", to, token });
   }
-  async sendPasswordResetEmail(): Promise<void> {}
-  async sendAdminNotification(): Promise<void> {
+  async sendPasswordResetEmail(_to: string, _token: string, _name: string): Promise<void> {}
+  async sendAdminNotification(_subject: string, _body: string): Promise<void> {
     sentEmails.push({ type: "admin_notification", to: "admin" });
   }
 }

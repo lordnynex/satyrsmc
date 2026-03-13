@@ -1,5 +1,4 @@
-import { t } from "../../trpc";
-import { adminProcedure } from "../../trpc";
+import { t, adminProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import {
   UserListInputSchema,

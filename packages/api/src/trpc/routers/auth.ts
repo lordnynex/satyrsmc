@@ -57,7 +57,7 @@ export const authRouter = t.router({
 
         ctx.resHeaders.append(
           "Set-Cookie",
-          `satyrs_access=${result.accessToken}; HttpOnly; Path=/trpc; SameSite=${sameSite}${secure}; Max-Age=900`,
+          `satyrs_access=${result.accessToken}; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=900`,
         );
         ctx.resHeaders.append(
           "Set-Cookie",
@@ -105,7 +105,7 @@ export const authRouter = t.router({
 
         ctx.resHeaders.append(
           "Set-Cookie",
-          `satyrs_access=${result.accessToken}; HttpOnly; Path=/trpc; SameSite=${sameSite}${secure}; Max-Age=900`,
+          `satyrs_access=${result.accessToken}; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=900`,
         );
         ctx.resHeaders.append(
           "Set-Cookie",
@@ -128,7 +128,7 @@ export const authRouter = t.router({
       const secure = isProduction ? "; Secure" : "";
       ctx.resHeaders.append(
         "Set-Cookie",
-        `satyrs_access=; HttpOnly; Path=/trpc; SameSite=${sameSite}${secure}; Max-Age=0`,
+        `satyrs_access=; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=0`,
       );
       ctx.resHeaders.append(
         "Set-Cookie",
