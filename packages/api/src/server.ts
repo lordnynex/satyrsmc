@@ -178,9 +178,9 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       return new Response("Not Found", { status: 404 });
     }
 
-    // Admin app serves: /admin/* (admin routes + static assets) and
-    // member/auth routes at root level (login, register, profile, etc.)
-    const MEMBER_AUTH_ROUTES = [
+    // Members app serves: /admin/*, auth routes, and member routes at root level.
+    // For "/" specifically, serve members app only if authenticated (has cookie).
+    const MEMBER_APP_ROUTES = [
       "/login",
       "/register",
       "/signup",
@@ -188,10 +188,13 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       "/reset-password",
       "/profile",
       "/roster",
+      "/events",
     ];
+    const hasAuthCookie = request.headers.get("cookie")?.includes("satyrs_access=") ?? false;
     const isAdminAppRoute =
       path.startsWith("/admin") ||
-      MEMBER_AUTH_ROUTES.some((r) => path === r || path.startsWith(r + "/"));
+      MEMBER_APP_ROUTES.some((r) => path === r || path.startsWith(r + "/")) ||
+      (path === "/" && hasAuthCookie);
 
     if (isAdminAppRoute) {
       // Try to serve static assets (JS/CSS/images) — built with publicPath="/admin/"

@@ -213,7 +213,7 @@ function RegistrationsSection() {
                 <p className="text-sm text-muted-foreground">
                   {[reg.first_name, reg.last_name].filter(Boolean).join(" ") || "No name provided"}
                   {" — "}
-                  Registered {new Date(reg.created_at ?? "").toLocaleDateString()}
+                  Registered {reg.created_at ? new Date(reg.created_at).toLocaleDateString() : "—"}
                 </p>
               </div>
               <div className="flex items-center gap-2">

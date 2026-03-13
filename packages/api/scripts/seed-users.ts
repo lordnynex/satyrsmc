@@ -157,7 +157,6 @@ async function main() {
     if (seed.createMember) {
       const member = memberRepo.create({
         id: crypto.randomUUID(),
-        name: `${seed.firstName} ${seed.lastName}`,
         contactId: contact.id,
       });
       await memberRepo.save(member);

@@ -123,10 +123,16 @@ export const authRouter = t.router({
     .output(GenericMessageSchema)
     .meta({ description: "Log out and clear auth cookies." })
     .mutation(async ({ ctx }) => {
-      ctx.resHeaders.append("Set-Cookie", "satyrs_access=; HttpOnly; Path=/trpc; Max-Age=0");
+      const isProduction = process.env.NODE_ENV === "production";
+      const sameSite = isProduction ? "Strict" : "Lax";
+      const secure = isProduction ? "; Secure" : "";
       ctx.resHeaders.append(
         "Set-Cookie",
-        "satyrs_refresh=; HttpOnly; Path=/trpc/auth.refresh; Max-Age=0",
+        `satyrs_access=; HttpOnly; Path=/trpc; SameSite=${sameSite}${secure}; Max-Age=0`,
+      );
+      ctx.resHeaders.append(
+        "Set-Cookie",
+        `satyrs_refresh=; HttpOnly; Path=/trpc/auth.refresh; SameSite=${sameSite}${secure}; Max-Age=0`,
       );
       return { message: "Logged out" };
     }),

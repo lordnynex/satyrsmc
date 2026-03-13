@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/state/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,13 @@ export function LoginPage() {
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/";
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, from, navigate]);
+
   if (isAuthenticated) {
-    navigate(from, { replace: true });
     return null;
   }
 
