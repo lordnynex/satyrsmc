@@ -44,7 +44,6 @@ export type {
   EventAssignment,
   EventPlanningMilestone,
   EventAttendee,
-  RideMemberAttendee,
   CommitteeSummary,
   CommitteeDetail,
   CommitteeMeetingSummary,

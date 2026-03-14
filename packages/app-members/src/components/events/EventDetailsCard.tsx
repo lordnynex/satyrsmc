@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, ExternalLink, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, ExternalLink, MapPin, Lock } from "lucide-react";
 import type { Event } from "@satyrsmc/shared/client";
 import { formatDateOnly } from "@/lib/date-utils";
 
@@ -17,6 +18,12 @@ export function EventDetailsCard({ event, budgetName, scenarioName }: EventDetai
         <CardDescription>Key information about this event</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {event.members_only && (
+          <Badge variant="secondary" className="gap-1">
+            <Lock className="size-3" />
+            Members Only
+          </Badge>
+        )}
         {event.event_date && (
           <div className="flex items-center gap-2">
             <Calendar className="size-4 text-muted-foreground" />

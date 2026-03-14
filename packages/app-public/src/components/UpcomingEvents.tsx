@@ -1,6 +1,6 @@
 import React from "react";
-import dayjs from "dayjs";
 import { trpc } from "@satyrsmc/shared/client";
+import { formatDateOnly } from "@satyrsmc/shared/lib/date-utils";
 
 export const UpcomingEvents: React.FC = () => {
   const { data: events, isLoading, error } = trpc.website.getEventsFeed.useQuery();
@@ -123,7 +123,7 @@ export const UpcomingEvents: React.FC = () => {
               className="text-sm font-medium shrink-0"
               style={{ color: "var(--color-accent)", minWidth: "160px" }}
             >
-              {event.event_date ? dayjs(event.event_date).format("M/D/YY") : ""}
+              {event.event_date ? formatDateOnly(event.event_date) : ""}
             </span>
             <div className="flex-1 min-w-0">
               <span className="font-semibold" style={{ color: "var(--color-text)" }}>

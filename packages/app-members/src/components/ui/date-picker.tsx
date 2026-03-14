@@ -32,7 +32,9 @@ export function DatePicker({
   disabled,
   id,
 }: DatePickerProps) {
-  const date = value ? new Date(value + "T12:00:00") : undefined;
+  // Strip to YYYY-MM-DD if a full ISO string is passed, then anchor at noon to avoid timezone shifts
+  const dateStr = value && value.length > 10 ? value.slice(0, 10) : value;
+  const date = dateStr ? new Date(dateStr + "T12:00:00") : undefined;
 
   const handleSelect = (d: Date | undefined) => {
     if (d) {

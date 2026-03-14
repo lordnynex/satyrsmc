@@ -3,5 +3,6 @@ export {
   toDateOnly,
   toDateTimeLocal,
   formatDateTime,
+  normalizeEventDate,
   MONTHS,
 } from "@satyrsmc/shared/lib/date-utils";

@@ -213,6 +213,16 @@ export enum UserStatus {
 }
 export const USER_STATUSES = Object.values(UserStatus);
 
+// --- RSVP ---
+
+export enum RsvpStatus {
+  NoResponse = "no_response",
+  Yes = "yes",
+  No = "no",
+  Pending = "pending",
+}
+export const RSVP_STATUSES = Object.values(RsvpStatus);
+
 // --- QR Code ---
 
 export enum QrErrorCorrectionLevel {

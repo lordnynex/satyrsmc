@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { extractEmbedUrlFromHtml, getMapEmbedUrl } from "@/lib/maps";
+import { toDateOnly } from "@/lib/date-utils";
 import {
   useEventSuspense,
   useBudgetsOptional,
@@ -12,8 +13,6 @@ import {
   useEventAttendeeUpdate,
   useEventAttendeeDelete,
   useEventMemberAttendeeAdd,
-  useEventMemberAttendeeUpdate,
-  useEventMemberAttendeeDelete,
   useEventScheduleItemCreate,
   useEventScheduleItemUpdate,
   useEventScheduleItemDelete,
@@ -78,8 +77,6 @@ function EventDetailContent({ id }: { id: string }) {
   const updateAttendeeMutation = useEventAttendeeUpdate();
   const deleteAttendeeMutation = useEventAttendeeDelete();
   const addMemberAttendeeMutation = useEventMemberAttendeeAdd();
-  const updateMemberAttendeeMutation = useEventMemberAttendeeUpdate();
-  const deleteMemberAttendeeMutation = useEventMemberAttendeeDelete();
   const addScheduleItemMutation = useEventScheduleItemCreate();
   const updateScheduleItemMutation = useEventScheduleItemUpdate();
   const deleteScheduleItemMutation = useEventScheduleItemDelete();
@@ -128,12 +125,13 @@ function EventDetailContent({ id }: { id: string }) {
   const [editPreRideEventId, setEditPreRideEventId] = useState("");
   const [editRideCost, setEditRideCost] = useState<string>("");
   const [editShowOnWebsite, setEditShowOnWebsite] = useState(false);
+  const [editMembersOnly, setEditMembersOnly] = useState(false);
 
   useEffect(() => {
     setEditName(event.name);
     setEditDescription(event.description ?? "");
     setEditYear(event.year ?? "");
-    setEditEventDate(event.event_date ?? "");
+    setEditEventDate(toDateOnly(event.event_date));
     setEditEventUrl(event.event_url ?? "");
     setEditEventLocation(event.event_location ?? "");
     setEditEventLocationEmbed(event.event_location_embed ?? "");
@@ -151,6 +149,7 @@ function EventDetailContent({ id }: { id: string }) {
     setEditPreRideEventId(event.pre_ride_event_id ?? "");
     setEditRideCost(event.ride_cost != null ? String(event.ride_cost) : "");
     setEditShowOnWebsite(event.show_on_website ?? false);
+    setEditMembersOnly(event.members_only ?? false);
   }, [event]);
 
   const refresh = async () => {
@@ -182,6 +181,7 @@ function EventDetailContent({ id }: { id: string }) {
         pre_ride_event_id: editPreRideEventId || undefined,
         ride_cost: editRideCost === "" ? undefined : parseFloat(editRideCost),
         show_on_website: editShowOnWebsite,
+        members_only: editMembersOnly,
       },
     });
     setEditOpen(false);
@@ -215,20 +215,6 @@ function EventDetailContent({ id }: { id: string }) {
       eventId: id,
       body: { member_id: memberId, waiver_signed: waiverSigned },
     });
-    refresh();
-  };
-
-  const handleUpdateMemberAttendeeWaiver = async (attendeeId: string, waiverSigned: boolean) => {
-    await updateMemberAttendeeMutation.mutateAsync({
-      eventId: id,
-      attendeeId,
-      body: { waiver_signed: waiverSigned },
-    });
-    refresh();
-  };
-
-  const handleRemoveMemberAttendee = async (attendeeId: string) => {
-    await deleteMemberAttendeeMutation.mutateAsync({ eventId: id, attendeeId });
     refresh();
   };
 
@@ -496,13 +482,10 @@ function EventDetailContent({ id }: { id: string }) {
           <RideAttendeesCard
             eventId={id}
             attendees={event.event_attendees ?? []}
-            memberAttendees={event.ride_member_attendees ?? []}
             onAdd={handleAddAttendee}
             onUpdateWaiver={handleUpdateAttendeeWaiver}
             onRemove={handleRemoveAttendee}
             onAddMember={handleAddMemberAttendee}
-            onUpdateMemberWaiver={handleUpdateMemberAttendeeWaiver}
-            onRemoveMember={handleRemoveMemberAttendee}
           />
           <RideAssetsCard
             eventId={id}
@@ -610,6 +593,8 @@ function EventDetailContent({ id }: { id: string }) {
         setEditRideCost={setEditRideCost}
         editShowOnWebsite={editShowOnWebsite}
         setEditShowOnWebsite={setEditShowOnWebsite}
+        editMembersOnly={editMembersOnly}
+        setEditMembersOnly={setEditMembersOnly}
         budgets={budgets}
         scenarios={scenarios}
         onSave={handleSaveEdit}

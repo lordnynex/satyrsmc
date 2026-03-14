@@ -38,8 +38,6 @@ import {
   EventDeleteInputSchema,
   EventDeleteIncidentInputSchema,
   EventDeleteIncidentOutputSchema,
-  EventDeleteMemberAttendeeInputSchema,
-  EventDeleteMemberAttendeeOutputSchema,
   EventDeleteMilestoneInputSchema,
   EventDeleteMilestoneOutputSchema,
   EventDeleteOutputSchema,
@@ -68,8 +66,6 @@ import {
   EventUpdateInputSchema,
   EventUpdateIncidentInputSchema,
   EventUpdateIncidentOutputSchema,
-  EventUpdateMemberAttendeeInputSchema,
-  EventUpdateMemberAttendeeOutputSchema,
   EventUpdateMilestoneInputSchema,
   EventUpdateMilestoneOutputSchema,
   EventUpdateOutputSchema,
@@ -173,6 +169,7 @@ export const eventsRouter = t.router({
       const out = await ctx.api.events.attendees.add(input.eventId, {
         contact_id: input.contact_id,
         waiver_signed: input.waiver_signed,
+        rsvp_status: input.rsvp_status,
       });
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
@@ -184,6 +181,7 @@ export const eventsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       const out = await ctx.api.events.attendees.update(input.eventId, input.attendeeId, {
         waiver_signed: input.waiver_signed,
+        rsvp_status: input.rsvp_status,
       });
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
@@ -200,35 +198,14 @@ export const eventsRouter = t.router({
   addMemberAttendee: t.procedure
     .input(EventAddMemberAttendeeInputSchema)
     .output(EventAddMemberAttendeeOutputSchema)
-    .meta({ description: "Add a member attendee to an event." })
+    .meta({ description: "Add a member attendee to an event (resolves member_id to contact_id)." })
     .mutation(async ({ ctx, input }) => {
-      const out = await ctx.api.events.memberAttendees.add(input.eventId, {
+      const out = await ctx.api.events.attendees.addByMember(input.eventId, {
         member_id: input.member_id,
         waiver_signed: input.waiver_signed,
       });
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
-    }),
-  updateMemberAttendee: t.procedure
-    .input(EventUpdateMemberAttendeeInputSchema)
-    .output(EventUpdateMemberAttendeeOutputSchema)
-    .meta({ description: "Update a member attendee." })
-    .mutation(async ({ ctx, input }) => {
-      const out = await ctx.api.events.memberAttendees.update(
-        input.eventId,
-        input.memberAttendeeId,
-        { waiver_signed: input.waiver_signed },
-      );
-      if (!out) throw new TRPCError({ code: "NOT_FOUND" });
-      return out;
-    }),
-  deleteMemberAttendee: t.procedure
-    .input(EventDeleteMemberAttendeeInputSchema)
-    .output(EventDeleteMemberAttendeeOutputSchema)
-    .meta({ description: "Remove a member attendee from an event." })
-    .mutation(async ({ ctx, input }) => {
-      await ctx.api.events.memberAttendees.delete(input.eventId, input.memberAttendeeId);
-      return { ok: true as const };
     }),
 
   createIncident: t.procedure

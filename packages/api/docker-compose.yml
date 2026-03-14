@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: badger
-      POSTGRES_USER: badger
-      POSTGRES_PASSWORD: badger
+      POSTGRES_DB: satyrsmc
+      POSTGRES_USER: satyrs
+      POSTGRES_PASSWORD: satyrs
     ports:
       - "5432:5432"
     volumes:
@@ -15,7 +15,7 @@ services:
       context: ../..
       dockerfile: packages/api/Dockerfile
     environment:
-      DATABASE_URL: postgres://badger:badger@postgres:5432/badger
+      DATABASE_URL: postgres://satyrs:satyrs@postgres:5432/satyrsmc
     ports:
       - "3000:3000"
     depends_on:

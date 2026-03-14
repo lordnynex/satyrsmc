@@ -1,12 +1,12 @@
 import { In } from "typeorm";
 import type { DataSource } from "typeorm";
 import type { EventType, EventAssignmentCategory } from "@satyrsmc/shared/lib/enums";
+import { normalizeEventDate } from "@satyrsmc/shared/lib/date-utils";
 import type { DbLike } from "../db/dbAdapter";
 import {
   Event,
   EventPhoto,
   EventAttendee,
-  EventRideMemberAttendee,
   EventAsset,
   RideScheduleItem,
   EventPlanningMilestone,
@@ -109,6 +109,7 @@ export class EventsService {
       planning_notes: e.planningNotes ?? null,
       event_type: e.eventType ?? "badger",
       show_on_website: e.showOnWebsite,
+      members_only: e.membersOnly,
       created_at: toISOString(e.createdAt),
     }));
   }
@@ -223,6 +224,7 @@ export class EventsService {
       planning_notes: e.planningNotes ?? null,
       event_type: (e.eventType ?? "badger") as EventType,
       show_on_website: e.showOnWebsite,
+      members_only: e.membersOnly,
       created_at: toISOString(e.createdAt),
       milestones: milestones.map((m) => {
         const month = m.month;
@@ -303,7 +305,6 @@ export class EventsService {
       pre_ride_event_id: e.preRideEventId ?? null,
       ride_cost: e.rideCost ?? null,
       event_attendees: await this.getAttendees(id),
-      ride_member_attendees: await this.getMemberAttendees(id),
       event_assets: await this.getAssets(id),
       ride_schedule_items: await this.getScheduleItems(id),
       incidents,
@@ -315,45 +316,48 @@ export class EventsService {
       where: { eventId },
       order: { sortOrder: "ASC" },
     });
-    const contactRepo = this.ds.getRepository(Contact);
-    return Promise.all(
-      attendees.map(async (a) => {
-        const c = await contactRepo.findOne({
-          where: { id: a.contactId },
-          select: ["id", "displayName"],
-        });
-        return {
-          id: a.id,
-          event_id: a.eventId,
-          contact_id: a.contactId,
-          sort_order: a.sortOrder ?? 0,
-          waiver_signed: a.waiverSigned,
-          contact: c ? { id: c.id, display_name: c.displayName } : undefined,
-        };
-      }),
-    );
-  }
+    if (attendees.length === 0) return [];
 
-  private async getMemberAttendees(eventId: string) {
-    const attendees = await this.ds.getRepository(EventRideMemberAttendee).find({
-      where: { eventId },
-      order: { sortOrder: "ASC" },
+    const contactIds = [...new Set(attendees.map((a) => a.contactId))];
+    const contactRepo = this.ds.getRepository(Contact);
+    const contacts = await contactRepo.find({
+      where: { id: In(contactIds) },
+      select: ["id", "displayName", "status"],
     });
-    const attendeeMemberIds = [...new Set(attendees.map((a) => a.memberId))];
-    const displayMap = await loadMemberDisplayMap(this.ds, attendeeMemberIds);
+    const contactsMap = new Map(contacts.map((c) => [c.id, c]));
+
+    // Find which contact_ids are active members
+    const memberRows = (await this.ds.query(
+      `SELECT m.id, m.contact_id FROM members m
+       JOIN contacts c ON c.id = m.contact_id
+       WHERE m.contact_id = ANY($1) AND c.status = 'active'`,
+      [contactIds],
+    )) as Array<{ id: string; contact_id: string }>;
+    const memberByContactId = new Map(memberRows.map((r) => [r.contact_id, r.id]));
+
+    // Load member display info for those that are members
+    const activeMemberIds = [...new Set(memberRows.map((r) => r.id))];
+    const memberDisplayMap = await loadMemberDisplayMap(this.ds, activeMemberIds);
+
     return attendees.map((a) => {
-      const memberApi = displayMap.get(a.memberId);
+      const c = contactsMap.get(a.contactId);
+      const memberId = memberByContactId.get(a.contactId);
+      const isMember = !!memberId;
+      const memberInfo = memberId ? memberDisplayMap.get(memberId) : undefined;
       return {
         id: a.id,
         event_id: a.eventId,
-        member_id: a.memberId,
+        contact_id: a.contactId,
         sort_order: a.sortOrder ?? 0,
         waiver_signed: a.waiverSigned,
-        member: memberApi
+        rsvp_status: a.rsvpStatus,
+        is_member: isMember,
+        contact: c ? { id: c.id, display_name: c.displayName } : undefined,
+        member: memberInfo
           ? {
-              id: memberApi.id,
-              name: memberApi.name,
-              photo_thumbnail_url: memberApi.photo_thumbnail_url,
+              id: memberInfo.id,
+              name: memberInfo.name,
+              photo_thumbnail_url: memberInfo.photo_thumbnail_url,
             }
           : undefined,
       };
@@ -528,19 +532,21 @@ export class EventsService {
     pre_ride_event_id?: string;
     ride_cost?: number;
     show_on_website?: boolean;
+    members_only?: boolean;
   }): Promise<EventCreateOutput> {
     const id = uuid();
     const eventType = body.event_type ?? "badger";
     const showOnWebsite = body.show_on_website !== false;
+    const membersOnly = body.members_only ?? false;
     await this.db.run(
-      `INSERT INTO events (id, name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (id, name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website, members_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         body.name,
         eventType,
         body.description ?? null,
         body.year ?? null,
-        body.event_date ?? null,
+        normalizeEventDate(body.event_date),
         body.event_url ?? null,
         body.event_location ?? null,
         body.event_location_embed ?? null,
@@ -557,6 +563,7 @@ export class EventsService {
         body.pre_ride_event_id ?? null,
         body.ride_cost ?? null,
         showOnWebsite,
+        membersOnly,
       ],
     );
     const created = await this.get(id);
@@ -588,6 +595,7 @@ export class EventsService {
       pre_ride_event_id: string;
       ride_cost: number;
       show_on_website: boolean;
+      members_only: boolean;
     }>,
   ): Promise<EventUpdateOutput | null> {
     /* Original: SELECT * FROM events WHERE id = ? */
@@ -597,7 +605,14 @@ export class EventsService {
     const event_type = body.event_type !== undefined ? body.event_type : existing.eventType;
     const description = body.description !== undefined ? body.description : existing.description;
     const year = body.year !== undefined ? body.year : existing.year;
-    const event_date = body.event_date !== undefined ? body.event_date : existing.eventDate;
+    const event_date =
+      body.event_date !== undefined
+        ? normalizeEventDate(body.event_date)
+        : normalizeEventDate(
+            existing.eventDate instanceof Date
+              ? existing.eventDate.toISOString()
+              : existing.eventDate,
+          );
     const event_url = body.event_url !== undefined ? body.event_url : existing.eventUrl;
     const event_location =
       body.event_location !== undefined ? body.event_location : existing.eventLocation;
@@ -627,8 +642,9 @@ export class EventsService {
     const ride_cost = body.ride_cost !== undefined ? body.ride_cost : existing.rideCost;
     const show_on_website =
       body.show_on_website !== undefined ? body.show_on_website : existing.showOnWebsite;
+    const members_only = body.members_only !== undefined ? body.members_only : existing.membersOnly;
     await this.db.run(
-      `UPDATE events SET name = ?, event_type = ?, description = ?, year = ?, event_date = ?, event_url = ?, event_location = ?, event_location_embed = ?, ga_ticket_cost = ?, day_pass_cost = ?, ga_tickets_sold = ?, day_passes_sold = ?, budget_id = ?, scenario_id = ?, planning_notes = ?, start_location = ?, end_location = ?, facebook_event_url = ?, pre_ride_event_id = ?, ride_cost = ?, show_on_website = ? WHERE id = ?`,
+      `UPDATE events SET name = ?, event_type = ?, description = ?, year = ?, event_date = ?, event_url = ?, event_location = ?, event_location_embed = ?, ga_ticket_cost = ?, day_pass_cost = ?, ga_tickets_sold = ?, day_passes_sold = ?, budget_id = ?, scenario_id = ?, planning_notes = ?, start_location = ?, end_location = ?, facebook_event_url = ?, pre_ride_event_id = ?, ride_cost = ?, show_on_website = ?, members_only = ? WHERE id = ?`,
       [
         name,
         event_type,
@@ -651,6 +667,7 @@ export class EventsService {
         pre_ride_event_id,
         ride_cost,
         show_on_website,
+        members_only,
         id,
       ],
     );
@@ -669,7 +686,6 @@ export class EventsService {
     await this.db.run("DELETE FROM event_volunteers WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM event_photos WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM event_attendees WHERE event_id = ?", [id]);
-    await this.db.run("DELETE FROM event_ride_member_attendees WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM event_assets WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM ride_schedule_items WHERE event_id = ?", [id]);
     await this.db.run("DELETE FROM events WHERE id = ?", [id]);
@@ -803,17 +819,16 @@ export class EventsService {
   }
 
   attendees = {
-    add: async (eventId: string, body: { contact_id: string; waiver_signed?: boolean }) => {
+    add: async (
+      eventId: string,
+      body: { contact_id: string; waiver_signed?: boolean; rsvp_status?: string },
+    ) => {
       const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
       if (!event) return null;
       const contact = await this.ds
         .getRepository(Contact)
         .findOne({ where: { id: body.contact_id } });
       if (!contact) return null;
-      const existing = await this.ds
-        .getRepository(EventAttendee)
-        .findOne({ where: { eventId, contactId: body.contact_id } });
-      if (existing) return null;
       const id = uuid();
       const maxResult = await this.ds
         .getRepository(EventAttendee)
@@ -823,29 +838,52 @@ export class EventsService {
         .getRawOne<{ m: number }>();
       const sortOrder = (maxResult?.m ?? 0) + 1;
       const waiverSigned = body.waiver_signed ?? false;
+      const rsvpStatus = body.rsvp_status ?? "no_response";
       await this.db.run(
-        "INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed) VALUES (?, ?, ?, ?, ?)",
-        [id, eventId, body.contact_id, sortOrder, waiverSigned],
+        `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, rsvp_status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, now(), now())
+         ON CONFLICT (event_id, contact_id) DO UPDATE SET rsvp_status = ?, waiver_signed = ?, updated_at = now()`,
+        [
+          id,
+          eventId,
+          body.contact_id,
+          sortOrder,
+          waiverSigned,
+          rsvpStatus,
+          rsvpStatus,
+          waiverSigned,
+        ],
       );
-      return {
-        id,
-        event_id: eventId,
-        contact_id: body.contact_id,
-        sort_order: sortOrder,
-        waiver_signed: body.waiver_signed ?? false,
-        contact: { id: contact.id, display_name: contact.displayName },
-      };
+      // Re-fetch to get the actual row (may be upserted)
+      const attendees = await this.getAttendees(eventId);
+      return attendees.find((a) => a.contact_id === body.contact_id) ?? null;
     },
-    update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) => {
+    addByMember: async (eventId: string, body: { member_id: string; waiver_signed?: boolean }) => {
+      const member = await this.ds
+        .getRepository(Member)
+        .findOne({ where: { id: body.member_id }, select: ["id", "contactId"] });
+      if (!member) return null;
+      return this.attendees.add(eventId, {
+        contact_id: member.contactId,
+        rsvp_status: "yes",
+        waiver_signed: body.waiver_signed,
+      });
+    },
+    update: async (
+      eventId: string,
+      attendeeId: string,
+      body: { waiver_signed?: boolean; rsvp_status?: string },
+    ) => {
       const existing = await this.ds
         .getRepository(EventAttendee)
         .findOne({ where: { id: attendeeId, eventId } });
       if (!existing) return null;
       const waiverSigned =
         body.waiver_signed !== undefined ? body.waiver_signed : existing.waiverSigned;
+      const rsvpStatus = body.rsvp_status !== undefined ? body.rsvp_status : existing.rsvpStatus;
       await this.db.run(
-        "UPDATE event_attendees SET waiver_signed = ? WHERE id = ? AND event_id = ?",
-        [waiverSigned, attendeeId, eventId],
+        "UPDATE event_attendees SET waiver_signed = ?, rsvp_status = ?, updated_at = now() WHERE id = ? AND event_id = ?",
+        [waiverSigned, rsvpStatus, attendeeId, eventId],
       );
       const attendees = await this.getAttendees(eventId);
       return attendees.find((a) => a.id === attendeeId) ?? null;
@@ -968,71 +1006,6 @@ export class EventsService {
     delete: async (eventId: string, incidentId: string) => {
       await this.db.run("DELETE FROM incidents WHERE id = ? AND event_id = ?", [
         incidentId,
-        eventId,
-      ]);
-      return { ok: true };
-    },
-  };
-
-  memberAttendees = {
-    add: async (eventId: string, body: { member_id: string; waiver_signed?: boolean }) => {
-      const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
-      if (!event) return null;
-      const memberExists = await this.ds
-        .getRepository(Member)
-        .findOne({ where: { id: body.member_id }, select: ["id"] });
-      if (!memberExists) return null;
-      const existing = await this.ds
-        .getRepository(EventRideMemberAttendee)
-        .findOne({ where: { eventId, memberId: body.member_id } });
-      if (existing) return null;
-      const id = uuid();
-      const maxResult = await this.ds
-        .getRepository(EventRideMemberAttendee)
-        .createQueryBuilder("a")
-        .select("COALESCE(MAX(a.sortOrder), 0)", "m")
-        .where("a.eventId = :eventId", { eventId })
-        .getRawOne<{ m: number }>();
-      const sortOrder = (maxResult?.m ?? 0) + 1;
-      const waiverSigned = body.waiver_signed ?? false;
-      await this.db.run(
-        "INSERT INTO event_ride_member_attendees (id, event_id, member_id, sort_order, waiver_signed) VALUES (?, ?, ?, ?, ?)",
-        [id, eventId, body.member_id, sortOrder, waiverSigned],
-      );
-      const memberDisplay = await loadMemberDisplayMap(this.ds, [body.member_id]);
-      const memberInfo = memberDisplay.get(body.member_id);
-      return {
-        id,
-        event_id: eventId,
-        member_id: body.member_id,
-        sort_order: sortOrder,
-        waiver_signed: body.waiver_signed ?? false,
-        member: memberInfo
-          ? {
-              id: memberInfo.id,
-              name: memberInfo.name,
-              photo_thumbnail_url: memberInfo.photo_thumbnail_url,
-            }
-          : undefined,
-      };
-    },
-    update: async (eventId: string, attendeeId: string, body: { waiver_signed?: boolean }) => {
-      const existing = await this.ds
-        .getRepository(EventRideMemberAttendee)
-        .findOne({ where: { id: attendeeId, eventId } });
-      if (!existing) return null;
-      const waiverSigned =
-        body.waiver_signed !== undefined ? body.waiver_signed : existing.waiverSigned;
-      await this.db.run(
-        "UPDATE event_ride_member_attendees SET waiver_signed = ? WHERE id = ? AND event_id = ?",
-        [waiverSigned, attendeeId, eventId],
-      );
-      const attendees = await this.getMemberAttendees(eventId);
-      return attendees.find((a) => a.id === attendeeId) ?? null;
-    },
-    delete: async (eventId: string, attendeeId: string) => {
-      await this.db.run("DELETE FROM event_ride_member_attendees WHERE id = ? AND event_id = ?", [
-        attendeeId,
         eventId,
       ]);
       return { ok: true };

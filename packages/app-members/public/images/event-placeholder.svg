@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0b1120"/>
+      <stop offset="100%" style="stop-color:#1a2744"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g transform="translate(400,280)" opacity="0.15">
+    <path d="M-60-20c0-33.1 26.9-60 60-60s60 26.9 60 60v10h20v20h-20v10c0 33.1-26.9 60-60 60s-60-26.9-60-60v-10h-20v-20h20v-10zm20 0v30c0 22.1 17.9 40 40 40s40-17.9 40-40v-30c0-22.1-17.9-40-40-40s-40 17.9-40 40z" fill="#d4af37"/>
+    <circle cx="0" cy="0" r="15" fill="#d4af37"/>
+  </g>
+  <text x="400" y="340" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#d4af37" opacity="0.2">SATYRS MC</text>
+</svg>

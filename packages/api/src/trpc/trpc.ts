@@ -3,7 +3,21 @@ import type { TRPCPanelMeta } from "trpc-ui";
 import type { Context } from "./context";
 import { UserType } from "@satyrsmc/shared/lib/enums";
 
-export const t = initTRPC.context<Context>().meta<TRPCPanelMeta>().create();
+export const t = initTRPC
+  .context<Context>()
+  .meta<TRPCPanelMeta>()
+  .create({
+    errorFormatter: ({ shape, error }) => {
+      if (error.code === "INTERNAL_SERVER_ERROR") {
+        return {
+          ...shape,
+          message: "An internal server error occurred",
+          data: { ...shape.data, stack: undefined },
+        };
+      }
+      return { ...shape, data: { ...shape.data, stack: undefined } };
+    },
+  });
 
 /** Requires a valid session (any authenticated user). */
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {

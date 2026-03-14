@@ -1,7 +1,6 @@
 export { Event } from "./Event";
 export { EventPhoto } from "./EventPhoto";
 export { EventAttendee } from "./EventAttendee";
-export { EventRideMemberAttendee } from "./EventRideMemberAttendee";
 export { EventAsset } from "./EventAsset";
 export { RideScheduleItem } from "./RideScheduleItem";
 export { EventPlanningMilestone } from "./EventPlanningMilestone";

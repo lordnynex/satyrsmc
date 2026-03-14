@@ -73,6 +73,8 @@ interface EditEventDialogProps {
   setEditRideCost: (v: string) => void;
   editShowOnWebsite: boolean;
   setEditShowOnWebsite: (v: boolean) => void;
+  editMembersOnly: boolean;
+  setEditMembersOnly: (v: boolean) => void;
   budgets: BudgetSummary[];
   scenarios: ScenarioSummary[];
   onSave: () => Promise<void>;
@@ -123,6 +125,8 @@ export function EditEventDialog({
   setEditRideCost,
   editShowOnWebsite,
   setEditShowOnWebsite,
+  editMembersOnly,
+  setEditMembersOnly,
   budgets,
   scenarios,
   onSave,
@@ -369,6 +373,15 @@ export function EditEventDialog({
               className="size-4 rounded border-input"
             />
             <span className="text-sm font-medium">Show on website</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={editMembersOnly}
+              onChange={(e) => setEditMembersOnly(e.target.checked)}
+              className="size-4 rounded border-input"
+            />
+            <span className="text-sm font-medium">Members only</span>
           </label>
         </div>
         <DialogFooter>

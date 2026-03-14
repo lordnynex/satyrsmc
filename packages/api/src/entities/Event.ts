@@ -77,4 +77,7 @@ export class Event {
 
   @Column({ name: "show_on_website", type: "boolean", default: false })
   showOnWebsite!: boolean;
+
+  @Column({ name: "members_only", type: "boolean", default: false })
+  membersOnly!: boolean;
 }

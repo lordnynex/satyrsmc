@@ -168,33 +168,6 @@ export function useEventMemberAttendeeAdd() {
   });
 }
 
-export function useEventMemberAttendeeUpdate() {
-  const api = useApi();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      eventId,
-      attendeeId,
-      body,
-    }: {
-      eventId: string;
-      attendeeId: string;
-      body: { waiver_signed?: boolean };
-    }) => api.events.memberAttendees.update(eventId, attendeeId, body),
-    onSuccess: (_, { eventId }) => qc.invalidateQueries({ queryKey: queryKeys.event(eventId) }),
-  });
-}
-
-export function useEventMemberAttendeeDelete() {
-  const api = useApi();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ eventId, attendeeId }: { eventId: string; attendeeId: string }) =>
-      api.events.memberAttendees.delete(eventId, attendeeId),
-    onSuccess: (_, { eventId }) => qc.invalidateQueries({ queryKey: queryKeys.event(eventId) }),
-  });
-}
-
 export function useEventScheduleItemCreate() {
   const api = useApi();
   const qc = useQueryClient();

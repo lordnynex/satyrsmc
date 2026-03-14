@@ -59,6 +59,16 @@ describe("admin.events", () => {
       expect(result.id).toBeDefined();
       expect(result.name).toBe("New Event");
     });
+
+    test("creates event with members_only flag", async () => {
+      const result = await harness.caller.admin.events.create({
+        name: "Members Only Event",
+        event_type: EventType.Badger,
+        members_only: true,
+      });
+      expect(result.id).toBeDefined();
+      expect(result.members_only).toBe(true);
+    });
   });
 
   describe("update", () => {
@@ -70,6 +80,15 @@ describe("admin.events", () => {
       });
       expect(result.id).toBe(e.id);
       expect(result.name).toBe("Updated Event");
+    });
+
+    test("updates members_only flag", async () => {
+      const e = await createEvent(harness.api, { name: "Toggle Members Only" });
+      const result = await harness.caller.admin.events.update({
+        id: e.id,
+        members_only: true,
+      });
+      expect(result.members_only).toBe(true);
     });
 
     test("throws NOT_FOUND when id does not exist", async () => {
