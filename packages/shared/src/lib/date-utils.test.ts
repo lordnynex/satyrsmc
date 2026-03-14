@@ -1,5 +1,13 @@
 import { describe, it, expect } from "bun:test";
-import { formatDateOnly, toDateOnly, toDateTimeLocal, formatDateTime, MONTHS } from "./date-utils";
+import {
+  formatDateOnly,
+  formatDateShort,
+  toDateOnly,
+  toDateTimeLocal,
+  formatDateTime,
+  normalizeEventDate,
+  MONTHS,
+} from "./date-utils";
 
 describe("formatDateOnly", () => {
   it("formats a valid ISO string", () => {
@@ -21,6 +29,50 @@ describe("formatDateOnly", () => {
 
   it("formats single-digit days without padding", () => {
     expect(formatDateOnly("2025-06-01")).toBe("6/1/2025");
+  });
+});
+
+describe("formatDateShort", () => {
+  it("formats a valid ISO string with 2-digit year", () => {
+    expect(formatDateShort("2025-03-10T00:00:00.000Z")).toBe("3/10/25");
+  });
+
+  it("formats a YYYY-MM-DD string with 2-digit year", () => {
+    expect(formatDateShort("2026-12-25")).toBe("12/25/26");
+  });
+
+  it("returns empty string for empty input", () => {
+    expect(formatDateShort("")).toBe("");
+  });
+
+  it("formats single-digit days without padding", () => {
+    expect(formatDateShort("2025-06-01")).toBe("6/1/25");
+  });
+});
+
+describe("normalizeEventDate", () => {
+  it("normalizes a date-only string to noon UTC", () => {
+    expect(normalizeEventDate("2025-03-10")).toBe("2025-03-10T12:00:00.000Z");
+  });
+
+  it("normalizes a full ISO string to noon UTC", () => {
+    expect(normalizeEventDate("2025-03-10T14:30:00.000Z")).toBe("2025-03-10T12:00:00.000Z");
+  });
+
+  it("returns null for null", () => {
+    expect(normalizeEventDate(null)).toBeNull();
+  });
+
+  it("returns null for undefined", () => {
+    expect(normalizeEventDate(undefined)).toBeNull();
+  });
+
+  it("returns null for invalid string", () => {
+    expect(normalizeEventDate("not-a-date")).toBeNull();
+  });
+
+  it("returns null for empty string", () => {
+    expect(normalizeEventDate("")).toBeNull();
   });
 });
 

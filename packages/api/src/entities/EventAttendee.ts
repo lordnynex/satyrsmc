@@ -22,8 +22,8 @@ export class EventAttendee {
   rsvpStatus!: RsvpStatus;
 
   @Column({ name: "created_at", type: "timestamptz", nullable: true })
-  createdAt!: string | null;
+  createdAt!: Date | null;
 
   @Column({ name: "updated_at", type: "timestamptz", nullable: true })
-  updatedAt!: string | null;
+  updatedAt!: Date | null;
 }

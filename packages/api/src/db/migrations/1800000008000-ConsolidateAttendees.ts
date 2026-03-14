@@ -68,7 +68,7 @@ export class ConsolidateAttendees1800000008000 implements MigrationInterface {
         id TEXT PRIMARY KEY,
         event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
         user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        rsvp_status TEXT NOT NULL DEFAULT 'no_response',
+        status TEXT NOT NULL DEFAULT 'no_response',
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         UNIQUE(event_id, user_id)
@@ -83,5 +83,6 @@ export class ConsolidateAttendees1800000008000 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE event_attendees DROP COLUMN IF EXISTS updated_at`);
     await queryRunner.query(`ALTER TABLE event_attendees DROP COLUMN IF EXISTS created_at`);
     await queryRunner.query(`ALTER TABLE event_attendees DROP COLUMN IF EXISTS rsvp_status`);
+    await queryRunner.query(`ALTER TABLE event_attendees DROP COLUMN IF EXISTS status`);
   }
 }

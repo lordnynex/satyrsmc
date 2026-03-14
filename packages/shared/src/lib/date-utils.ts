@@ -56,6 +56,18 @@ export function normalizeEventDate(s: string | null | undefined): string | null 
   return `${dateOnly}T12:00:00.000Z`;
 }
 
+/**
+ * Format a date string with a 2-digit year (e.g. "3/14/26"). Accepts ISO or YYYY-MM-DD.
+ * Uses timezone-safe parsing like formatDateOnly.
+ */
+export function formatDateShort(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = toDateOnly(dateStr);
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  return `${Number(m)}/${Number(day)}/${y.slice(2)}`;
+}
+
 export const MONTHS = [
   "January",
   "February",

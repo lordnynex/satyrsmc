@@ -36,7 +36,7 @@ function buildFilters(input: MemberEventListInput, startIdx: number): FilterResu
   }
   if (input.date_to) {
     idx++;
-    conditions.push(`e.event_date <= $${idx}`);
+    conditions.push(`e.event_date < ($${idx}::date + interval '1 day')`);
     params.push(input.date_to);
   }
 
