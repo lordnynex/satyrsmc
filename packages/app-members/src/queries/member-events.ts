@@ -8,11 +8,16 @@ export function useMemberEventsList(input: MemberEventListInput) {
   });
 }
 
+export function useMemberEventDetail(id: string) {
+  return trpc.members.events.get.useQuery({ id });
+}
+
 export function useMemberEventRsvp() {
   const utils = trpc.useUtils();
   return trpc.members.events.rsvp.useMutation({
     onSuccess: () => {
       utils.members.events.list.invalidate();
+      utils.members.events.get.invalidate();
     },
   });
 }

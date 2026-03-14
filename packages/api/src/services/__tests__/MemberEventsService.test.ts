@@ -60,7 +60,7 @@ describe("MemberEventsService", () => {
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
       await createEvent(api, {
         name: "Future Event",
-        event_date: tomorrow,
+        start_date: tomorrow,
         event_type: EventType.Badger,
         event_location: "Test Location",
       });
@@ -85,12 +85,12 @@ describe("MemberEventsService", () => {
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
       await createEvent(api, {
         name: "Badger Event",
-        event_date: tomorrow,
+        start_date: tomorrow,
         event_type: EventType.Badger,
       });
       await createEvent(api, {
         name: "Rides Event",
-        event_date: tomorrow,
+        start_date: tomorrow,
         event_type: EventType.Rides,
       });
 
@@ -108,8 +108,8 @@ describe("MemberEventsService", () => {
     test("filters by search", async () => {
       const { contactId } = await createTestUserDirect(ds);
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      await createEvent(api, { name: "Alpha Event", event_date: tomorrow });
-      await createEvent(api, { name: "Beta Event", event_date: tomorrow });
+      await createEvent(api, { name: "Alpha Event", start_date: tomorrow });
+      await createEvent(api, { name: "Beta Event", start_date: tomorrow });
 
       const result = await api.memberEvents.list(contactId, {
         search: "Alpha",
@@ -126,8 +126,8 @@ describe("MemberEventsService", () => {
       const { contactId } = await createTestUserDirect(ds);
       const yesterday = new Date(Date.now() - 86400000).toISOString();
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      await createEvent(api, { name: "Past Event", event_date: yesterday });
-      await createEvent(api, { name: "Future Event", event_date: tomorrow });
+      await createEvent(api, { name: "Past Event", start_date: yesterday });
+      await createEvent(api, { name: "Future Event", start_date: tomorrow });
 
       const result = await api.memberEvents.list(contactId, {
         upcoming: false,
@@ -143,7 +143,7 @@ describe("MemberEventsService", () => {
       const { contactId } = await createTestUserDirect(ds);
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
       for (let i = 0; i < 5; i++) {
-        await createEvent(api, { name: `Event ${i}`, event_date: tomorrow });
+        await createEvent(api, { name: `Event ${i}`, start_date: tomorrow });
       }
 
       const page1 = await api.memberEvents.list(contactId, {
@@ -168,7 +168,7 @@ describe("MemberEventsService", () => {
       const { contactId: contactId1 } = await createTestUserDirect(ds, { username: "user1" });
       const { contactId: contactId2 } = await createTestUserDirect(ds, { username: "user2" });
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "RSVP Event", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "RSVP Event", start_date: tomorrow });
 
       await api.memberEvents.rsvp(contactId1, ev.id, RsvpStatus.Yes);
       await api.memberEvents.rsvp(contactId2, ev.id, RsvpStatus.Yes);
@@ -185,7 +185,7 @@ describe("MemberEventsService", () => {
     test("includes my_rsvp for current user", async () => {
       const { contactId } = await createTestUserDirect(ds);
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "My RSVP Event", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "My RSVP Event", start_date: tomorrow });
 
       await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.Yes);
 
@@ -200,9 +200,9 @@ describe("MemberEventsService", () => {
 
     test("filters by date range", async () => {
       const { contactId } = await createTestUserDirect(ds);
-      await createEvent(api, { name: "Jan Event", event_date: "2026-01-15T00:00:00Z" });
-      await createEvent(api, { name: "Mar Event", event_date: "2026-03-15T00:00:00Z" });
-      await createEvent(api, { name: "Jun Event", event_date: "2026-06-15T00:00:00Z" });
+      await createEvent(api, { name: "Jan Event", start_date: "2026-01-15T00:00:00Z" });
+      await createEvent(api, { name: "Mar Event", start_date: "2026-03-15T00:00:00Z" });
+      await createEvent(api, { name: "Jun Event", start_date: "2026-06-15T00:00:00Z" });
 
       const result = await api.memberEvents.list(contactId, {
         date_from: "2026-02-01",
@@ -221,7 +221,7 @@ describe("MemberEventsService", () => {
     test("creates a new RSVP", async () => {
       const { contactId } = await createTestUserDirect(ds);
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "RSVP Target", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "RSVP Target", start_date: tomorrow });
 
       const result = await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.Yes);
       expect(result.ok).toBe(true);
@@ -231,7 +231,7 @@ describe("MemberEventsService", () => {
     test("updates an existing RSVP (upsert)", async () => {
       const { contactId } = await createTestUserDirect(ds);
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "Upsert RSVP", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "Upsert RSVP", start_date: tomorrow });
 
       await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.Yes);
       const result = await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.No);
@@ -248,7 +248,7 @@ describe("MemberEventsService", () => {
     test("pending RSVP is not counted as yes", async () => {
       const { contactId } = await createTestUserDirect(ds);
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "Pending Event", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "Pending Event", start_date: tomorrow });
 
       await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.Pending);
 

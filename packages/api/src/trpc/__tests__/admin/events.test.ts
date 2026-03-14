@@ -233,16 +233,40 @@ describe("admin.events", () => {
         label: "Check-in",
       });
       expect(created).toBeDefined();
-      await harness.caller.admin.events.updateScheduleItem({
+      const updated = await harness.caller.admin.events.updateScheduleItem({
         eventId: event.id,
         scheduleId: created.id,
         label: "Updated",
       });
+      expect(updated.label).toBe("Updated");
+      expect(updated.scheduled_time).toBeTruthy();
       await harness.caller.admin.events.deleteScheduleItem({
         eventId: event.id,
         scheduleId: created.id,
       });
       expect(true).toBe(true);
+    });
+
+    test("create and update with full ISO timestamp", async () => {
+      const event = await createEvent(harness.api, { name: "ISO Schedule" });
+      const created = await harness.caller.admin.events.createScheduleItem({
+        eventId: event.id,
+        scheduled_time: "2025-06-01T09:00:00Z",
+        label: "Meet up",
+      });
+      expect(created.label).toBe("Meet up");
+      expect(created.scheduled_time).toContain("2025-06-01");
+
+      const updated = await harness.caller.admin.events.updateScheduleItem({
+        eventId: event.id,
+        scheduleId: created.id,
+        scheduled_time: "2025-06-02T10:30:00Z",
+        label: "Updated meet up",
+        location: null,
+      });
+      expect(updated.label).toBe("Updated meet up");
+      expect(updated.scheduled_time).toContain("2025-06-02");
+      expect(updated.scheduled_time).toContain("10:30");
     });
   });
 

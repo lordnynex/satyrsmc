@@ -1,4 +1,17 @@
 /**
+ * Build a Google Static Maps API URL for a location string.
+ * Returns null if no location or API key is provided.
+ */
+export function getStaticMapUrl(
+  location: string | null | undefined,
+  apiKey: string | null | undefined,
+): string | null {
+  if (!location?.trim() || !apiKey?.trim()) return null;
+  const encoded = encodeURIComponent(location.trim());
+  return `https://maps.googleapis.com/maps/api/staticmap?center=${encoded}&zoom=14&size=400x200&markers=color:red|${encoded}&key=${apiKey}`;
+}
+
+/**
  * Extracts the embed URL from Google Maps iframe HTML.
  * Accepts full iframe tag or a bare embed URL; returns the URL or null.
  */

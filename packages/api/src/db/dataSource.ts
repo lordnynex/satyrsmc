@@ -62,6 +62,7 @@ import { AddEventRsvps1800000006000 } from "./migrations/1800000006000-AddEventR
 import { NormalizeEventDatesToNoonUtc1800000007000 } from "./migrations/1800000007000-NormalizeEventDatesToNoonUtc.ts";
 import { ConsolidateAttendees1800000008000 } from "./migrations/1800000008000-ConsolidateAttendees.ts";
 import { RenameStatusToRsvpStatus1800000009000 } from "./migrations/1800000009000-RenameStatusToRsvpStatus.ts";
+import { EventDateAndHostChanges1800000010000 } from "./migrations/1800000010000-EventDateAndHostChanges.ts";
 
 export function getProjectRoot(): string {
   return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
@@ -135,6 +136,7 @@ export const dataSourceOptions: DataSourceOptions = {
     NormalizeEventDatesToNoonUtc1800000007000,
     ConsolidateAttendees1800000008000,
     RenameStatusToRsvpStatus1800000009000,
+    EventDateAndHostChanges1800000010000,
   ],
   migrationsRun: true,
   entities,

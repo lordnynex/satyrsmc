@@ -96,7 +96,8 @@ export class EventsService {
       name: e.name,
       description: e.description ?? null,
       year: e.year ?? null,
-      event_date: toISOStringOrNull(e.eventDate),
+      start_date: toISOStringOrNull(e.startDate),
+      end_date: toISOStringOrNull(e.endDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
       event_location_embed: e.eventLocationEmbed ?? null,
@@ -110,6 +111,7 @@ export class EventsService {
       event_type: e.eventType ?? "badger",
       show_on_website: e.showOnWebsite,
       members_only: e.membersOnly,
+      host_ids: e.hostIds ?? [],
       created_at: toISOString(e.createdAt),
     }));
   }
@@ -125,7 +127,7 @@ export class EventsService {
       name: e.name,
       description: e.description ?? null,
       year: e.year ?? null,
-      event_date: toISOStringOrNull(e.eventDate),
+      start_date: toISOStringOrNull(e.startDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
       event_location_embed: e.eventLocationEmbed ?? null,
@@ -211,7 +213,8 @@ export class EventsService {
       name: e.name,
       description: e.description ?? null,
       year: e.year ?? null,
-      event_date: toISOStringOrNull(e.eventDate),
+      start_date: toISOStringOrNull(e.startDate),
+      end_date: toISOStringOrNull(e.endDate),
       event_url: e.eventUrl ?? null,
       event_location: e.eventLocation ?? null,
       event_location_embed: e.eventLocationEmbed ?? null,
@@ -225,6 +228,7 @@ export class EventsService {
       event_type: (e.eventType ?? "badger") as EventType,
       show_on_website: e.showOnWebsite,
       members_only: e.membersOnly,
+      host_ids: e.hostIds ?? [],
       created_at: toISOString(e.createdAt),
       milestones: milestones.map((m) => {
         const month = m.month;
@@ -515,7 +519,8 @@ export class EventsService {
     event_type?: EventType;
     description?: string;
     year?: number;
-    event_date?: string;
+    start_date?: string;
+    end_date?: string;
     event_url?: string;
     event_location?: string;
     event_location_embed?: string;
@@ -533,20 +538,22 @@ export class EventsService {
     ride_cost?: number;
     show_on_website?: boolean;
     members_only?: boolean;
+    host_ids?: string[];
   }): Promise<EventCreateOutput> {
     const id = uuid();
     const eventType = body.event_type ?? "badger";
     const showOnWebsite = body.show_on_website !== false;
     const membersOnly = body.members_only ?? false;
     await this.db.run(
-      `INSERT INTO events (id, name, event_type, description, year, event_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website, members_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (id, name, event_type, description, year, start_date, end_date, event_url, event_location, event_location_embed, ga_ticket_cost, day_pass_cost, ga_tickets_sold, day_passes_sold, budget_id, scenario_id, planning_notes, start_location, end_location, facebook_event_url, pre_ride_event_id, ride_cost, show_on_website, members_only, host_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         body.name,
         eventType,
         body.description ?? null,
         body.year ?? null,
-        normalizeEventDate(body.event_date),
+        normalizeEventDate(body.start_date),
+        normalizeEventDate(body.end_date),
         body.event_url ?? null,
         body.event_location ?? null,
         body.event_location_embed ?? null,
@@ -564,6 +571,7 @@ export class EventsService {
         body.ride_cost ?? null,
         showOnWebsite,
         membersOnly,
+        body.host_ids ?? [],
       ],
     );
     const created = await this.get(id);
@@ -578,7 +586,8 @@ export class EventsService {
       event_type: string;
       description: string;
       year: number;
-      event_date: string;
+      start_date: string;
+      end_date: string;
       event_url: string;
       event_location: string;
       event_location_embed: string;
@@ -596,6 +605,7 @@ export class EventsService {
       ride_cost: number;
       show_on_website: boolean;
       members_only: boolean;
+      host_ids: string[];
     }>,
   ): Promise<EventUpdateOutput | null> {
     /* Original: SELECT * FROM events WHERE id = ? */
@@ -605,13 +615,19 @@ export class EventsService {
     const event_type = body.event_type !== undefined ? body.event_type : existing.eventType;
     const description = body.description !== undefined ? body.description : existing.description;
     const year = body.year !== undefined ? body.year : existing.year;
-    const event_date =
-      body.event_date !== undefined
-        ? normalizeEventDate(body.event_date)
+    const start_date =
+      body.start_date !== undefined
+        ? normalizeEventDate(body.start_date)
         : normalizeEventDate(
-            existing.eventDate instanceof Date
-              ? existing.eventDate.toISOString()
-              : existing.eventDate,
+            existing.startDate instanceof Date
+              ? existing.startDate.toISOString()
+              : existing.startDate,
+          );
+    const end_date =
+      body.end_date !== undefined
+        ? normalizeEventDate(body.end_date)
+        : normalizeEventDate(
+            existing.endDate instanceof Date ? existing.endDate.toISOString() : existing.endDate,
           );
     const event_url = body.event_url !== undefined ? body.event_url : existing.eventUrl;
     const event_location =
@@ -643,14 +659,16 @@ export class EventsService {
     const show_on_website =
       body.show_on_website !== undefined ? body.show_on_website : existing.showOnWebsite;
     const members_only = body.members_only !== undefined ? body.members_only : existing.membersOnly;
+    const host_ids = body.host_ids !== undefined ? body.host_ids : existing.hostIds;
     await this.db.run(
-      `UPDATE events SET name = ?, event_type = ?, description = ?, year = ?, event_date = ?, event_url = ?, event_location = ?, event_location_embed = ?, ga_ticket_cost = ?, day_pass_cost = ?, ga_tickets_sold = ?, day_passes_sold = ?, budget_id = ?, scenario_id = ?, planning_notes = ?, start_location = ?, end_location = ?, facebook_event_url = ?, pre_ride_event_id = ?, ride_cost = ?, show_on_website = ?, members_only = ? WHERE id = ?`,
+      `UPDATE events SET name = ?, event_type = ?, description = ?, year = ?, start_date = ?, end_date = ?, event_url = ?, event_location = ?, event_location_embed = ?, ga_ticket_cost = ?, day_pass_cost = ?, ga_tickets_sold = ?, day_passes_sold = ?, budget_id = ?, scenario_id = ?, planning_notes = ?, start_location = ?, end_location = ?, facebook_event_url = ?, pre_ride_event_id = ?, ride_cost = ?, show_on_website = ?, members_only = ?, host_ids = ? WHERE id = ?`,
       [
         name,
         event_type,
         description,
         year,
-        event_date,
+        start_date,
+        end_date,
         event_url,
         event_location,
         event_location_embed,
@@ -668,6 +686,7 @@ export class EventsService {
         ride_cost,
         show_on_website,
         members_only,
+        host_ids,
         id,
       ],
     );
@@ -1049,7 +1068,11 @@ export class EventsService {
         .getRepository(RideScheduleItem)
         .findOne({ where: { id: scheduleId, eventId } });
       if (!existing) return null;
-      const scheduled_time = body.scheduled_time ?? existing.scheduledTime;
+      const scheduled_time =
+        body.scheduled_time ??
+        (existing.scheduledTime instanceof Date
+          ? existing.scheduledTime.toISOString()
+          : existing.scheduledTime);
       const label = body.label ?? existing.label;
       const location = body.location !== undefined ? body.location : existing.location;
       await this.db.run(

@@ -120,10 +120,13 @@ export function RideAttendeesCard({
                   <span className="flex-1 min-w-0 truncate text-sm font-medium">
                     {a.contact?.display_name ?? a.contact_id}
                   </span>
-                  <label className="flex items-center gap-1.5 shrink-0 cursor-pointer">
+                  <label
+                    className={`flex items-center gap-1.5 shrink-0 ${a.waiver_signed ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                  >
                     <input
                       type="checkbox"
                       checked={a.waiver_signed}
+                      disabled={a.waiver_signed}
                       onChange={(e) => onUpdateWaiver(a.id, e.target.checked)}
                       className="rounded size-3.5"
                     />
@@ -172,12 +175,13 @@ export function RideAttendeesCard({
                     removeContextLabel="attendees"
                   />
                   <label
-                    className="flex items-center gap-1 cursor-pointer shrink-0"
-                    title="Waiver signed"
+                    className={`flex items-center gap-1 shrink-0 ${a.waiver_signed ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                    title={a.waiver_signed ? "Waiver signed by member" : "Waiver not signed"}
                   >
                     <input
                       type="checkbox"
                       checked={a.waiver_signed}
+                      disabled={a.waiver_signed}
                       onChange={(e) => onUpdateWaiver(a.id, e.target.checked)}
                       className="rounded size-3"
                     />

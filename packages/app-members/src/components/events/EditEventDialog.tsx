@@ -37,8 +37,10 @@ interface EditEventDialogProps {
   setEditDescription: (v: string) => void;
   editYear: number | "";
   setEditYear: (v: number | "") => void;
-  editEventDate: string;
-  setEditEventDate: (v: string) => void;
+  editStartDate: string;
+  setEditStartDate: (v: string) => void;
+  editEndDate: string;
+  setEditEndDate: (v: string) => void;
   editEventUrl: string;
   setEditEventUrl: (v: string) => void;
   editEventLocation: string;
@@ -89,8 +91,10 @@ export function EditEventDialog({
   setEditDescription,
   editYear,
   setEditYear,
-  editEventDate,
-  setEditEventDate,
+  editStartDate,
+  setEditStartDate,
+  editEndDate,
+  setEditEndDate,
   editEventUrl,
   setEditEventUrl,
   editEventLocation,
@@ -181,11 +185,21 @@ export function EditEventDialog({
               />
             </div>
             <div className="space-y-2 min-w-0">
-              <Label>Event Date</Label>
+              <Label>Start Date</Label>
               <Input
                 type="date"
-                value={editEventDate}
-                onChange={(e) => setEditEventDate(e.target.value)}
+                value={editStartDate}
+                onChange={(e) => setEditStartDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 min-w-0">
+            <div className="space-y-2 min-w-0">
+              <Label>End Date</Label>
+              <Input
+                type="date"
+                value={editEndDate}
+                onChange={(e) => setEditEndDate(e.target.value)}
               />
             </div>
           </div>

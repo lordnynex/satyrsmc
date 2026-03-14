@@ -68,6 +68,23 @@ export function formatDateShort(dateStr: string): string {
   return `${Number(m)}/${Number(day)}/${y.slice(2)}`;
 }
 
+const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/**
+ * Format a date string as a long display date (e.g. "Tuesday, March 24, 2026").
+ * Accepts ISO or YYYY-MM-DD. Uses timezone-safe parsing like formatDateOnly.
+ */
+export function formatDateLong(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = toDateOnly(dateStr);
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  const date = new Date(Number(y), Number(m) - 1, Number(day));
+  const dayName = DAYS_OF_WEEK[date.getDay()];
+  const monthName = MONTHS[date.getMonth()];
+  return `${dayName}, ${monthName} ${Number(day)}, ${y}`;
+}
+
 export const MONTHS = [
   "January",
   "February",

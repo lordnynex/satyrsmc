@@ -16,7 +16,8 @@ export const EventCreateInputSchema = z.object({
   event_type: eventTypeSchema.optional(),
   description: z.string().optional(),
   year: z.number().optional(),
-  event_date: z.string().optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
   event_url: z.string().optional(),
   event_location: z.string().optional(),
   event_location_embed: z.string().optional(),
@@ -34,6 +35,7 @@ export const EventCreateInputSchema = z.object({
   ride_cost: z.number().optional(),
   show_on_website: z.boolean().optional(),
   members_only: z.boolean().optional(),
+  host_ids: z.array(z.string()).optional(),
 });
 
 export const EventUpdateInputSchema = z.object({
@@ -42,7 +44,8 @@ export const EventUpdateInputSchema = z.object({
   event_type: eventTypeSchema.nullable().optional(),
   description: z.string().nullable().optional(),
   year: z.number().nullable().optional(),
-  event_date: z.string().nullable().optional(),
+  start_date: z.string().nullable().optional(),
+  end_date: z.string().nullable().optional(),
   event_url: z.string().nullable().optional(),
   event_location: z.string().nullable().optional(),
   event_location_embed: z.string().nullable().optional(),
@@ -55,6 +58,7 @@ export const EventUpdateInputSchema = z.object({
   planning_notes: z.string().nullable().optional(),
   show_on_website: z.boolean().optional(),
   members_only: z.boolean().optional(),
+  host_ids: z.array(z.string()).optional(),
 });
 
 export const EventDeleteInputSchema = z.object({ id: z.string() });
@@ -373,7 +377,8 @@ const EventSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   year: z.number().nullable(),
-  event_date: z.string().nullable(),
+  start_date: z.string().nullable(),
+  end_date: z.string().nullable(),
   event_url: z.string().nullable(),
   event_location: z.string().nullable(),
   event_location_embed: z.string().nullable(),
@@ -387,6 +392,7 @@ const EventSchema = z.object({
   event_type: z.nativeEnum(EventType),
   show_on_website: z.boolean().optional(),
   members_only: z.boolean().optional(),
+  host_ids: z.array(z.string()).optional(),
   start_location: z.string().nullable().optional(),
   end_location: z.string().nullable().optional(),
   facebook_event_url: z.string().nullable().optional(),

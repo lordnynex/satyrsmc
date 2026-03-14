@@ -75,7 +75,7 @@ function EventCardSkeleton() {
 }
 
 function EventCard({ event }: { event: MemberEventCard }) {
-  const formattedDate = event.event_date ? formatDateOnly(event.event_date) : null;
+  const formattedDate = event.start_date ? formatDateOnly(event.start_date) : null;
 
   const rsvpConfig =
     event.my_rsvp && event.my_rsvp !== RsvpStatus.NoResponse
@@ -184,7 +184,7 @@ export function MemberEventsPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6 p-4 md:p-6 max-w-5xl mx-auto">
       {/* Back link */}
       <Link
         to="/"
@@ -315,7 +315,9 @@ export function MemberEventsPage() {
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.items.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <Link key={event.id} to={`/events/${event.id}`}>
+                <EventCard event={event} />
+              </Link>
             ))}
           </div>
 

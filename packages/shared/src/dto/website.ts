@@ -35,7 +35,7 @@ const EventFeedItemSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   year: z.number().nullable(),
-  event_date: z.string().nullable(),
+  start_date: z.string().nullable(),
   event_url: z.string().nullable(),
   event_location: z.string().nullable(),
   event_type: z.string(),

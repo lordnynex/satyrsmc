@@ -75,7 +75,7 @@ describe("members.events tRPC router", () => {
 
     test("returns events when authenticated", async () => {
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      await createEvent(api, { name: "Router Event", event_date: tomorrow });
+      await createEvent(api, { name: "Router Event", start_date: tomorrow });
 
       const result = await authedHarness.caller.members.events.list({
         upcoming: true,
@@ -92,10 +92,10 @@ describe("members.events tRPC router", () => {
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
       await createEvent(api, {
         name: "Badger",
-        event_date: tomorrow,
+        start_date: tomorrow,
         event_type: EventType.Badger,
       });
-      await createEvent(api, { name: "Rides", event_date: tomorrow, event_type: EventType.Rides });
+      await createEvent(api, { name: "Rides", start_date: tomorrow, event_type: EventType.Rides });
 
       const result = await authedHarness.caller.members.events.list({
         event_type: EventType.Rides,
@@ -118,7 +118,7 @@ describe("members.events tRPC router", () => {
 
     test("creates RSVP when authenticated", async () => {
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "RSVP Event", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "RSVP Event", start_date: tomorrow });
 
       const result = await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
@@ -129,9 +129,51 @@ describe("members.events tRPC router", () => {
       expect(result.status).toBe(RsvpStatus.Yes);
     });
 
+    test("waiver_signed persisted when RSVPing yes", async () => {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "Waiver Event", start_date: tomorrow });
+
+      await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: RsvpStatus.Yes,
+        waiver_signed: true,
+      });
+
+      const rows = (await ds.query(
+        `SELECT waiver_signed FROM event_attendees WHERE event_id = $1 AND contact_id = $2`,
+        [ev.id, contactId],
+      )) as Array<{ waiver_signed: boolean }>;
+      expect(rows[0]!.waiver_signed).toBe(true);
+    });
+
+    test("waiver_signed not downgraded on subsequent RSVP", async () => {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "Waiver Keep Event", start_date: tomorrow });
+
+      // First RSVP yes with waiver
+      await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: RsvpStatus.Yes,
+        waiver_signed: true,
+      });
+
+      // Change to No without waiver
+      await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: RsvpStatus.No,
+      });
+
+      const rows = (await ds.query(
+        `SELECT waiver_signed, rsvp_status FROM event_attendees WHERE event_id = $1 AND contact_id = $2`,
+        [ev.id, contactId],
+      )) as Array<{ waiver_signed: boolean; rsvp_status: string }>;
+      expect(rows[0]!.rsvp_status).toBe(RsvpStatus.No);
+      expect(rows[0]!.waiver_signed).toBe(true);
+    });
+
     test("RSVP reflected in list", async () => {
       const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const ev = await createEvent(api, { name: "Reflected RSVP", event_date: tomorrow });
+      const ev = await createEvent(api, { name: "Reflected RSVP", start_date: tomorrow });
 
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,

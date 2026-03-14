@@ -123,7 +123,7 @@ export const UpcomingEvents: React.FC = () => {
               className="text-sm font-medium shrink-0"
               style={{ color: "var(--color-accent)", minWidth: "160px" }}
             >
-              {event.event_date ? formatDateShort(event.event_date) : ""}
+              {event.start_date ? formatDateShort(event.start_date) : ""}
             </span>
             <div className="flex-1 min-w-0">
               <span className="font-semibold" style={{ color: "var(--color-text)" }}>

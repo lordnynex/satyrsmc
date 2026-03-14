@@ -1,5 +1,6 @@
 export {
   formatDateOnly,
+  formatDateLong,
   toDateOnly,
   toDateTimeLocal,
   formatDateTime,

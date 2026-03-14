@@ -24,10 +24,10 @@ export function EventDetailsCard({ event, budgetName, scenarioName }: EventDetai
             Members Only
           </Badge>
         )}
-        {event.event_date && (
+        {event.start_date && (
           <div className="flex items-center gap-2">
             <Calendar className="size-4 text-muted-foreground" />
-            <span>{formatDateOnly(event.event_date!)}</span>
+            <span>{formatDateOnly(event.start_date!)}</span>
           </div>
         )}
         {event.event_url && (

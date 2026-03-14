@@ -107,7 +107,8 @@ function EventDetailContent({ id }: { id: string }) {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editYear, setEditYear] = useState<number | "">("");
-  const [editEventDate, setEditEventDate] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
   const [editEventUrl, setEditEventUrl] = useState("");
   const [editEventLocation, setEditEventLocation] = useState("");
   const [editEventLocationEmbed, setEditEventLocationEmbed] = useState("");
@@ -131,7 +132,8 @@ function EventDetailContent({ id }: { id: string }) {
     setEditName(event.name);
     setEditDescription(event.description ?? "");
     setEditYear(event.year ?? "");
-    setEditEventDate(toDateOnly(event.event_date));
+    setEditStartDate(toDateOnly(event.start_date));
+    setEditEndDate(toDateOnly(event.end_date));
     setEditEventUrl(event.event_url ?? "");
     setEditEventLocation(event.event_location ?? "");
     setEditEventLocationEmbed(event.event_location_embed ?? "");
@@ -163,7 +165,8 @@ function EventDetailContent({ id }: { id: string }) {
         name: editName,
         description: editDescription || undefined,
         year: editYear === "" ? undefined : Number(editYear),
-        event_date: editEventDate || undefined,
+        start_date: editStartDate || undefined,
+        end_date: editEndDate || undefined,
         event_url: editEventUrl || undefined,
         event_location: editEventLocation || undefined,
         event_location_embed: extractEmbedUrlFromHtml(editEventLocationEmbed) || undefined,
@@ -474,6 +477,7 @@ function EventDetailContent({ id }: { id: string }) {
         <>
           <RideScheduleCard
             eventId={id}
+            eventStartDate={event.start_date}
             items={event.ride_schedule_items ?? []}
             onAdd={handleAddScheduleItem}
             onUpdate={handleUpdateScheduleItem}
@@ -557,8 +561,10 @@ function EventDetailContent({ id }: { id: string }) {
         setEditDescription={setEditDescription}
         editYear={editYear}
         setEditYear={setEditYear}
-        editEventDate={editEventDate}
-        setEditEventDate={setEditEventDate}
+        editStartDate={editStartDate}
+        setEditStartDate={setEditStartDate}
+        editEndDate={editEndDate}
+        setEditEndDate={setEditEndDate}
         editEventUrl={editEventUrl}
         setEditEventUrl={setEditEventUrl}
         editEventLocation={editEventLocation}
