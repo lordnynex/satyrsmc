@@ -217,6 +217,118 @@ describe("MemberEventsService", () => {
     });
   });
 
+  describe("get", () => {
+    test("returns null for non-existent event", async () => {
+      const { contactId } = await createTestUserDirect(ds);
+      const result = await api.memberEvents.get(contactId, "00000000-0000-0000-0000-000000000000");
+      expect(result).toBeNull();
+    });
+
+    test("returns event detail with correct fields", async () => {
+      const { contactId } = await createTestUserDirect(ds);
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, {
+        name: "Detail Event",
+        start_date: tomorrow,
+        event_type: EventType.Rides,
+        event_location: "Test Park",
+        members_only: true,
+      });
+
+      const result = await api.memberEvents.get(contactId, ev.id);
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(ev.id);
+      expect(result!.name).toBe("Detail Event");
+      expect(result!.event_type).toBe(EventType.Rides);
+      expect(result!.event_location).toBe("Test Park");
+      expect(result!.members_only).toBe(true);
+      expect(result!.photos).toEqual([]);
+      expect(result!.attendees).toEqual([]);
+      expect(result!.schedule_items).toEqual([]);
+      expect(result!.my_rsvp).toBeNull();
+      expect(result!.rsvp_yes_count).toBe(0);
+      expect(result!.host_ids).toEqual([]);
+    });
+
+    test("returns correct my_rsvp for authenticated user", async () => {
+      const { contactId } = await createTestUserDirect(ds);
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "RSVP Detail", start_date: tomorrow });
+
+      await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.Yes);
+      const result = await api.memberEvents.get(contactId, ev.id);
+      expect(result!.my_rsvp).toBe(RsvpStatus.Yes);
+    });
+
+    test("returns correct rsvp_yes_count", async () => {
+      const { contactId: c1 } = await createTestUserDirect(ds, { username: "user-a" });
+      const { contactId: c2 } = await createTestUserDirect(ds, { username: "user-b" });
+      const { contactId: c3 } = await createTestUserDirect(ds, { username: "user-c" });
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "Count Event", start_date: tomorrow });
+
+      await api.memberEvents.rsvp(c1, ev.id, RsvpStatus.Yes);
+      await api.memberEvents.rsvp(c2, ev.id, RsvpStatus.Yes);
+      await api.memberEvents.rsvp(c3, ev.id, RsvpStatus.No);
+
+      const result = await api.memberEvents.get(c1, ev.id);
+      expect(result!.rsvp_yes_count).toBe(2);
+    });
+
+    test("only includes attendees with rsvp_status=yes", async () => {
+      const { contactId: c1 } = await createTestUserDirect(ds, { username: "yes-user" });
+      const { contactId: c2 } = await createTestUserDirect(ds, { username: "no-user" });
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "Attendee Filter", start_date: tomorrow });
+
+      await api.memberEvents.rsvp(c1, ev.id, RsvpStatus.Yes);
+      await api.memberEvents.rsvp(c2, ev.id, RsvpStatus.No);
+
+      const result = await api.memberEvents.get(c1, ev.id);
+      expect(result!.attendees.length).toBe(1);
+      expect(result!.attendees[0]!.contact_id).toBe(c1);
+    });
+
+    test("attendees include contact_id and display_name", async () => {
+      const { contactId } = await createTestUserDirect(ds, { username: "display-test" });
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "Attendee Shape", start_date: tomorrow });
+
+      await api.memberEvents.rsvp(contactId, ev.id, RsvpStatus.Yes);
+      const result = await api.memberEvents.get(contactId, ev.id);
+      const attendee = result!.attendees[0]!;
+      expect(attendee.contact_id).toBe(contactId);
+      expect(attendee.display_name).toBe("display-test");
+      expect(typeof attendee.is_member).toBe("boolean");
+      expect(typeof attendee.sort_order).toBe("number");
+    });
+
+    test("returns schedule items ordered by sort_order", async () => {
+      const { contactId } = await createTestUserDirect(ds);
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, {
+        name: "Schedule Event",
+        start_date: tomorrow,
+        event_type: EventType.Rides,
+      });
+
+      await api.events.scheduleItems.create(ev.id, {
+        scheduled_time: "2026-03-15T10:00:00Z",
+        label: "Second",
+      });
+      await api.events.scheduleItems.create(ev.id, {
+        scheduled_time: "2026-03-15T08:00:00Z",
+        label: "First",
+      });
+
+      const result = await api.memberEvents.get(contactId, ev.id);
+      expect(result!.schedule_items.length).toBe(2);
+      // sort_order is insertion order (1, 2)
+      expect(result!.schedule_items[0]!.label).toBe("Second");
+      expect(result!.schedule_items[1]!.label).toBe("First");
+    });
+  });
+
   describe("rsvp", () => {
     test("creates a new RSVP", async () => {
       const { contactId } = await createTestUserDirect(ds);

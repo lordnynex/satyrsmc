@@ -27,7 +27,7 @@ interface RideScheduleCardProps {
   onDelete: (scheduleId: string) => Promise<void>;
 }
 
-/** Combine a YYYY-MM-DD date and HH:MM time into an ISO timestamp at noon-anchored UTC */
+/** Combine a YYYY-MM-DD date and HH:MM time into a UTC ISO timestamp */
 function combineDateTime(date: string, time: string): string {
   return new Date(`${date}T${time}:00Z`).toISOString();
 }
@@ -43,7 +43,7 @@ function extractTime(iso: string): string {
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 }
 
-/** Format an ISO timestamp for display: "Mar 14 at 9:00 AM" */
+/** Format an ISO timestamp for display: "3/14/26 at 9:00 AM" */
 function formatScheduleTime(iso: string): string {
   const date = formatDateShort(iso);
   const d = new Date(iso);

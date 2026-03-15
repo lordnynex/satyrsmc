@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import {
   formatDateOnly,
   formatDateShort,
+  formatDateLong,
   toDateOnly,
   toDateTimeLocal,
   formatDateTime,
@@ -130,6 +131,32 @@ describe("formatDateTime", () => {
 
   it("returns original string for invalid date", () => {
     expect(formatDateTime("not-a-date")).toBe("not-a-date");
+  });
+});
+
+describe("formatDateLong", () => {
+  it("formats a YYYY-MM-DD string to long date", () => {
+    expect(formatDateLong("2026-03-24")).toBe("Tuesday, March 24, 2026");
+  });
+
+  it("formats a full ISO string to long date", () => {
+    expect(formatDateLong("2026-03-24T12:00:00.000Z")).toBe("Tuesday, March 24, 2026");
+  });
+
+  it("returns empty string for empty input", () => {
+    expect(formatDateLong("")).toBe("");
+  });
+
+  it("returns empty string for invalid date", () => {
+    expect(formatDateLong("not-a-date")).toBe("");
+  });
+
+  it("handles single-digit day", () => {
+    expect(formatDateLong("2026-01-05")).toBe("Monday, January 5, 2026");
+  });
+
+  it("handles different days of week", () => {
+    expect(formatDateLong("2026-03-14")).toBe("Saturday, March 14, 2026");
   });
 });
 

@@ -8,7 +8,6 @@ import {
   User,
   Check,
   X,
-  Clock,
   Tent,
   ExternalLink,
   Pencil,
@@ -134,8 +133,20 @@ function RsvpSheet({
           {hasExistingRsvp && (
             <div className="text-sm">
               Current status:{" "}
-              <Badge variant={event.my_rsvp === RsvpStatus.Yes ? "success" : "destructive"}>
-                {event.my_rsvp === RsvpStatus.Yes ? "Going" : "Not Going"}
+              <Badge
+                variant={
+                  event.my_rsvp === RsvpStatus.Yes
+                    ? "success"
+                    : event.my_rsvp === RsvpStatus.Pending
+                      ? "warning"
+                      : "destructive"
+                }
+              >
+                {event.my_rsvp === RsvpStatus.Yes
+                  ? "Going"
+                  : event.my_rsvp === RsvpStatus.Pending
+                    ? "Pending"
+                    : "Not Going"}
               </Badge>
             </div>
           )}
@@ -210,8 +221,20 @@ function Sidebar({ event, onOpenRsvp }: { event: MemberEventDetail; onOpenRsvp: 
         {hasExistingRsvp && (
           <div className="text-sm">
             Status:{" "}
-            <Badge variant={event.my_rsvp === RsvpStatus.Yes ? "success" : "destructive"}>
-              {event.my_rsvp === RsvpStatus.Yes ? "Going" : "Not Going"}
+            <Badge
+              variant={
+                event.my_rsvp === RsvpStatus.Yes
+                  ? "success"
+                  : event.my_rsvp === RsvpStatus.Pending
+                    ? "warning"
+                    : "destructive"
+              }
+            >
+              {event.my_rsvp === RsvpStatus.Yes
+                ? "Going"
+                : event.my_rsvp === RsvpStatus.Pending
+                  ? "Pending"
+                  : "Not Going"}
             </Badge>
           </div>
         )}
@@ -253,13 +276,6 @@ function Sidebar({ event, onOpenRsvp }: { event: MemberEventDetail; onOpenRsvp: 
               {formatDateOnly(event.start_date)}
               {event.end_date && ` – ${formatDateOnly(event.end_date)}`}
             </span>
-          </div>
-        )}
-
-        {event.start_date && (
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="size-4 text-muted-foreground shrink-0" />
-            <span>{formatTime(event.start_date)}</span>
           </div>
         )}
 

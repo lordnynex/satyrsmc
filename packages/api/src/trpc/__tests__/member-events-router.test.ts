@@ -109,6 +109,51 @@ describe("members.events tRPC router", () => {
     });
   });
 
+  describe("get", () => {
+    test("requires authentication", async () => {
+      await expect(harness.caller.members.events.get({ id: "fake" })).rejects.toThrow(
+        "Authentication required",
+      );
+    });
+
+    test("returns event detail when authenticated", async () => {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, {
+        name: "Get Detail",
+        start_date: tomorrow,
+        event_type: EventType.Badger,
+      });
+
+      const result = await authedHarness.caller.members.events.get({ id: ev.id });
+      expect(result.id).toBe(ev.id);
+      expect(result.name).toBe("Get Detail");
+      expect(result.event_type).toBe(EventType.Badger);
+      expect(result.attendees).toEqual([]);
+      expect(result.photos).toEqual([]);
+      expect(result.schedule_items).toEqual([]);
+    });
+
+    test("throws NOT_FOUND for non-existent event", async () => {
+      await expect(
+        authedHarness.caller.members.events.get({ id: "00000000-0000-0000-0000-000000000000" }),
+      ).rejects.toThrow();
+    });
+
+    test("includes my_rsvp from authenticated user", async () => {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, { name: "Get RSVP", start_date: tomorrow });
+
+      await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: RsvpStatus.Yes,
+      });
+
+      const result = await authedHarness.caller.members.events.get({ id: ev.id });
+      expect(result.my_rsvp).toBe(RsvpStatus.Yes);
+      expect(result.rsvp_yes_count).toBe(1);
+    });
+  });
+
   describe("rsvp", () => {
     test("requires authentication", async () => {
       await expect(

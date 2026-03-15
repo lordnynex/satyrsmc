@@ -176,6 +176,28 @@ describe("admin.events", () => {
     });
   });
 
+  describe("addAttendee waiver protection", () => {
+    test("re-adding attendee does not downgrade waiver_signed", async () => {
+      const event = await createEvent(harness.api, { name: "Waiver Protect Event" });
+      const contact = await createContact(harness.api, { display_name: "Waiver Contact" });
+
+      // Add with waiver signed
+      await harness.caller.admin.events.addAttendee({
+        eventId: event.id,
+        contact_id: contact.id,
+        waiver_signed: true,
+      });
+
+      // Re-add without waiver_signed (defaults to false)
+      const readded = await harness.caller.admin.events.addAttendee({
+        eventId: event.id,
+        contact_id: contact.id,
+      });
+
+      expect(readded.waiver_signed).toBe(true);
+    });
+  });
+
   describe("addMemberAttendee", () => {
     test("adds member attendee", async () => {
       const event = await createEvent(harness.api, { name: "Member Attendee Event" });
