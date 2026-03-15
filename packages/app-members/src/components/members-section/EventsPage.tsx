@@ -86,7 +86,7 @@ function EventCard({ event }: { event: MemberEventCard }) {
     <div className="group relative overflow-hidden rounded-lg border border-border bg-card aspect-[4/3]">
       {/* Background image */}
       <img
-        src={event.photo_url ?? "/admin/images/event-placeholder.svg"}
+        src={event.photo_url ?? "/images/event-placeholder.svg"}
         alt=""
         className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105"
       />

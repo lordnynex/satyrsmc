@@ -47,9 +47,9 @@ function buildFilters(input: MemberEventListInput, startIdx: number): FilterResu
   }
 
   if (input.upcoming) {
-    conditions.push(`(e.start_date >= now() OR e.start_date IS NULL)`);
+    conditions.push(`(e.start_date::date >= now()::date OR e.start_date IS NULL)`);
   } else {
-    conditions.push(`e.start_date < now()`);
+    conditions.push(`e.start_date::date < now()::date`);
   }
 
   return { conditions, params, nextIdx: idx };

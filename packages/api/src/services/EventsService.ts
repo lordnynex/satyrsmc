@@ -858,10 +858,14 @@ export class EventsService {
       const sortOrder = (maxResult?.m ?? 0) + 1;
       const waiverSigned = body.waiver_signed ?? false;
       const rsvpStatus = body.rsvp_status ?? "no_response";
+      const hasExplicitRsvp = body.rsvp_status !== undefined;
       await this.db.run(
         `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, rsvp_status, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, now(), now())
-         ON CONFLICT (event_id, contact_id) DO UPDATE SET rsvp_status = ?, waiver_signed = (event_attendees.waiver_signed OR ?), updated_at = now()`,
+         ON CONFLICT (event_id, contact_id) DO UPDATE SET
+           rsvp_status = CASE WHEN ? THEN ? ELSE event_attendees.rsvp_status END,
+           waiver_signed = (event_attendees.waiver_signed OR ?),
+           updated_at = now()`,
         [
           id,
           eventId,
@@ -869,6 +873,7 @@ export class EventsService {
           sortOrder,
           waiverSigned,
           rsvpStatus,
+          hasExplicitRsvp,
           rsvpStatus,
           waiverSigned,
         ],
