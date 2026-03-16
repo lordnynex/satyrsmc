@@ -19,6 +19,9 @@ export const authRouter = t.router({
     .output(GenericMessageSchema)
     .meta({ description: "Register for an account. Sends a signup email." })
     .mutation(async ({ ctx, input }) => {
+      const valid = await ctx.api.recaptcha.verify(input.recaptcha_token);
+      if (!valid)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "reCAPTCHA verification failed" });
       return ctx.api.auth.register(input);
     }),
 
@@ -47,6 +50,9 @@ export const authRouter = t.router({
     .input(LoginInputSchema)
     .meta({ description: "Log in with username and password." })
     .mutation(async ({ ctx, input }) => {
+      const recaptchaValid = await ctx.api.recaptcha.verify(input.recaptcha_token);
+      if (!recaptchaValid)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "reCAPTCHA verification failed" });
       try {
         const result = await ctx.api.auth.login(input);
 

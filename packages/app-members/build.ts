@@ -16,6 +16,7 @@ const entrypoints = [path.join(process.cwd(), "index.html")];
 const isDev = process.env.BUILD_DEV === "1";
 const apiOrigin = process.env.API_ORIGIN ?? process.env.VITE_API_ORIGIN ?? "";
 const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? "";
+const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY ?? "";
 
 const result = await Bun.build({
   entrypoints,
@@ -29,6 +30,7 @@ const result = await Bun.build({
     "process.env.NODE_ENV": JSON.stringify(isDev ? "development" : "production"),
     __BUILD_API_ORIGIN__: JSON.stringify(apiOrigin),
     __BUILD_GOOGLE_MAPS_API_KEY__: JSON.stringify(googleMapsApiKey),
+    __BUILD_RECAPTCHA_SITE_KEY__: JSON.stringify(recaptchaSiteKey),
   },
 });
 

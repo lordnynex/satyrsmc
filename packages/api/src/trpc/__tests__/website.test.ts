@@ -5,7 +5,7 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll, mock } from "bun:test";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
 import {
@@ -122,6 +122,7 @@ describe("website router", () => {
         name: "Jane Doe",
         email: "jane@example.com",
         message: "Hello",
+        recaptcha_token: "test-token",
       });
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -133,6 +134,7 @@ describe("website router", () => {
         email: "subj@example.com",
         subject: "Question",
         message: "Body",
+        recaptcha_token: "test-token",
       });
       expect(result.id).toBeDefined();
     });
@@ -143,6 +145,7 @@ describe("website router", () => {
           name: "Bad Email",
           email: "not-an-email",
           message: "Hi",
+          recaptcha_token: "test-token",
         }),
       ).rejects.toThrow(TRPCError);
       try {
@@ -150,9 +153,38 @@ describe("website router", () => {
           name: "Bad Email",
           email: "not-an-email",
           message: "Hi",
+          recaptcha_token: "test-token",
         });
       } catch (e) {
         expect((e as TRPCError).code).toBe("BAD_REQUEST");
+      }
+    });
+
+    test("rejects when reCAPTCHA verification fails", async () => {
+      const original = harness.api.recaptcha.verify;
+      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      try {
+        await expect(
+          harness.caller.website.submitContact({
+            name: "Bot",
+            email: "bot@example.com",
+            message: "spam",
+            recaptcha_token: "bad-token",
+          }),
+        ).rejects.toThrow(TRPCError);
+        try {
+          await harness.caller.website.submitContact({
+            name: "Bot",
+            email: "bot@example.com",
+            message: "spam",
+            recaptcha_token: "bad-token",
+          });
+        } catch (e) {
+          expect((e as TRPCError).code).toBe("BAD_REQUEST");
+          expect((e as TRPCError).message).toBe("reCAPTCHA verification failed");
+        }
+      } finally {
+        harness.api.recaptcha.verify = original;
       }
     });
   });
@@ -166,6 +198,7 @@ describe("website router", () => {
         sender_name: "Sender",
         sender_email: "sender@example.com",
         message: "Message",
+        recaptcha_token: "test-token",
       });
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -179,6 +212,7 @@ describe("website router", () => {
           sender_name: "S",
           sender_email: "invalid",
           message: "M",
+          recaptcha_token: "test-token",
         }),
       ).rejects.toThrow(TRPCError);
       try {
@@ -187,9 +221,30 @@ describe("website router", () => {
           sender_name: "S",
           sender_email: "invalid",
           message: "M",
+          recaptcha_token: "test-token",
         });
       } catch (e) {
         expect((e as TRPCError).code).toBe("BAD_REQUEST");
+      }
+    });
+    test("rejects when reCAPTCHA verification fails", async () => {
+      const member = await createMember(harness.api, { name: "Captcha Test Member" });
+      const original = harness.api.recaptcha.verify;
+      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      try {
+        await harness.caller.website.submitContactMember({
+          member_id: member.id,
+          sender_name: "Bot",
+          sender_email: "bot@example.com",
+          message: "spam",
+          recaptcha_token: "bad-token",
+        });
+        expect(true).toBe(false);
+      } catch (e) {
+        expect((e as TRPCError).code).toBe("BAD_REQUEST");
+        expect((e as TRPCError).message).toBe("reCAPTCHA verification failed");
+      } finally {
+        harness.api.recaptcha.verify = original;
       }
     });
   });

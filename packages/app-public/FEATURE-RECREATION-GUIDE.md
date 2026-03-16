@@ -16,7 +16,9 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - TypeORM entities (~50) with Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
 - 20+ TypeORM migrations
 - Services for all domains (contacts, members, events, budgets, meetings, committees, mailing, QR codes, documents, website CMS)
+- RecaptchaService: server-side reCAPTCHA v2 verification (fails closed in production, gracefully bypassed in dev/test)
 - Website tRPC router: `getEventsFeed`, `getMembersFeed`, `getBlogPublished`, `getBlogBySlug`, `getPages`, `getPageBySlug`, `getMenus`, `getSettings`, `submitContact`, `submitContactMember`
+- `submitContact` and `submitContactMember` verify reCAPTCHA token before persisting
 - Admin tRPC routers (15+): full CRUD for all domains
 - Photo/asset serving via sharp (BYTEA in Postgres)
 
@@ -31,12 +33,15 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 
 **Public App (`@satyrsmc/app-public`)** — unauthenticated marketing site only
 
-- 5 public pages: Home, About, Events, Badger, Gallery
-- tRPC client wired up (`createTRPCReact<AppRouter>()`) but **no pages consume tRPC yet** — all use static data files
+- 6 public pages: Home, About, Events, Badger, Gallery, Contact
+- tRPC client wired up (`createTRPCReact<AppRouter>()`) — Contact page consumes tRPC; other pages still use static data files
+- Contact page: `react-hook-form` + `zodResolver` + `react-google-recaptcha` widget, submits via `trpc.website.submitContact`
+- Contact member modal: same form stack, submits via `trpc.website.submitContactMember`
 - Static data: `content/events.ts`, `data/members.json`, `data/timeline.json`
 - react-photo-album + lightbox for gallery
 - react-markdown for content rendering
 - Members section now lives in `app-members` with auth-protected routes (Phase 3 complete)
+- 28 component/page tests (Happy DOM + Testing Library + mock tRPC link)
 
 **Shared (`@satyrsmc/shared`)**
 
@@ -47,14 +52,13 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 
 ### What's NOT Built
 
-- Public pages consuming tRPC (all static)
-- Contact page with form/reCAPTCHA
+- Public pages consuming tRPC (Home, About, Events, Members, Gallery, Badger still use static data)
 - Blog pages in public app
 - Dynamic CMS pages in public app
 - CI/CD pipelines
 - Member section page content (roster, profile, events pages are scaffolded but have no real content yet)
 - Email delivery (ConsoleEmailService stub logs in dev — no SMTP/SES integration)
-- reCAPTCHA on registration form
+- ~~reCAPTCHA on registration form~~ — DONE (LoginPage and RegisterPage in app-members now use react-hook-form + reCAPTCHA widget, matching the contact form pattern)
 
 ### What's Built (Auth & User System)
 
@@ -63,14 +67,14 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - AuthService: register, signup, login, logout, refresh, forgot/reset password with account lockout
 - UsersService: admin CRUD for user management, invitation flow, registration approval
 - tRPC middleware: protectedProcedure, adminProcedure, memberProcedure
-- Auth pages: login, register, signup, forgot-password, reset-password
+- Auth pages: login, register, signup, forgot-password, reset-password (login + register use react-hook-form + reCAPTCHA)
 - AuthContext + useAuth hook, ProtectedRoute/AdminRoute/MemberRoute guards
 - Admin user management UI at /admin/users (list, detail, status/type changes, invitations)
 - Members section scaffolding: dashboard, roster, profile, events (at root /)
 - Admin routes restructured under /admin/\*
 - MembersService reads/writes through Contact sub-tables (contact_id FK)
 - Database seed script with sample users (bun run seed)
-- Comprehensive test coverage (460+ API tests, PGlite integration tests)
+- Comprehensive test coverage (500+ API tests, PGlite integration tests; 35 app-members + 28 app-public component tests)
 
 ---
 
@@ -298,27 +302,38 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 
 ---
 
-### Phase 5: Contact Page
+### Phase 5: Contact Page (COMPLETE)
 
 **Goal:** Public contact form with validation and spam protection.
 
+**What was done:**
+
 **Frontend (app-public):**
 
-- New `/contact` route and `ContactPage.tsx`
-- `react-hook-form` + `@hookform/resolvers` + `zodResolver`
-- Contact form Zod schema in `@satyrsmc/shared` (shared with server validation)
-- reCAPTCHA v2 widget (`react-google-recaptcha`)
-- Success/error states
+- `/contact` route with `ContactPage.tsx` — `react-hook-form` + `zodResolver(SubmitContactInputSchema)` + per-field Zod validation errors
+- `ContactMemberModal.tsx` — same form stack for contacting individual members
+- reCAPTCHA v2 widget (`react-google-recaptcha`) on both forms, with dark theme
+- Site key injected via `__BUILD_RECAPTCHA_SITE_KEY__` build variable; gracefully skipped when unset
+- Success/error states, form reset on reCAPTCHA error
 
 **Backend:**
 
-- `website.submitContact` already exists and saves to `contact_submissions` table
-- Add reCAPTCHA server-side verification before accepting submission
-- Admin views submissions in app-members (`WebsiteContactSubmissionsPanel` already built)
+- `RecaptchaService` (`packages/api/src/services/RecaptchaService.ts`) verifies tokens via Google's API
+  - Fails closed in production when `RECAPTCHA_SECRET_KEY` is unset
+  - Gracefully bypasses in dev/test (returns `true`)
+  - Handles network errors and non-2xx responses (returns `false`)
+- `submitContact` and `submitContactMember` tRPC mutations verify reCAPTCHA before persisting
+- Zod schemas (`SubmitContactInputSchema`, `SubmitContactMemberInputSchema`) include `recaptcha_token` with validation messages
+
+**Testing:**
+
+- 28 app-public component/page tests added (Hero, MissionStatement, UpcomingEvents, ContactMemberModal, ContactPage, AboutPage, BadgerPage, MembersPage)
+- reCAPTCHA failure path test for the website router
+- Test infrastructure: build-time globals defined in `setup.ts`, mock tRPC link for handler-driven tests
 
 **Environment:**
 
-- `VITE_RECAPTCHA_SITE_KEY` (client)
+- `RECAPTCHA_SITE_KEY` (build-time, via `__BUILD_RECAPTCHA_SITE_KEY__`)
 - `RECAPTCHA_SECRET_KEY` (server — same as auth)
 
 ---
@@ -360,30 +375,25 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 
 ---
 
-### Phase 8: Testing Infrastructure
+### Phase 8: Testing Infrastructure (PARTIALLY COMPLETE)
 
 **Goal:** Comprehensive test coverage with enforcement.
 
-**Setup:**
+**What's built:**
 
 - `bun:test` for all tests (per Bun-first convention)
-- Test utilities: `createTestContext()` for tRPC router testing, service mocking helpers
+- API: 500+ tests with PGlite integration tests, tRPC test harness (`createTrpcTestHarness`), service test helpers
+- app-members: 35 component tests (SafeHtml, auth pages, user management, utilities)
+- app-public: 28 component/page tests (Hero, MissionStatement, UpcomingEvents, ContactMemberModal, ContactPage, AboutPage, BadgerPage, MembersPage)
+- Test utilities per frontend app: `renderWithProviders` (QueryClient + tRPC + MemoryRouter), `createMockTrpcLink` (handler-driven mock)
+- Happy DOM for frontend DOM simulation (preloaded via `bunfig.toml`)
+- Test fixtures in `packages/api/src/test/fixtures.ts`
 
-**Coverage:**
+**What's NOT built:**
 
-- 90% thresholds for statements, branches, functions, lines
-- Pre-push git hook blocks push on failure
-
-**Test Layers:**
-
-1. **Unit tests**: Mock services, test router logic and auth middleware
-2. **Integration tests**: PGlite embedded Postgres for service-level testing
-3. **Component tests**: React Testing Library for key UI components
-
-**Test Data:**
-
-- Shared fixtures in `@satyrsmc/shared` using typed interfaces
-- Fixtures match shared type contracts
+- 90% coverage thresholds enforcement
+- Pre-push git hook blocking on coverage failure
+- Coverage reporting in CI
 
 ---
 
