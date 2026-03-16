@@ -63,4 +63,3 @@ export type EventVolunteer = NonNullable<EventGetOutput["volunteers"]>[number];
 export type EventAssignment = NonNullable<EventGetOutput["assignments"]>[number];
 export type EventPlanningMilestone = NonNullable<EventGetOutput["milestones"]>[number];
 export type EventAttendee = NonNullable<EventGetOutput["event_attendees"]>[number];
-export type RideMemberAttendee = NonNullable<EventGetOutput["ride_member_attendees"]>[number];

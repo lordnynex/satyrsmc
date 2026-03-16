@@ -17,7 +17,9 @@
     "@tiptap/pm": "3.20.1",
     "@trpc/client": "^11.0.0-rc.0",
     "@trpc/react-query": "^11.0.0-rc.0",
+    "@types/dompurify": "^3.2.0",
     "dayjs": "^1.11.19",
+    "dompurify": "^3.3.3",
     "react": "^19",
     "react-dom": "^19",
     "react-router-dom": "^7.13.0"

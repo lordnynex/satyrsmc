@@ -59,6 +59,16 @@ describe("admin.events", () => {
       expect(result.id).toBeDefined();
       expect(result.name).toBe("New Event");
     });
+
+    test("creates event with members_only flag", async () => {
+      const result = await harness.caller.admin.events.create({
+        name: "Members Only Event",
+        event_type: EventType.Badger,
+        members_only: true,
+      });
+      expect(result.id).toBeDefined();
+      expect(result.members_only).toBe(true);
+    });
   });
 
   describe("update", () => {
@@ -70,6 +80,15 @@ describe("admin.events", () => {
       });
       expect(result.id).toBe(e.id);
       expect(result.name).toBe("Updated Event");
+    });
+
+    test("updates members_only flag", async () => {
+      const e = await createEvent(harness.api, { name: "Toggle Members Only" });
+      const result = await harness.caller.admin.events.update({
+        id: e.id,
+        members_only: true,
+      });
+      expect(result.members_only).toBe(true);
     });
 
     test("throws NOT_FOUND when id does not exist", async () => {
@@ -157,6 +176,28 @@ describe("admin.events", () => {
     });
   });
 
+  describe("addAttendee waiver protection", () => {
+    test("re-adding attendee does not downgrade waiver_signed", async () => {
+      const event = await createEvent(harness.api, { name: "Waiver Protect Event" });
+      const contact = await createContact(harness.api, { display_name: "Waiver Contact" });
+
+      // Add with waiver signed
+      await harness.caller.admin.events.addAttendee({
+        eventId: event.id,
+        contact_id: contact.id,
+        waiver_signed: true,
+      });
+
+      // Re-add without waiver_signed (defaults to false)
+      const readded = await harness.caller.admin.events.addAttendee({
+        eventId: event.id,
+        contact_id: contact.id,
+      });
+
+      expect(readded.waiver_signed).toBe(true);
+    });
+  });
+
   describe("addMemberAttendee", () => {
     test("adds member attendee", async () => {
       const event = await createEvent(harness.api, { name: "Member Attendee Event" });
@@ -214,16 +255,40 @@ describe("admin.events", () => {
         label: "Check-in",
       });
       expect(created).toBeDefined();
-      await harness.caller.admin.events.updateScheduleItem({
+      const updated = await harness.caller.admin.events.updateScheduleItem({
         eventId: event.id,
         scheduleId: created.id,
         label: "Updated",
       });
+      expect(updated.label).toBe("Updated");
+      expect(updated.scheduled_time).toBeTruthy();
       await harness.caller.admin.events.deleteScheduleItem({
         eventId: event.id,
         scheduleId: created.id,
       });
       expect(true).toBe(true);
+    });
+
+    test("create and update with full ISO timestamp", async () => {
+      const event = await createEvent(harness.api, { name: "ISO Schedule" });
+      const created = await harness.caller.admin.events.createScheduleItem({
+        eventId: event.id,
+        scheduled_time: "2025-06-01T09:00:00Z",
+        label: "Meet up",
+      });
+      expect(created.label).toBe("Meet up");
+      expect(created.scheduled_time).toContain("2025-06-01");
+
+      const updated = await harness.caller.admin.events.updateScheduleItem({
+        eventId: event.id,
+        scheduleId: created.id,
+        scheduled_time: "2025-06-02T10:30:00Z",
+        label: "Updated meet up",
+        location: null,
+      });
+      expect(updated.label).toBe("Updated meet up");
+      expect(updated.scheduled_time).toContain("2025-06-02");
+      expect(updated.scheduled_time).toContain("10:30");
     });
   });
 

@@ -66,7 +66,7 @@ describe("EventsService", () => {
         event_type: "badger",
         description: "D",
         year: 2025,
-        event_date: "2025-06-01",
+        start_date: "2025-06-01",
         event_location: "Here",
         show_on_website: true,
       });

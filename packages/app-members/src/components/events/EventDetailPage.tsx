@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { extractEmbedUrlFromHtml, getMapEmbedUrl } from "@/lib/maps";
+import { toDateOnly } from "@/lib/date-utils";
 import {
   useEventSuspense,
   useBudgetsOptional,
@@ -12,8 +13,6 @@ import {
   useEventAttendeeUpdate,
   useEventAttendeeDelete,
   useEventMemberAttendeeAdd,
-  useEventMemberAttendeeUpdate,
-  useEventMemberAttendeeDelete,
   useEventScheduleItemCreate,
   useEventScheduleItemUpdate,
   useEventScheduleItemDelete,
@@ -78,8 +77,6 @@ function EventDetailContent({ id }: { id: string }) {
   const updateAttendeeMutation = useEventAttendeeUpdate();
   const deleteAttendeeMutation = useEventAttendeeDelete();
   const addMemberAttendeeMutation = useEventMemberAttendeeAdd();
-  const updateMemberAttendeeMutation = useEventMemberAttendeeUpdate();
-  const deleteMemberAttendeeMutation = useEventMemberAttendeeDelete();
   const addScheduleItemMutation = useEventScheduleItemCreate();
   const updateScheduleItemMutation = useEventScheduleItemUpdate();
   const deleteScheduleItemMutation = useEventScheduleItemDelete();
@@ -110,7 +107,8 @@ function EventDetailContent({ id }: { id: string }) {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editYear, setEditYear] = useState<number | "">("");
-  const [editEventDate, setEditEventDate] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
   const [editEventUrl, setEditEventUrl] = useState("");
   const [editEventLocation, setEditEventLocation] = useState("");
   const [editEventLocationEmbed, setEditEventLocationEmbed] = useState("");
@@ -128,12 +126,14 @@ function EventDetailContent({ id }: { id: string }) {
   const [editPreRideEventId, setEditPreRideEventId] = useState("");
   const [editRideCost, setEditRideCost] = useState<string>("");
   const [editShowOnWebsite, setEditShowOnWebsite] = useState(false);
+  const [editMembersOnly, setEditMembersOnly] = useState(false);
 
   useEffect(() => {
     setEditName(event.name);
     setEditDescription(event.description ?? "");
     setEditYear(event.year ?? "");
-    setEditEventDate(event.event_date ?? "");
+    setEditStartDate(toDateOnly(event.start_date));
+    setEditEndDate(toDateOnly(event.end_date));
     setEditEventUrl(event.event_url ?? "");
     setEditEventLocation(event.event_location ?? "");
     setEditEventLocationEmbed(event.event_location_embed ?? "");
@@ -151,6 +151,7 @@ function EventDetailContent({ id }: { id: string }) {
     setEditPreRideEventId(event.pre_ride_event_id ?? "");
     setEditRideCost(event.ride_cost != null ? String(event.ride_cost) : "");
     setEditShowOnWebsite(event.show_on_website ?? false);
+    setEditMembersOnly(event.members_only ?? false);
   }, [event]);
 
   const refresh = async () => {
@@ -164,7 +165,8 @@ function EventDetailContent({ id }: { id: string }) {
         name: editName,
         description: editDescription || undefined,
         year: editYear === "" ? undefined : Number(editYear),
-        event_date: editEventDate || undefined,
+        start_date: editStartDate || undefined,
+        end_date: editEndDate || undefined,
         event_url: editEventUrl || undefined,
         event_location: editEventLocation || undefined,
         event_location_embed: extractEmbedUrlFromHtml(editEventLocationEmbed) || undefined,
@@ -182,6 +184,7 @@ function EventDetailContent({ id }: { id: string }) {
         pre_ride_event_id: editPreRideEventId || undefined,
         ride_cost: editRideCost === "" ? undefined : parseFloat(editRideCost),
         show_on_website: editShowOnWebsite,
+        members_only: editMembersOnly,
       },
     });
     setEditOpen(false);
@@ -215,20 +218,6 @@ function EventDetailContent({ id }: { id: string }) {
       eventId: id,
       body: { member_id: memberId, waiver_signed: waiverSigned },
     });
-    refresh();
-  };
-
-  const handleUpdateMemberAttendeeWaiver = async (attendeeId: string, waiverSigned: boolean) => {
-    await updateMemberAttendeeMutation.mutateAsync({
-      eventId: id,
-      attendeeId,
-      body: { waiver_signed: waiverSigned },
-    });
-    refresh();
-  };
-
-  const handleRemoveMemberAttendee = async (attendeeId: string) => {
-    await deleteMemberAttendeeMutation.mutateAsync({ eventId: id, attendeeId });
     refresh();
   };
 
@@ -488,6 +477,7 @@ function EventDetailContent({ id }: { id: string }) {
         <>
           <RideScheduleCard
             eventId={id}
+            eventStartDate={event.start_date}
             items={event.ride_schedule_items ?? []}
             onAdd={handleAddScheduleItem}
             onUpdate={handleUpdateScheduleItem}
@@ -496,13 +486,10 @@ function EventDetailContent({ id }: { id: string }) {
           <RideAttendeesCard
             eventId={id}
             attendees={event.event_attendees ?? []}
-            memberAttendees={event.ride_member_attendees ?? []}
             onAdd={handleAddAttendee}
             onUpdateWaiver={handleUpdateAttendeeWaiver}
             onRemove={handleRemoveAttendee}
             onAddMember={handleAddMemberAttendee}
-            onUpdateMemberWaiver={handleUpdateMemberAttendeeWaiver}
-            onRemoveMember={handleRemoveMemberAttendee}
           />
           <RideAssetsCard
             eventId={id}
@@ -574,8 +561,10 @@ function EventDetailContent({ id }: { id: string }) {
         setEditDescription={setEditDescription}
         editYear={editYear}
         setEditYear={setEditYear}
-        editEventDate={editEventDate}
-        setEditEventDate={setEditEventDate}
+        editStartDate={editStartDate}
+        setEditStartDate={setEditStartDate}
+        editEndDate={editEndDate}
+        setEditEndDate={setEditEndDate}
         editEventUrl={editEventUrl}
         setEditEventUrl={setEditEventUrl}
         editEventLocation={editEventLocation}
@@ -610,6 +599,8 @@ function EventDetailContent({ id }: { id: string }) {
         setEditRideCost={setEditRideCost}
         editShowOnWebsite={editShowOnWebsite}
         setEditShowOnWebsite={setEditShowOnWebsite}
+        editMembersOnly={editMembersOnly}
+        setEditMembersOnly={setEditMembersOnly}
         budgets={budgets}
         scenarios={scenarios}
         onSave={handleSaveEdit}

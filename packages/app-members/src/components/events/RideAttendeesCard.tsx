@@ -14,30 +14,24 @@ import { Plus, Trash2, FileCheck, Users } from "lucide-react";
 import { useMembersOptional, useContactsListFetcher } from "@/queries/hooks";
 import { MemberChipPopover } from "@/components/members/MemberChipPopover";
 import { ContactStatusFilter } from "@satyrsmc/shared/client";
-import type { EventAttendee, RideMemberAttendee, Contact, Member } from "@satyrsmc/shared/client";
+import type { EventAttendee, Contact, Member } from "@satyrsmc/shared/client";
 
 interface RideAttendeesCardProps {
   eventId: string;
   attendees: EventAttendee[];
-  memberAttendees: RideMemberAttendee[];
   onAdd: (contactId: string, waiverSigned?: boolean) => Promise<void>;
   onUpdateWaiver: (attendeeId: string, waiverSigned: boolean) => Promise<void>;
   onRemove: (attendeeId: string) => Promise<void>;
   onAddMember: (memberId: string, waiverSigned?: boolean) => Promise<void>;
-  onUpdateMemberWaiver: (attendeeId: string, waiverSigned: boolean) => Promise<void>;
-  onRemoveMember: (attendeeId: string) => Promise<void>;
 }
 
 export function RideAttendeesCard({
   eventId: _eventId,
   attendees,
-  memberAttendees,
   onAdd,
   onUpdateWaiver,
   onRemove,
   onAddMember,
-  onUpdateMemberWaiver,
-  onRemoveMember,
 }: RideAttendeesCardProps) {
   const fetchContactsList = useContactsListFetcher();
   const { data: members = [] } = useMembersOptional();
@@ -51,8 +45,13 @@ export function RideAttendeesCard({
   const [waiverChecked, setWaiverChecked] = useState(false);
   const [memberWaiverChecked, setMemberWaiverChecked] = useState(false);
 
+  const contactAttendees = attendees.filter((a) => !a.is_member);
+  const memberAttendees = attendees.filter((a) => a.is_member);
+
   const existingIds = new Set(attendees.map((a) => a.contact_id));
-  const existingMemberIds = new Set(memberAttendees.map((a) => a.member_id));
+  const existingMemberIds = new Set(
+    memberAttendees.map((a) => a.member?.id).filter((id): id is string => !!id),
+  );
 
   useEffect(() => {
     if (!addOpen) return;
@@ -109,11 +108,11 @@ export function RideAttendeesCard({
               Add contact
             </Button>
           </div>
-          {attendees.length === 0 ? (
+          {contactAttendees.length === 0 ? (
             <p className="text-sm text-muted-foreground py-1">No contacts added yet.</p>
           ) : (
             <ul className="space-y-1">
-              {attendees.map((a) => (
+              {contactAttendees.map((a) => (
                 <li
                   key={a.id}
                   className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50"
@@ -121,10 +120,13 @@ export function RideAttendeesCard({
                   <span className="flex-1 min-w-0 truncate text-sm font-medium">
                     {a.contact?.display_name ?? a.contact_id}
                   </span>
-                  <label className="flex items-center gap-1.5 shrink-0 cursor-pointer">
+                  <label
+                    className={`flex items-center gap-1.5 shrink-0 ${a.waiver_signed ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                  >
                     <input
                       type="checkbox"
                       checked={a.waiver_signed}
+                      disabled={a.waiver_signed}
                       onChange={(e) => onUpdateWaiver(a.id, e.target.checked)}
                       className="rounded size-3.5"
                     />
@@ -166,20 +168,21 @@ export function RideAttendeesCard({
               {memberAttendees.map((a) => (
                 <div key={a.id} className="flex items-center gap-1.5">
                   <MemberChipPopover
-                    memberId={a.member_id}
-                    name={a.member?.name ?? a.member_id}
+                    memberId={a.member?.id ?? a.contact_id}
+                    name={a.member?.name ?? a.contact?.display_name ?? a.contact_id}
                     photo={a.member?.photo_thumbnail_url ?? null}
-                    onRemove={() => confirm("Remove member?") && onRemoveMember(a.id)}
+                    onRemove={() => confirm("Remove member?") && onRemove(a.id)}
                     removeContextLabel="attendees"
                   />
                   <label
-                    className="flex items-center gap-1 cursor-pointer shrink-0"
-                    title="Waiver signed"
+                    className={`flex items-center gap-1 shrink-0 ${a.waiver_signed ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                    title={a.waiver_signed ? "Waiver signed by member" : "Waiver not signed"}
                   >
                     <input
                       type="checkbox"
                       checked={a.waiver_signed}
-                      onChange={(e) => onUpdateMemberWaiver(a.id, e.target.checked)}
+                      disabled={a.waiver_signed}
+                      onChange={(e) => onUpdateWaiver(a.id, e.target.checked)}
                       className="rounded size-3"
                     />
                     <FileCheck className="size-3 text-muted-foreground" />

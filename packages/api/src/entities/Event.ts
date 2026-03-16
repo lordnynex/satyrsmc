@@ -18,8 +18,11 @@ export class Event {
   @Column({ name: "created_at", type: "timestamptz", nullable: true })
   createdAt!: Date | null;
 
-  @Column({ name: "event_date", type: "timestamptz", nullable: true })
-  eventDate!: Date | null;
+  @Column({ name: "start_date", type: "timestamptz", nullable: true })
+  startDate!: Date | null;
+
+  @Column({ name: "end_date", type: "timestamptz", nullable: true })
+  endDate!: Date | null;
 
   @Column({ name: "event_url", type: "text", nullable: true })
   eventUrl!: string | null;
@@ -75,6 +78,12 @@ export class Event {
   @Column({ name: "ride_cost", type: "real", nullable: true })
   rideCost!: number | null;
 
+  @Column({ name: "host_ids", type: "text", array: true, default: "{}" })
+  hostIds!: string[];
+
   @Column({ name: "show_on_website", type: "boolean", default: false })
   showOnWebsite!: boolean;
+
+  @Column({ name: "members_only", type: "boolean", default: false })
+  membersOnly!: boolean;
 }

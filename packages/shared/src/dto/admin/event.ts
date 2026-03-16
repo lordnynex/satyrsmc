@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { EventType, EventAssignmentCategory } from "../../lib/enums";
+import { EventType, EventAssignmentCategory, RsvpStatus } from "../../lib/enums";
 
 const dateLike = z.union([z.string(), z.date().transform((d) => d.toISOString())]);
 
@@ -16,7 +16,8 @@ export const EventCreateInputSchema = z.object({
   event_type: eventTypeSchema.optional(),
   description: z.string().optional(),
   year: z.number().optional(),
-  event_date: z.string().optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
   event_url: z.string().optional(),
   event_location: z.string().optional(),
   event_location_embed: z.string().optional(),
@@ -33,6 +34,8 @@ export const EventCreateInputSchema = z.object({
   pre_ride_event_id: z.string().optional(),
   ride_cost: z.number().optional(),
   show_on_website: z.boolean().optional(),
+  members_only: z.boolean().optional(),
+  host_ids: z.array(z.string()).optional(),
 });
 
 export const EventUpdateInputSchema = z.object({
@@ -41,7 +44,8 @@ export const EventUpdateInputSchema = z.object({
   event_type: eventTypeSchema.nullable().optional(),
   description: z.string().nullable().optional(),
   year: z.number().nullable().optional(),
-  event_date: z.string().nullable().optional(),
+  start_date: z.string().nullable().optional(),
+  end_date: z.string().nullable().optional(),
   event_url: z.string().nullable().optional(),
   event_location: z.string().nullable().optional(),
   event_location_embed: z.string().nullable().optional(),
@@ -53,6 +57,8 @@ export const EventUpdateInputSchema = z.object({
   scenario_id: z.string().nullable().optional(),
   planning_notes: z.string().nullable().optional(),
   show_on_website: z.boolean().optional(),
+  members_only: z.boolean().optional(),
+  host_ids: z.array(z.string()).optional(),
 });
 
 export const EventDeleteInputSchema = z.object({ id: z.string() });
@@ -66,11 +72,13 @@ export const EventAddAttendeeInputSchema = z.object({
   eventId: z.string(),
   contact_id: z.string(),
   waiver_signed: z.boolean().optional(),
+  rsvp_status: z.nativeEnum(RsvpStatus).optional(),
 });
 export const EventUpdateAttendeeInputSchema = z.object({
   eventId: z.string(),
   attendeeId: z.string(),
   waiver_signed: z.boolean().optional(),
+  rsvp_status: z.nativeEnum(RsvpStatus).optional(),
 });
 export const EventDeleteAttendeeInputSchema = z.object({
   eventId: z.string(),
@@ -81,15 +89,6 @@ export const EventAddMemberAttendeeInputSchema = z.object({
   eventId: z.string(),
   member_id: z.string(),
   waiver_signed: z.boolean().optional(),
-});
-export const EventUpdateMemberAttendeeInputSchema = z.object({
-  eventId: z.string(),
-  memberAttendeeId: z.string(),
-  waiver_signed: z.boolean().optional(),
-});
-export const EventDeleteMemberAttendeeInputSchema = z.object({
-  eventId: z.string(),
-  memberAttendeeId: z.string(),
 });
 
 export const EventCreateIncidentInputSchema = z.object({
@@ -288,15 +287,9 @@ const EventAttendeeSchema = z.object({
   contact_id: z.string(),
   sort_order: z.number(),
   waiver_signed: z.boolean(),
+  rsvp_status: z.nativeEnum(RsvpStatus),
+  is_member: z.boolean(),
   contact: ContactRefSchema.optional(),
-});
-
-const RideMemberAttendeeSchema = z.object({
-  id: z.string(),
-  event_id: z.string(),
-  member_id: z.string(),
-  sort_order: z.number(),
-  waiver_signed: z.boolean(),
   member: z
     .object({
       id: z.string(),
@@ -384,7 +377,8 @@ const EventSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   year: z.number().nullable(),
-  event_date: z.string().nullable(),
+  start_date: z.string().nullable(),
+  end_date: z.string().nullable(),
   event_url: z.string().nullable(),
   event_location: z.string().nullable(),
   event_location_embed: z.string().nullable(),
@@ -397,6 +391,8 @@ const EventSchema = z.object({
   planning_notes: z.string().nullable(),
   event_type: z.nativeEnum(EventType),
   show_on_website: z.boolean().optional(),
+  members_only: z.boolean().optional(),
+  host_ids: z.array(z.string()).optional(),
   start_location: z.string().nullable().optional(),
   end_location: z.string().nullable().optional(),
   facebook_event_url: z.string().nullable().optional(),
@@ -405,7 +401,6 @@ const EventSchema = z.object({
   created_at: z.string().optional(),
   milestones: z.array(EventPlanningMilestoneSchema).optional(),
   event_attendees: z.array(EventAttendeeSchema).optional(),
-  ride_member_attendees: z.array(RideMemberAttendeeSchema).optional(),
   event_assets: z.array(EventAssetSchema).optional(),
   ride_schedule_items: z.array(RideScheduleItemSchema).optional(),
   incidents: z.array(IncidentSchema).optional(),
@@ -430,9 +425,7 @@ export const EventDeleteAssetOutputSchema = z.object({ ok: z.literal(true) });
 export const EventAddAttendeeOutputSchema = EventAttendeeSchema;
 export const EventUpdateAttendeeOutputSchema = EventAttendeeSchema;
 export const EventDeleteAttendeeOutputSchema = z.object({ ok: z.literal(true) });
-export const EventAddMemberAttendeeOutputSchema = RideMemberAttendeeSchema;
-export const EventUpdateMemberAttendeeOutputSchema = RideMemberAttendeeSchema;
-export const EventDeleteMemberAttendeeOutputSchema = z.object({ ok: z.literal(true) });
+export const EventAddMemberAttendeeOutputSchema = EventAttendeeSchema;
 export const EventCreateIncidentOutputSchema = IncidentSchema;
 export const EventUpdateIncidentOutputSchema = IncidentSchema;
 export const EventDeleteIncidentOutputSchema = z.object({ ok: z.literal(true) });
@@ -474,8 +467,6 @@ export type EventAddAttendeeOutput = z.infer<typeof EventAddAttendeeOutputSchema
 export type EventUpdateAttendeeOutput = z.infer<typeof EventUpdateAttendeeOutputSchema>;
 export type EventDeleteAttendeeOutput = z.infer<typeof EventDeleteAttendeeOutputSchema>;
 export type EventAddMemberAttendeeOutput = z.infer<typeof EventAddMemberAttendeeOutputSchema>;
-export type EventUpdateMemberAttendeeOutput = z.infer<typeof EventUpdateMemberAttendeeOutputSchema>;
-export type EventDeleteMemberAttendeeOutput = z.infer<typeof EventDeleteMemberAttendeeOutputSchema>;
 export type EventCreateIncidentOutput = z.infer<typeof EventCreateIncidentOutputSchema>;
 export type EventUpdateIncidentOutput = z.infer<typeof EventUpdateIncidentOutputSchema>;
 export type EventDeleteIncidentOutput = z.infer<typeof EventDeleteIncidentOutputSchema>;

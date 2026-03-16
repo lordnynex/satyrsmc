@@ -8,7 +8,7 @@ interface EventSummary {
   id: string;
   name: string;
   year?: number | null;
-  event_date?: string | null;
+  start_date?: string | null;
   event_type?: EventType;
   show_on_website?: boolean;
 }

@@ -65,6 +65,11 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
         req: request,
         router: appRouter,
         createContext,
+        onError: ({ error, path }) => {
+          if (error.code === "INTERNAL_SERVER_ERROR") {
+            logger.error({ err: error.cause ?? error, path }, "tRPC internal error");
+          }
+        },
       });
       const durationMs = Math.round(performance.now() - start);
       const ip = server?.requestIP?.(request)?.address ?? "unknown";

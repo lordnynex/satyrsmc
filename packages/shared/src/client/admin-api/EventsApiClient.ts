@@ -256,16 +256,5 @@ export class EventsApiClient {
   readonly memberAttendees = {
     add: async (eventId: string, body: { member_id: string; waiver_signed?: boolean }) =>
       this.client.admin.events.addMemberAttendee.mutate({ eventId, ...body }),
-    update: async (eventId: string, memberAttendeeId: string, body: { waiver_signed?: boolean }) =>
-      this.client.admin.events.updateMemberAttendee.mutate({
-        eventId,
-        memberAttendeeId,
-        ...body,
-      }),
-    delete: async (eventId: string, memberAttendeeId: string) =>
-      this.client.admin.events.deleteMemberAttendee.mutate({
-        eventId,
-        memberAttendeeId,
-      }),
   };
 }

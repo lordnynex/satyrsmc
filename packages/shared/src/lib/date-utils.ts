@@ -1,9 +1,16 @@
 import dayjs from "dayjs";
 
-/** Format a date string for locale display (e.g. 11/29/2025). Accepts ISO or YYYY-MM-DD. */
+/**
+ * Format a date string for locale display (e.g. 11/29/2025). Accepts ISO or YYYY-MM-DD.
+ * Uses timezone-safe parsing — extracts the YYYY-MM-DD portion directly to avoid
+ * dayjs interpreting UTC midnight as the previous day in western timezones.
+ */
 export function formatDateOnly(dateStr: string): string {
   if (!dateStr) return "";
-  return dayjs(dateStr).format("M/D/YYYY");
+  const d = toDateOnly(dateStr);
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  return `${Number(m)}/${Number(day)}/${y}`;
 }
 
 /**
@@ -35,6 +42,47 @@ export function formatDateTime(s: string | null | undefined): string {
   const d = dayjs(s);
   if (!d.isValid()) return s;
   return d.format("M/D/YYYY, h:mm A");
+}
+
+/**
+ * Normalize a date-only or ISO date string to noon UTC for timezone-safe storage.
+ * Ensures the date is always correct regardless of the viewer's timezone
+ * (noon UTC cannot roll to a different day in any timezone from UTC-12 to UTC+14).
+ */
+export function normalizeEventDate(s: string | null | undefined): string | null {
+  if (!s) return null;
+  const dateOnly = toDateOnly(typeof s === "string" ? s : "");
+  if (!dateOnly) return null;
+  return `${dateOnly}T12:00:00.000Z`;
+}
+
+/**
+ * Format a date string with a 2-digit year (e.g. "3/14/26"). Accepts ISO or YYYY-MM-DD.
+ * Uses timezone-safe parsing like formatDateOnly.
+ */
+export function formatDateShort(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = toDateOnly(dateStr);
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  return `${Number(m)}/${Number(day)}/${y.slice(2)}`;
+}
+
+const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/**
+ * Format a date string as a long display date (e.g. "Tuesday, March 24, 2026").
+ * Accepts ISO or YYYY-MM-DD. Uses timezone-safe parsing like formatDateOnly.
+ */
+export function formatDateLong(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = toDateOnly(dateStr);
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  const date = new Date(Number(y), Number(m) - 1, Number(day));
+  const dayName = DAYS_OF_WEEK[date.getDay()];
+  const monthName = MONTHS[date.getMonth()];
+  return `${dayName}, ${monthName} ${Number(day)}, ${y}`;
 }
 
 export const MONTHS = [

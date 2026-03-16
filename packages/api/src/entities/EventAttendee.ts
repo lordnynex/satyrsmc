@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import type { RsvpStatus } from "@satyrsmc/shared/lib/enums";
 
 @Entity("event_attendees")
 export class EventAttendee {
@@ -16,4 +17,13 @@ export class EventAttendee {
 
   @Column({ name: "waiver_signed", type: "boolean", default: false })
   waiverSigned!: boolean;
+
+  @Column({ name: "rsvp_status", type: "text", default: "no_response" })
+  rsvpStatus!: RsvpStatus;
+
+  @Column({ name: "created_at", type: "timestamptz", nullable: true })
+  createdAt!: Date | null;
+
+  @Column({ name: "updated_at", type: "timestamptz", nullable: true })
+  updatedAt!: Date | null;
 }

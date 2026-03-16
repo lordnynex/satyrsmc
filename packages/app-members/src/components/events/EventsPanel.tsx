@@ -71,12 +71,12 @@ export function EventsPanel({ type }: EventsPanelProps) {
                   <CardTitle className="text-lg truncate">{e.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                     {e.year != null && <span>{e.year}</span>}
-                    {e.event_date && (
+                    {e.start_date && (
                       <>
                         <span className="text-border">•</span>
                         <span className="flex items-center gap-1">
                           <Calendar className="size-3.5" />
-                          {formatDateOnly(e.event_date!)}
+                          {formatDateOnly(e.start_date!)}
                         </span>
                       </>
                     )}

@@ -21,6 +21,7 @@ import { AuthService } from "./AuthService";
 import { UsersService } from "./UsersService";
 import { ConsoleEmailService } from "./EmailService";
 import type { EmailService } from "./EmailService";
+import { MemberEventsService } from "./MemberEventsService";
 
 export function createApi(db: DbLike, ds: DataSource, emailService?: EmailService) {
   const email = emailService ?? new ConsoleEmailService();
@@ -57,6 +58,7 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
     contactSubmissions: new ContactSubmissionsService(ds),
     auth: new AuthService(ds, email),
     users: new UsersService(ds, email),
+    memberEvents: new MemberEventsService(ds),
   };
 }
 

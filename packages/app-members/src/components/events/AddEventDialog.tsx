@@ -40,9 +40,11 @@ export function AddEventDialog({
   const [name, setName] = useState("");
   const [eventType, setEventType] = useState<EventType>(defaultEventType);
   const [year, setYear] = useState<number | "">(new Date().getFullYear());
-  const [eventDate, setEventDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [description, setDescription] = useState("");
   const [showOnWebsite, setShowOnWebsite] = useState(true);
+  const [membersOnly, setMembersOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   const createEventMutation = useCreateEvent();
 
@@ -56,9 +58,11 @@ export function AddEventDialog({
     setName("");
     setEventType(defaultEventType);
     setYear(new Date().getFullYear());
-    setEventDate("");
+    setStartDate("");
+    setEndDate("");
     setDescription("");
     setShowOnWebsite(true);
+    setMembersOnly(false);
   };
 
   const handleSubmit = async () => {
@@ -71,9 +75,11 @@ export function AddEventDialog({
         name: trimmedName,
         event_type: eventType,
         year: year === "" ? undefined : Number(year),
-        event_date: eventDate.trim() || undefined,
+        start_date: startDate.trim() || undefined,
+        end_date: endDate.trim() || undefined,
         description: description.trim() || undefined,
         show_on_website: showOnWebsite,
+        members_only: membersOnly,
       } as Record<string, unknown>);
       reset();
       onOpenChange(false);
@@ -126,8 +132,14 @@ export function AddEventDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Event date</Label>
-              <DatePicker value={eventDate} onChange={setEventDate} />
+              <Label>Start date</Label>
+              <DatePicker value={startDate} onChange={setStartDate} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>End date</Label>
+              <DatePicker value={endDate} onChange={setEndDate} />
             </div>
           </div>
           <div className="space-y-2">
@@ -147,6 +159,15 @@ export function AddEventDialog({
               className="size-4 rounded border-input"
             />
             <span className="text-sm font-medium">Show on website</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={membersOnly}
+              onChange={(e) => setMembersOnly(e.target.checked)}
+              className="size-4 rounded border-input"
+            />
+            <span className="text-sm font-medium">Members only</span>
           </label>
         </div>
         <DialogFooter>

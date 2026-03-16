@@ -19,6 +19,7 @@ import {
   RosterPage,
   ProfilePage,
   MemberEventsPage,
+  MemberEventDetailPage,
 } from "@/components/members-section";
 import {
   HomePage,
@@ -717,6 +718,14 @@ function App() {
       >
         <Route index element={<MembersDashboard />} />
         <Route path="/events" element={<MemberEventsPage />} />
+        <Route
+          path="/events/:id"
+          element={
+            <IdParamGuard>
+              <MemberEventDetailPage />
+            </IdParamGuard>
+          }
+        />
         <Route
           path="/roster"
           element={
