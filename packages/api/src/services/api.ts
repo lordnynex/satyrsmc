@@ -23,6 +23,8 @@ import { ConsoleEmailService } from "./EmailService";
 import type { EmailService } from "./EmailService";
 import { MemberEventsService } from "./MemberEventsService";
 import { RecaptchaService } from "./RecaptchaService";
+import { ActivityLogsService } from "./ActivityLogsService";
+import { MembershipLogsService } from "./MembershipLogsService";
 
 export function createApi(db: DbLike, ds: DataSource, emailService?: EmailService) {
   const email = emailService ?? new ConsoleEmailService();
@@ -61,6 +63,8 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
     users: new UsersService(ds, email),
     memberEvents: new MemberEventsService(ds),
     recaptcha: new RecaptchaService(),
+    activityLogs: new ActivityLogsService(ds),
+    membershipLogs: new MembershipLogsService(ds),
   };
 }
 

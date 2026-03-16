@@ -47,3 +47,5 @@ export { ContactMemberSubmission } from "./ContactMemberSubmission";
 export { Incident } from "./Incident";
 export { User } from "./User";
 export { Registration } from "./Registration";
+export { ActivityLog } from "./ActivityLog";
+export { MembershipLog } from "./MembershipLog";

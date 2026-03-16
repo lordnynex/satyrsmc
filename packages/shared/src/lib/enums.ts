@@ -238,3 +238,36 @@ export enum QrFormat {
   Svg = "svg",
 }
 export const QR_FORMATS = Object.values(QrFormat);
+
+// --- Activity Log ---
+
+export enum ActivityMessageCode {
+  EventAttended = "event_attended",
+  RunLed = "run_led",
+  EventReviewSubmitted = "event_review_submitted",
+  RunReportSubmitted = "run_report_submitted",
+  GalleryPhotoSubmitted = "gallery_photo_submitted",
+  GalleryPhotosSubmitted = "gallery_photos_submitted",
+  ProfilePhotoSubmitted = "profile_photo_submitted",
+  RigbookPhotoSubmitted = "rigbook_photo_submitted",
+  Joined = "joined",
+}
+export const ACTIVITY_MESSAGE_CODES = Object.values(ActivityMessageCode);
+
+// --- Membership Log ---
+
+export enum MembershipMessageCode {
+  AccountCreated = "account_created",
+  AccountUnlocked = "account_unlocked",
+  AccountChanged = "account_changed",
+  AccountRejected = "account_rejected",
+  DuesPaid = "dues_paid",
+  OfficeAdded = "office_added",
+  OfficeRemoved = "office_removed",
+  TitleAdded = "title_added",
+  TitleRemoved = "title_removed",
+  MembershipGranted = "membership_granted",
+  MembershipEligible = "membership_eligible",
+  GuestRestricted = "guest_restricted",
+}
+export const MEMBERSHIP_MESSAGE_CODES = Object.values(MembershipMessageCode);

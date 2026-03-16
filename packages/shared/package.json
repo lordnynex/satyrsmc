@@ -31,7 +31,10 @@
     "./dto/admin/websiteAdmin": "./src/dto/admin/websiteAdmin.ts",
     "./dto/admin/incident": "./src/dto/admin/incident.ts",
     "./dto/admin/user": "./src/dto/admin/user.ts",
+    "./dto/admin/activityLog": "./src/dto/admin/activityLog.ts",
+    "./dto/admin/membershipLog": "./src/dto/admin/membershipLog.ts",
     "./dto/member/event": "./src/dto/member/event.ts",
+    "./dto/member/activityLog": "./src/dto/member/activityLog.ts",
     "./dto/auth": "./src/dto/auth.ts",
     "./styles/*": "./styles/*",
     "./components": "./src/components/index.ts"

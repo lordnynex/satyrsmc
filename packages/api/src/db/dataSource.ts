@@ -51,6 +51,8 @@ import {
   Incident,
   User,
   Registration,
+  ActivityLog,
+  MembershipLog,
 } from "../entities";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
 import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
@@ -63,6 +65,7 @@ import { NormalizeEventDatesToNoonUtc1800000007000 } from "./migrations/18000000
 import { ConsolidateAttendees1800000008000 } from "./migrations/1800000008000-ConsolidateAttendees.ts";
 import { RenameStatusToRsvpStatus1800000009000 } from "./migrations/1800000009000-RenameStatusToRsvpStatus.ts";
 import { EventDateAndHostChanges1800000010000 } from "./migrations/1800000010000-EventDateAndHostChanges.ts";
+import { CreateLogTables1800000011000 } from "./migrations/1800000011000-CreateLogTables.ts";
 
 export function getProjectRoot(): string {
   return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
@@ -118,6 +121,8 @@ const entities = [
   Incident,
   User,
   Registration,
+  ActivityLog,
+  MembershipLog,
 ];
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -137,6 +142,7 @@ export const dataSourceOptions: DataSourceOptions = {
     ConsolidateAttendees1800000008000,
     RenameStatusToRsvpStatus1800000009000,
     EventDateAndHostChanges1800000010000,
+    CreateLogTables1800000011000,
   ],
   migrationsRun: true,
   entities,
