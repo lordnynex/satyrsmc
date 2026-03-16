@@ -26,7 +26,7 @@ const ContactPage: React.FC = () => {
     defaultValues: {
       name: "",
       email: "",
-      subject: null,
+      subject: "",
       message: "",
       recaptcha_token: RECAPTCHA_SITE_KEY ? "" : "disabled",
     },

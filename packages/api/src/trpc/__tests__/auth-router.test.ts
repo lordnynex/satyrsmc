@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "bun:test";
+import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
 import type { TRPCError } from "@trpc/server";
 import type { DataSource } from "typeorm";
 import type { Api } from "../../services/api";
@@ -89,6 +89,25 @@ describe("auth tRPC router", () => {
       expect(sentEmails.length).toBe(1);
       expect(sentEmails[0]!.type).toBe("registration");
     });
+
+    test("rejects when reCAPTCHA verification fails", async () => {
+      const original = harness.api.recaptcha.verify;
+      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      try {
+        await harness.caller.auth.register({
+          email: "captcha-fail@example.com",
+          first_name: "Bot",
+          last_name: "User",
+          recaptcha_token: "bad-token",
+        });
+        expect(true).toBe(false);
+      } catch (e) {
+        expect((e as TRPCError).code).toBe("BAD_REQUEST");
+        expect((e as TRPCError).message).toBe("reCAPTCHA verification failed");
+      } finally {
+        harness.api.recaptcha.verify = original;
+      }
+    });
   });
 
   describe("validateToken", () => {
@@ -166,6 +185,29 @@ describe("auth tRPC router", () => {
       const cookies = harness.context.resHeaders.getSetCookie();
       expect(cookies.some((c: string) => c.startsWith("satyrs_access="))).toBe(true);
       expect(cookies.some((c: string) => c.startsWith("satyrs_refresh="))).toBe(true);
+    });
+
+    test("rejects when reCAPTCHA verification fails", async () => {
+      const { username } = await createTestUser(harness.api);
+      const { users } = await harness.api.users.list();
+      const user = users.find((u) => u.username === username);
+      await harness.api.users.updateStatus(user!.id, UserStatus.Active);
+
+      const original = harness.api.recaptcha.verify;
+      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      try {
+        await harness.caller.auth.login({
+          username,
+          password: "TestPass1!",
+          recaptcha_token: "bad-token",
+        });
+        expect(true).toBe(false);
+      } catch (e) {
+        expect((e as TRPCError).code).toBe("BAD_REQUEST");
+        expect((e as TRPCError).message).toBe("reCAPTCHA verification failed");
+      } finally {
+        harness.api.recaptcha.verify = original;
+      }
     });
 
     test("rejects wrong password", async () => {

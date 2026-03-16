@@ -227,6 +227,26 @@ describe("website router", () => {
         expect((e as TRPCError).code).toBe("BAD_REQUEST");
       }
     });
+    test("rejects when reCAPTCHA verification fails", async () => {
+      const member = await createMember(harness.api, { name: "Captcha Test Member" });
+      const original = harness.api.recaptcha.verify;
+      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      try {
+        await harness.caller.website.submitContactMember({
+          member_id: member.id,
+          sender_name: "Bot",
+          sender_email: "bot@example.com",
+          message: "spam",
+          recaptcha_token: "bad-token",
+        });
+        expect(true).toBe(false);
+      } catch (e) {
+        expect((e as TRPCError).code).toBe("BAD_REQUEST");
+        expect((e as TRPCError).message).toBe("reCAPTCHA verification failed");
+      } finally {
+        harness.api.recaptcha.verify = original;
+      }
+    });
   });
 
   // --- getMenus: returns menus (no input) ---
