@@ -122,6 +122,7 @@ describe("website router", () => {
         name: "Jane Doe",
         email: "jane@example.com",
         message: "Hello",
+        recaptcha_token: "test-token",
       });
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -133,6 +134,7 @@ describe("website router", () => {
         email: "subj@example.com",
         subject: "Question",
         message: "Body",
+        recaptcha_token: "test-token",
       });
       expect(result.id).toBeDefined();
     });
@@ -143,6 +145,7 @@ describe("website router", () => {
           name: "Bad Email",
           email: "not-an-email",
           message: "Hi",
+          recaptcha_token: "test-token",
         }),
       ).rejects.toThrow(TRPCError);
       try {
@@ -150,6 +153,7 @@ describe("website router", () => {
           name: "Bad Email",
           email: "not-an-email",
           message: "Hi",
+          recaptcha_token: "test-token",
         });
       } catch (e) {
         expect((e as TRPCError).code).toBe("BAD_REQUEST");
@@ -166,6 +170,7 @@ describe("website router", () => {
         sender_name: "Sender",
         sender_email: "sender@example.com",
         message: "Message",
+        recaptcha_token: "test-token",
       });
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -179,6 +184,7 @@ describe("website router", () => {
           sender_name: "S",
           sender_email: "invalid",
           message: "M",
+          recaptcha_token: "test-token",
         }),
       ).rejects.toThrow(TRPCError);
       try {
@@ -187,6 +193,7 @@ describe("website router", () => {
           sender_name: "S",
           sender_email: "invalid",
           message: "M",
+          recaptcha_token: "test-token",
         });
       } catch (e) {
         expect((e as TRPCError).code).toBe("BAD_REQUEST");

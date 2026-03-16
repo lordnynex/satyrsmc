@@ -200,20 +200,21 @@ describe("MemberEventsService", () => {
 
     test("filters by date range", async () => {
       const { contactId } = await createTestUserDirect(ds);
-      await createEvent(api, { name: "Jan Event", start_date: "2026-01-15T00:00:00Z" });
-      await createEvent(api, { name: "Mar Event", start_date: "2026-03-15T00:00:00Z" });
-      await createEvent(api, { name: "Jun Event", start_date: "2026-06-15T00:00:00Z" });
+      // Use future dates so the upcoming filter doesn't exclude them
+      await createEvent(api, { name: "Jul Event", start_date: "2027-07-15T00:00:00Z" });
+      await createEvent(api, { name: "Sep Event", start_date: "2027-09-15T00:00:00Z" });
+      await createEvent(api, { name: "Dec Event", start_date: "2027-12-15T00:00:00Z" });
 
       const result = await api.memberEvents.list(contactId, {
-        date_from: "2026-02-01",
-        date_to: "2026-04-30",
+        date_from: "2027-08-01",
+        date_to: "2027-10-31",
         upcoming: true,
         page: 1,
         per_page: 18,
       });
 
       expect(result.items.length).toBe(1);
-      expect(result.items[0]!.name).toBe("Mar Event");
+      expect(result.items[0]!.name).toBe("Sep Event");
     });
   });
 

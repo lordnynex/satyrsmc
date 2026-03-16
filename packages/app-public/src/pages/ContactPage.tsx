@@ -1,26 +1,51 @@
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import ReCAPTCHA from "react-google-recaptcha";
+import { SubmitContactInputSchema } from "@satyrsmc/shared/dto/website";
+import type { z } from "zod";
 import { Hero } from "../components/Hero";
 import { trpc } from "@satyrsmc/shared/client";
 
+declare const __BUILD_RECAPTCHA_SITE_KEY__: string;
+const RECAPTCHA_SITE_KEY = __BUILD_RECAPTCHA_SITE_KEY__ || "";
+
+type ContactFormValues = z.infer<typeof SubmitContactInputSchema>;
+
 const ContactPage: React.FC = () => {
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [subject, setSubject] = React.useState("");
-  const [message, setMessage] = React.useState("");
+  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
   const [submitted, setSubmitted] = React.useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ContactFormValues>({
+    resolver: zodResolver(SubmitContactInputSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      subject: null,
+      message: "",
+      recaptcha_token: RECAPTCHA_SITE_KEY ? "" : "disabled",
+    },
+  });
 
   const mutation = trpc.website.submitContact.useMutation({
     onSuccess: () => setSubmitted(true),
+    onError: () => {
+      recaptchaRef.current?.reset();
+      setValue("recaptcha_token", "");
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate({
-      name,
-      email,
-      subject: subject || null,
-      message,
-    });
+  const onSubmit = (data: ContactFormValues) => {
+    mutation.mutate(data);
+  };
+
+  const handleRecaptchaChange = (token: string | null) => {
+    setValue("recaptcha_token", token ?? "", { shouldValidate: true });
   };
 
   return (
@@ -46,7 +71,7 @@ const ContactPage: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                   <div>
                     <label htmlFor="contact-name" className="label">
                       Name *
@@ -55,10 +80,13 @@ const ContactPage: React.FC = () => {
                       id="contact-name"
                       type="text"
                       className="input w-full"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
+                      {...register("name")}
                     />
+                    {errors.name && (
+                      <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                        {errors.name.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="contact-email" className="label">
@@ -68,10 +96,13 @@ const ContactPage: React.FC = () => {
                       id="contact-email"
                       type="email"
                       className="input w-full"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
+                      {...register("email")}
                     />
+                    {errors.email && (
+                      <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="contact-subject" className="label">
@@ -81,8 +112,7 @@ const ContactPage: React.FC = () => {
                       id="contact-subject"
                       type="text"
                       className="input w-full"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
+                      {...register("subject")}
                     />
                   </div>
                   <div>
@@ -93,11 +123,31 @@ const ContactPage: React.FC = () => {
                       id="contact-message"
                       className="textarea w-full"
                       rows={5}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      required
+                      {...register("message")}
                     />
+                    {errors.message && (
+                      <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                        {errors.message.message}
+                      </p>
+                    )}
                   </div>
+
+                  {RECAPTCHA_SITE_KEY && (
+                    <div>
+                      <ReCAPTCHA
+                        ref={recaptchaRef}
+                        sitekey={RECAPTCHA_SITE_KEY}
+                        theme="dark"
+                        onChange={handleRecaptchaChange}
+                        onExpired={() => setValue("recaptcha_token", "")}
+                      />
+                      {errors.recaptcha_token && (
+                        <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                          {errors.recaptcha_token.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {mutation.error && (
                     <p className="text-sm" style={{ color: "#ef4444" }}>

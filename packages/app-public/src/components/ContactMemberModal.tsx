@@ -1,5 +1,15 @@
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import ReCAPTCHA from "react-google-recaptcha";
+import { SubmitContactMemberInputSchema } from "@satyrsmc/shared/dto/website";
+import type { z } from "zod";
 import { trpc } from "@satyrsmc/shared/client";
+
+declare const __BUILD_RECAPTCHA_SITE_KEY__: string;
+const RECAPTCHA_SITE_KEY = __BUILD_RECAPTCHA_SITE_KEY__ || "";
+
+type ContactMemberFormValues = z.infer<typeof SubmitContactMemberInputSchema>;
 
 interface ContactMemberModalProps {
   memberId: string;
@@ -12,23 +22,39 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
   memberName,
   onClose,
 }) => {
-  const [senderName, setSenderName] = React.useState("");
-  const [senderEmail, setSenderEmail] = React.useState("");
-  const [message, setMessage] = React.useState("");
+  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
   const [submitted, setSubmitted] = React.useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ContactMemberFormValues>({
+    resolver: zodResolver(SubmitContactMemberInputSchema),
+    defaultValues: {
+      member_id: memberId,
+      sender_name: "",
+      sender_email: "",
+      message: "",
+      recaptcha_token: RECAPTCHA_SITE_KEY ? "" : "disabled",
+    },
+  });
 
   const mutation = trpc.website.submitContactMember.useMutation({
     onSuccess: () => setSubmitted(true),
+    onError: () => {
+      recaptchaRef.current?.reset();
+      setValue("recaptcha_token", "");
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate({
-      member_id: memberId,
-      sender_name: senderName,
-      sender_email: senderEmail,
-      message,
-    });
+  const onSubmit = (data: ContactMemberFormValues) => {
+    mutation.mutate(data);
+  };
+
+  const handleRecaptchaChange = (token: string | null) => {
+    setValue("recaptcha_token", token ?? "", { shouldValidate: true });
   };
 
   return (
@@ -76,7 +102,7 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
               <div>
                 <label htmlFor="sender-name" className="label">
                   Your Name *
@@ -85,10 +111,13 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                   id="sender-name"
                   type="text"
                   className="input w-full"
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  required
+                  {...register("sender_name")}
                 />
+                {errors.sender_name && (
+                  <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                    {errors.sender_name.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="sender-email" className="label">
@@ -98,10 +127,13 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                   id="sender-email"
                   type="email"
                   className="input w-full"
-                  value={senderEmail}
-                  onChange={(e) => setSenderEmail(e.target.value)}
-                  required
+                  {...register("sender_email")}
                 />
+                {errors.sender_email && (
+                  <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                    {errors.sender_email.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="member-message" className="label">
@@ -111,11 +143,31 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                   id="member-message"
                   className="textarea w-full"
                   rows={4}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
+                  {...register("message")}
                 />
+                {errors.message && (
+                  <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                    {errors.message.message}
+                  </p>
+                )}
               </div>
+
+              {RECAPTCHA_SITE_KEY && (
+                <div>
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                    theme="dark"
+                    onChange={handleRecaptchaChange}
+                    onExpired={() => setValue("recaptcha_token", "")}
+                  />
+                  {errors.recaptcha_token && (
+                    <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                      {errors.recaptcha_token.message}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {mutation.error && (
                 <p className="text-sm" style={{ color: "#ef4444" }}>

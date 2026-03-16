@@ -75,6 +75,9 @@ export const websiteRouter = t.router({
     .output(SubmitContactOutputSchema)
     .meta({ description: "Submit a general contact form." })
     .mutation(async ({ ctx, input }) => {
+      const valid = await ctx.api.recaptcha.verify(input.recaptcha_token);
+      if (!valid)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "reCAPTCHA verification failed" });
       const result = await ctx.api.contactSubmissions.createContact({
         name: input.name,
         email: input.email,
@@ -89,7 +92,15 @@ export const websiteRouter = t.router({
     .output(SubmitContactMemberOutputSchema)
     .meta({ description: "Submit a contact form for a specific member." })
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.api.contactSubmissions.createContactMember(input);
+      const valid = await ctx.api.recaptcha.verify(input.recaptcha_token);
+      if (!valid)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "reCAPTCHA verification failed" });
+      const result = await ctx.api.contactSubmissions.createContactMember({
+        member_id: input.member_id,
+        sender_name: input.sender_name,
+        sender_email: input.sender_email,
+        message: input.message,
+      });
       return { id: result.id, created: true as const };
     }),
 

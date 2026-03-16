@@ -15,17 +15,19 @@ export const GetPageByIdInputSchema = z.object({
 });
 
 export const SubmitContactInputSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email address"),
   subject: z.string().nullable().optional(),
-  message: z.string(),
+  message: z.string().min(1, "Message is required"),
+  recaptcha_token: z.string().min(1, "Please complete the reCAPTCHA"),
 });
 
 export const SubmitContactMemberInputSchema = z.object({
   member_id: z.string(),
-  sender_name: z.string(),
-  sender_email: z.string().email(),
-  message: z.string(),
+  sender_name: z.string().min(1, "Name is required"),
+  sender_email: z.string().email("Please enter a valid email address"),
+  message: z.string().min(1, "Message is required"),
+  recaptcha_token: z.string().min(1, "Please complete the reCAPTCHA"),
 });
 
 // ----- Output schemas (entity shapes used by outputs) -----
