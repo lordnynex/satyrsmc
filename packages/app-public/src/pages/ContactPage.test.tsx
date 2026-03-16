@@ -75,7 +75,7 @@ describe("ContactPage", () => {
     });
   });
 
-  test("submit button shows loading state", async () => {
+  test("submit button is enabled before submission", async () => {
     const user = userEvent.setup();
     const handlers = {
       "website.submitContact": () => ({ id: "c1", created: true }),

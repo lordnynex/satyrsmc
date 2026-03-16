@@ -12,19 +12,31 @@ export class RecaptchaService {
 
   async verify(token: string): Promise<boolean> {
     if (!this.secret) {
+      if (process.env.NODE_ENV === "production") {
+        console.error("RECAPTCHA_SECRET_KEY is not configured in production; failing verification");
+        return false;
+      }
       return true;
     }
 
-    const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: this.secret,
-        response: token,
-      }),
-    });
+    try {
+      const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret: this.secret,
+          response: token,
+        }),
+      });
 
-    const data = (await response.json()) as RecaptchaResponse;
-    return data.success;
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = (await response.json()) as RecaptchaResponse;
+      return data.success;
+    } catch {
+      return false;
+    }
   }
 }

@@ -200,14 +200,15 @@ describe("MemberEventsService", () => {
 
     test("filters by date range", async () => {
       const { contactId } = await createTestUserDirect(ds);
-      // Use future dates so the upcoming filter doesn't exclude them
-      await createEvent(api, { name: "Jul Event", start_date: "2027-07-15T00:00:00Z" });
-      await createEvent(api, { name: "Sep Event", start_date: "2027-09-15T00:00:00Z" });
-      await createEvent(api, { name: "Dec Event", start_date: "2027-12-15T00:00:00Z" });
+      // Use dates relative to now so the upcoming filter doesn't exclude them
+      const baseYear = new Date().getFullYear() + 3;
+      await createEvent(api, { name: "Jul Event", start_date: `${baseYear}-07-15T00:00:00Z` });
+      await createEvent(api, { name: "Sep Event", start_date: `${baseYear}-09-15T00:00:00Z` });
+      await createEvent(api, { name: "Dec Event", start_date: `${baseYear}-12-15T00:00:00Z` });
 
       const result = await api.memberEvents.list(contactId, {
-        date_from: "2027-08-01",
-        date_to: "2027-10-31",
+        date_from: `${baseYear}-08-01`,
+        date_to: `${baseYear}-10-31`,
         upcoming: true,
         page: 1,
         per_page: 18,

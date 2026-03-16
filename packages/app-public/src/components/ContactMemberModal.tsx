@@ -44,10 +44,16 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
   const mutation = trpc.website.submitContactMember.useMutation({
     onSuccess: () => setSubmitted(true),
     onError: () => {
-      recaptchaRef.current?.reset();
-      setValue("recaptcha_token", "");
+      if (RECAPTCHA_SITE_KEY) {
+        recaptchaRef.current?.reset();
+        setValue("recaptcha_token", "");
+      }
     },
   });
+
+  React.useEffect(() => {
+    setValue("member_id", memberId);
+  }, [memberId, setValue]);
 
   const onSubmit = (data: ContactMemberFormValues) => {
     mutation.mutate(data);

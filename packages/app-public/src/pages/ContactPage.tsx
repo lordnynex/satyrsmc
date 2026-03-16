@@ -35,8 +35,10 @@ const ContactPage: React.FC = () => {
   const mutation = trpc.website.submitContact.useMutation({
     onSuccess: () => setSubmitted(true),
     onError: () => {
-      recaptchaRef.current?.reset();
-      setValue("recaptcha_token", "");
+      if (RECAPTCHA_SITE_KEY) {
+        recaptchaRef.current?.reset();
+        setValue("recaptcha_token", "");
+      }
     },
   });
 
@@ -112,7 +114,9 @@ const ContactPage: React.FC = () => {
                       id="contact-subject"
                       type="text"
                       className="input w-full"
-                      {...register("subject")}
+                      {...register("subject", {
+                        setValueAs: (value: string) => (value === "" ? null : value),
+                      })}
                     />
                   </div>
                   <div>

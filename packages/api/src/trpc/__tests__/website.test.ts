@@ -5,7 +5,7 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll, mock } from "bun:test";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
 import {
@@ -157,6 +157,34 @@ describe("website router", () => {
         });
       } catch (e) {
         expect((e as TRPCError).code).toBe("BAD_REQUEST");
+      }
+    });
+
+    test("rejects when reCAPTCHA verification fails", async () => {
+      const original = harness.api.recaptcha.verify;
+      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      try {
+        await expect(
+          harness.caller.website.submitContact({
+            name: "Bot",
+            email: "bot@example.com",
+            message: "spam",
+            recaptcha_token: "bad-token",
+          }),
+        ).rejects.toThrow(TRPCError);
+        try {
+          await harness.caller.website.submitContact({
+            name: "Bot",
+            email: "bot@example.com",
+            message: "spam",
+            recaptcha_token: "bad-token",
+          });
+        } catch (e) {
+          expect((e as TRPCError).code).toBe("BAD_REQUEST");
+          expect((e as TRPCError).message).toBe("reCAPTCHA verification failed");
+        }
+      } finally {
+        harness.api.recaptcha.verify = original;
       }
     });
   });
