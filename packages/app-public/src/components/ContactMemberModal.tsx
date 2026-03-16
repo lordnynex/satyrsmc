@@ -108,7 +108,7 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3" noValidate>
               <div>
                 <label htmlFor="sender-name" className="label">
                   Your Name *

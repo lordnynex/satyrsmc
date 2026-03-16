@@ -73,7 +73,7 @@ const ContactPage: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
                   <div>
                     <label htmlFor="contact-name" className="label">
                       Name *
