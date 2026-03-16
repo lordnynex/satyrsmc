@@ -1,4 +1,4 @@
-// Typed tRPC client and provider (shared by app-admin and app-public)
+// Typed tRPC client and provider (shared by app-members and app-public)
 export { trpc, createTrpcClient, type TrpcClient } from "./trpc";
 export { TrpcClientProvider, useTrpcClient } from "./trpcClientContext";
 
@@ -22,7 +22,7 @@ export type {
   ScenarioMetrics,
 } from "./budget-state";
 
-// Type aliases for names used by app-admin (MeetingSummary, CommitteeSummary, etc.)
+// Type aliases for names used by app-members (MeetingSummary, CommitteeSummary, etc.)
 export type {
   MeetingSummary,
   MeetingDetail,

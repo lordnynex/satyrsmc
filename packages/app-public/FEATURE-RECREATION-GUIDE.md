@@ -20,7 +20,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - Admin tRPC routers (15+): full CRUD for all domains
 - Photo/asset serving via sharp (BYTEA in Postgres)
 
-**Admin App (`@satyrsmc/app-admin`)**
+**Admin App (`@satyrsmc/app-members`)**
 
 - Full club management SPA: members, contacts, events, meetings, budgets, committees, mailing lists, QR codes, documents, incidents
 - Website CMS: pages, blog posts, menus, contact submissions, settings, event feeds, member profiles, galleries
@@ -36,7 +36,7 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 - Static data: `content/events.ts`, `data/members.json`, `data/timeline.json`
 - react-photo-album + lightbox for gallery
 - react-markdown for content rendering
-- Members and Member Profile pages will move to `app-admin` (see Phase 3)
+- Members section now lives in `app-members` with auth-protected routes (Phase 3 complete)
 
 **Shared (`@satyrsmc/shared`)**
 
@@ -47,18 +47,30 @@ For coding conventions, type safety rules, and development workflow, see [CONTRI
 
 ### What's NOT Built
 
-- Authentication (no JWT, no login, no user/registration entities)
-- Member-authenticated routes in app-admin (roster, profile editing, meeting minutes)
 - Public pages consuming tRPC (all static)
 - Contact page with form/reCAPTCHA
 - Blog pages in public app
 - Dynamic CMS pages in public app
-- Auth protection on admin routes (all procedures are bare `t.procedure`)
-- Testing infrastructure (only 7 utility tests exist)
 - CI/CD pipelines
-- ESLint/Prettier configuration
-- Email service
-- Test seeding/fixtures (faker-based test harness — not a blocker)
+- Member section page content (roster, profile, events pages are scaffolded but have no real content yet)
+- Email delivery (ConsoleEmailService stub logs in dev — no SMTP/SES integration)
+- reCAPTCHA on registration form
+
+### What's Built (Auth & User System)
+
+- JWT authentication (jose HS256) with httpOnly cookie transport (access + refresh tokens)
+- User, Registration entities with migrations; users table linked to contacts and optionally members
+- AuthService: register, signup, login, logout, refresh, forgot/reset password with account lockout
+- UsersService: admin CRUD for user management, invitation flow, registration approval
+- tRPC middleware: protectedProcedure, adminProcedure, memberProcedure
+- Auth pages: login, register, signup, forgot-password, reset-password
+- AuthContext + useAuth hook, ProtectedRoute/AdminRoute/MemberRoute guards
+- Admin user management UI at /admin/users (list, detail, status/type changes, invitations)
+- Members section scaffolding: dashboard, roster, profile, events (at root /)
+- Admin routes restructured under /admin/\*
+- MembersService reads/writes through Contact sub-tables (contact_id FK)
+- Database seed script with sample users (bun run seed)
+- Comprehensive test coverage (460+ API tests, PGlite integration tests)
 
 ---
 
@@ -71,7 +83,7 @@ app-public (satyrsmc.org):
   /                  — Public/marketing (unauthenticated)
   /about, /events, /gallery, /blog, /contact
 
-app-admin (members.satyrsmc.org, to be renamed):
+app-members (members.satyrsmc.org, to be renamed):
   /                  — Members area (authenticated)
   /roster, /profile, /events, /meetings
   /admin/            — Club management (admin auth)
@@ -79,8 +91,8 @@ app-admin (members.satyrsmc.org, to be renamed):
 ```
 
 - **`app-public`** is the public marketing site — fully unauthenticated, no member routes
-- **`app-admin`** (likely to be renamed, e.g. `app-members`) hosts both the authenticated **members section** at `/` and the **admin section** at `/admin`. Served from `members.satyrsmc.org`.
-- **Why members live in app-admin**: Members are the most frequently accessed section for logged-in users. Placing the members area at the root of `members.satyrsmc.org` gives it a clean URL and keeps all authenticated concerns in a single app, separate from the public marketing site.
+- **`app-members`** (likely to be renamed, e.g. `app-members`) hosts both the authenticated **members section** at `/` and the **admin section** at `/admin`. Served from `members.satyrsmc.org`.
+- **Why members live in app-members**: Members are the most frequently accessed section for logged-in users. Placing the members area at the root of `members.satyrsmc.org` gives it a clean URL and keeps all authenticated concerns in a single app, separate from the public marketing site.
 - **Shared auth**: Same JWT cookies work across both apps — the API validates the same tokens regardless of which frontend made the request.
 
 ### Database
@@ -123,7 +135,7 @@ TypeORM entity-first is the current approach (decorators define schema, hand-wri
 
 ---
 
-### Phase 2: Authentication System
+### Phase 2: Authentication System (COMPLETE)
 
 **Goal:** JWT-based auth with registration flow, shared across both frontend apps.
 
@@ -187,7 +199,7 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 - Passwords: `bcryptjs` cost 12
 - Tokens: SHA-256 hashes stored in DB, raw tokens in emails
 
-**Frontend (app-admin, at `members.satyrsmc.org`):**
+**Frontend (app-members, at `members.satyrsmc.org`):**
 
 - `AuthContext` using React 19 `use()` pattern
 - `useAuth()` hook: `user`, `isAuthenticated`, `isAdmin`, `isMember`, `isLoading`, `login()`, `logout()`, `refresh()`
@@ -211,23 +223,23 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 ---
 
-### Phase 3: Members Section (in app-admin)
+### Phase 3: Members Section (in app-members) (COMPLETE — scaffolded)
 
-**Goal:** Authenticated member area within `app-admin` (to be renamed), served at `members.satyrsmc.org/`. The members section lives at the root; the existing admin features move under `/admin`.
+**Goal:** Authenticated member area within `app-members` (to be renamed), served at `members.satyrsmc.org/`. The members section lives at the root; the existing admin features move under `/admin`.
 
-**Why app-admin, not app-public:**
+**Why app-members, not app-public:**
 
 - Keeps all authenticated concerns in one app — members and admin share auth context, route guards, and tRPC client setup
 - The public site (`app-public`) stays purely unauthenticated with no auth dependencies
-- `app-admin` already has the auth infrastructure (tRPC client, query hooks, UI components) needed for member routes
+- `app-members` already has the auth infrastructure (tRPC client, query hooks, UI components) needed for member routes
 
 **App Restructure:**
 
-- `app-admin` is renamed (e.g. `app-members` or `app-internal`) and deployed to `members.satyrsmc.org`
+- `app-members` is renamed (e.g. `app-members` or `app-internal`) and deployed to `members.satyrsmc.org`
 - Existing admin routes move from `/` to `/admin/*`
 - Members section takes over the root `/`
 
-**Routes (in app-admin, at root, auth-gated):**
+**Routes (in app-members, at root, auth-gated):**
 
 - `/` — members landing / dashboard
 - `/roster` — sortable member roster (name, position, joined year, phone)
@@ -250,7 +262,7 @@ export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
 **Data Flow:**
 
 - Members with `show_on_website = true` feed into the public Members page on `app-public` via `website.getMembersFeed`
-- The members section in `app-admin` provides richer data for authenticated users via `memberProcedure` routes
+- The members section in `app-members` provides richer data for authenticated users via `memberProcedure` routes
 - Admin features remain behind `adminProcedure` at `/admin/*`
 
 ---
@@ -302,7 +314,7 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 
 - `website.submitContact` already exists and saves to `contact_submissions` table
 - Add reCAPTCHA server-side verification before accepting submission
-- Admin views submissions in app-admin (`WebsiteContactSubmissionsPanel` already built)
+- Admin views submissions in app-members (`WebsiteContactSubmissionsPanel` already built)
 
 **Environment:**
 
@@ -319,17 +331,17 @@ Note: Member Profile pages move to the authenticated members app (Phase 3). The 
 
 - `/blog` — listing page consuming `trpc.website.getBlogPublished`
 - `/blog/:slug` — detail page consuming `trpc.website.getBlogBySlug`
-- Blog content authored in app-admin via TipTap editor (already built)
+- Blog content authored in app-members via TipTap editor (already built)
 - Render HTML content via `SafeHtml` component (DOMPurify)
 
 **Dynamic Pages:**
 
 - `/:slug` — catch-all for CMS pages consuming `trpc.website.getPageBySlug`
-- Pages created/edited in app-admin website CMS (already built)
+- Pages created/edited in app-members website CMS (already built)
 
 ---
 
-### Phase 7: Admin Auth & User Management
+### Phase 7: Admin Auth & User Management (COMPLETE)
 
 **Goal:** Protect admin routes and add user management. Since members and admin now share one app, auth context is set up once and covers both sections.
 

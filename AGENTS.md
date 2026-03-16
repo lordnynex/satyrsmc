@@ -8,7 +8,7 @@ Satyrs Motorcycle Club management system and public website — a Bun monorepo w
 
 ## Architecture
 
-- **Monorepo**: Bun workspaces (`packages/api`, `packages/app-admin`, `packages/app-public`, `packages/shared`)
+- **Monorepo**: Bun workspaces (`packages/api`, `packages/app-members`, `packages/app-public`, `packages/shared`)
 - **API**: Bun.serve() + tRPC 11 — serves both SPAs and the API on port 3000
 - **App-Admin**: React 19 + TanStack Query + tRPC — admin panel for club management and website CMS (served at `/admin`)
 - **App-Public**: React 19 + tRPC — public website (served at `/`)
@@ -26,6 +26,7 @@ bun run start            # Start API (production)
 bun run start:api-only   # Start API without static serving
 bun run test             # Run API tests
 bun run migrate          # Run TypeORM migrations
+bun run seed             # Seed sample users for manual testing (password: Password1!)
 bun run storybook        # Storybook on :6006
 
 # Build & Deploy
@@ -47,6 +48,10 @@ make docker-api-run      # Run API container on :3000
 5. **No `dangerouslySetInnerHTML`** — use the `SafeHtml` component with DOMPurify.
 
 6. **No unsafe type casts** — never use `as never`, `as any`, or `as Record<string, unknown>` to bypass tRPC's inferred types.
+
+7. **Test coverage required** — every new feature, service, migration, router, and component must include corresponding unit and/or integration tests. Use PGlite for backend integration tests and `bun:test` for all tests. Run `bun test` after changes to ensure no regressions. Do not merge code without adequate test coverage.
+
+8. **No type errors** — run `bun run typecheck` before committing. All type errors (including pre-existing ones) must be fixed before any changes can be committed or pushed. Do not leave type errors for later.
 
 ## Type Safety Chain
 
@@ -119,7 +124,7 @@ satyrsmc/
           root.ts           # appRouter = { website, admin }
           routers/          # tRPC procedure definitions
       Dockerfile
-    app-admin/              # Admin SPA
+    app-members/              # Admin SPA
       src/
         App.tsx             # Routes
         entry.tsx           # Bootstrap
@@ -156,11 +161,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 
 ## Content Ownership
 
-| Content                                      | Source                             | Notes                                                            |
-| -------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
-| Members, contacts, events, budgets, meetings | Postgres via TypeORM               | Full CRUD in app-admin                                           |
-| Website pages, blog posts, menus, settings   | Postgres via TypeORM               | CMS in app-admin, served to app-public via `website` tRPC router |
-| Static events, gallery                       | Files in app-public `src/content/` | Some content not yet migrated to database                        |
+| Content                                      | Source                             | Notes                                                              |
+| -------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| Members, contacts, events, budgets, meetings | Postgres via TypeORM               | Full CRUD in app-members                                           |
+| Website pages, blog posts, menus, settings   | Postgres via TypeORM               | CMS in app-members, served to app-public via `website` tRPC router |
+| Static events, gallery                       | Files in app-public `src/content/` | Some content not yet migrated to database                          |
 
 ## Local Development
 
@@ -169,4 +174,4 @@ bun run dev        # Primary — builds frontends + starts API with HMR (require
 bun run dev:pglite # In-memory PGlite, no Postgres; optionally seeds from data/badger.db at startup
 ```
 
-The API serves app-public at `/` and app-admin at `/admin`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.
+The API serves app-public at `/` and app-members at `/admin`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.

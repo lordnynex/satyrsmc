@@ -29,7 +29,11 @@
     "./dto/admin/mailingList": "./src/dto/admin/mailingList.ts",
     "./dto/admin/mailingBatch": "./src/dto/admin/mailingBatch.ts",
     "./dto/admin/websiteAdmin": "./src/dto/admin/websiteAdmin.ts",
-    "./dto/admin/incident": "./src/dto/admin/incident.ts"
+    "./dto/admin/incident": "./src/dto/admin/incident.ts",
+    "./dto/admin/user": "./src/dto/admin/user.ts",
+    "./dto/auth": "./src/dto/auth.ts",
+    "./styles/*": "./styles/*",
+    "./components": "./src/components/index.ts"
   },
   "devDependencies": {
     "@satyrsmc/api": "workspace:*",

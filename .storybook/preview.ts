@@ -1,7 +1,7 @@
 import type { Preview } from "@storybook/react-vite";
 import addonPerformancePanel from "@github-ui/storybook-addon-performance-panel";
-import { withMockApi } from "../packages/app-admin/src/storybook/mockApiDecorator";
-import { withMockTrpc } from "../packages/app-admin/src/storybook/mockTrpcDecorator";
+import { withMockApi } from "../packages/app-members/src/storybook/mockApiDecorator";
+import { withMockTrpc } from "../packages/app-members/src/storybook/mockTrpcDecorator";
 
 // Wrapper that skips decorators in docs mode or when skipMocks parameter is set
 const withMockTrpcSafe: typeof withMockTrpc = (Story, context) => {

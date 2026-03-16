@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import plugin from "bun-plugin-tailwind";
 import { existsSync } from "fs";
-import { rm } from "fs/promises";
+import { copyFile, rm } from "fs/promises";
 import path from "path";
 
 const outdir = process.env.OUTDIR
@@ -13,6 +13,7 @@ if (existsSync(outdir)) {
 
 const entrypoints = [path.join(process.cwd(), "index.html")];
 const apiOrigin = process.env.API_ORIGIN ?? process.env.VITE_API_ORIGIN ?? "";
+const membersUrl = process.env.MEMBERS_URL ?? "";
 
 const result = await Bun.build({
   entrypoints,
@@ -25,10 +26,16 @@ const result = await Bun.build({
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
     __BUILD_API_ORIGIN__: JSON.stringify(apiOrigin),
+    __BUILD_MEMBERS_URL__: JSON.stringify(membersUrl),
   },
 });
 
 if (!result.success) {
   console.error("Build failed:", result.logs);
   process.exit(1);
+}
+
+const favicon = path.join(process.cwd(), "public", "favicon.ico");
+if (existsSync(favicon)) {
+  await copyFile(favicon, path.join(outdir, "favicon.ico"));
 }

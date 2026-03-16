@@ -21,6 +21,9 @@ export function createTrpcClient(options?: { getBaseUrl?: () => string }) {
     links: [
       httpBatchLink({
         url: `${getBaseUrl()}/trpc`,
+        fetch(url, options) {
+          return fetch(url, { ...options, credentials: "include" });
+        },
       }),
     ],
   });

@@ -6,7 +6,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Slim workspace: api + shared only (no web/app-admin = no React, tiptap, etc.)
+# Slim workspace: api + shared only (no web/app-members = no React, tiptap, etc.)
 COPY packages/api/docker-root.package.json package.json
 COPY packages/api packages/api
 COPY packages/shared packages/shared

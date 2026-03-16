@@ -70,11 +70,15 @@ export class CommitteesService {
     const memberIds = [...new Set(members.map((m) => m.memberId))];
     const membersMap = new Map<string, string>();
     if (memberIds.length) {
-      const memberEntities = await this.ds.getRepository(Member).find({
-        where: { id: In(memberIds) },
-        select: ["id", "name"],
-      });
-      for (const m of memberEntities) membersMap.set(m.id, m.name);
+      const memberRows = await this.ds
+        .getRepository(Member)
+        .createQueryBuilder("m")
+        .select("m.id", "id")
+        .leftJoin("contacts", "c", "c.id = m.contact_id")
+        .addSelect("c.display_name", "name")
+        .where("m.id IN (:...ids)", { ids: memberIds })
+        .getRawMany<{ id: string; name: string }>();
+      for (const m of memberRows) membersMap.set(m.id, m.name);
     }
     const chairpersonName = committee.chairpersonMemberId
       ? (membersMap.get(committee.chairpersonMemberId) ?? null)

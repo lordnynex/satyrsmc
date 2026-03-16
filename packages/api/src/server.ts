@@ -20,7 +20,7 @@ export interface CreateFetchHandlerOptions {
 export function createFetchHandler(options: CreateFetchHandlerOptions) {
   const { api, createContext, serveFrontend, projectRoot } = options;
   const webDist = join(projectRoot, "packages", "app-public", "dist");
-  const adminDist = join(projectRoot, "packages", "app-admin", "dist");
+  const adminDist = join(projectRoot, "packages", "app-members", "dist");
 
   return async (
     request: Request,
@@ -178,39 +178,58 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       return new Response("Not Found", { status: 404 });
     }
 
-    if (path.startsWith("/admin")) {
-      const filePath =
-        path === "/admin" || path === "/admin/"
-          ? join(adminDist, "index.html")
-          : join(adminDist, path.slice("/admin".length));
-      try {
-        const file = Bun.file(filePath);
-        if (await file.exists()) {
-          const contentType = path.endsWith(".html")
-            ? "text/html"
-            : path.endsWith(".js")
-              ? "application/javascript"
-              : path.endsWith(".css")
-                ? "text/css"
-                : undefined;
-          const res = new Response(file, {
-            headers: contentType ? { "Content-Type": contentType } : undefined,
-          });
-          logger.info(
-            {
-              method: request.method,
-              path,
-              status: 200,
-              durationMs: Math.round(performance.now() - start),
-              ip: server?.requestIP?.(request)?.address ?? "unknown",
-            },
-            "http request",
-          );
-          return res;
+    // Members app serves: /admin/*, auth routes, and member routes at root level.
+    // For "/" specifically, serve members app only if authenticated (has cookie).
+    const MEMBER_APP_ROUTES = [
+      "/login",
+      "/register",
+      "/signup",
+      "/forgot-password",
+      "/reset-password",
+      "/profile",
+      "/roster",
+      "/events",
+    ];
+    const hasAuthCookie = request.headers.get("cookie")?.includes("satyrs_access=") ?? false;
+    const isAdminAppRoute =
+      path.startsWith("/admin") ||
+      MEMBER_APP_ROUTES.some((r) => path === r || path.startsWith(r + "/")) ||
+      (path === "/" && hasAuthCookie);
+
+    if (isAdminAppRoute) {
+      // Try to serve static assets (JS/CSS/images) — built with publicPath="/admin/"
+      if (path.startsWith("/admin/")) {
+        const filePath = join(adminDist, path.slice("/admin".length));
+        try {
+          const file = Bun.file(filePath);
+          if (await file.exists()) {
+            const contentType = path.endsWith(".html")
+              ? "text/html"
+              : path.endsWith(".js")
+                ? "application/javascript"
+                : path.endsWith(".css")
+                  ? "text/css"
+                  : undefined;
+            const res = new Response(file, {
+              headers: contentType ? { "Content-Type": contentType } : undefined,
+            });
+            logger.info(
+              {
+                method: request.method,
+                path,
+                status: 200,
+                durationMs: Math.round(performance.now() - start),
+                ip: server?.requestIP?.(request)?.address ?? "unknown",
+              },
+              "http request",
+            );
+            return res;
+          }
+        } catch {
+          // fall through to SPA fallback
         }
-      } catch {
-        // fall through to SPA fallback
       }
+      // SPA fallback — serve admin index.html for all admin/member/auth routes
       const indexHtml = Bun.file(join(adminDist, "index.html"));
       if (await indexHtml.exists()) {
         logger.info(

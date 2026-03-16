@@ -194,6 +194,25 @@ export enum MailingRecipientStatus {
 }
 export const MAILING_RECIPIENT_STATUSES = Object.values(MailingRecipientStatus);
 
+// --- User ---
+
+export enum UserType {
+  User = "user",
+  Admin = "admin",
+  Webmaster = "webmaster",
+}
+export const USER_TYPES = Object.values(UserType);
+
+export enum UserStatus {
+  Active = "active",
+  Locked = "locked",
+  Rejected = "rejected",
+  Suspended = "suspended",
+  Inactive = "inactive",
+  Deactivated = "deactivated",
+}
+export const USER_STATUSES = Object.values(UserStatus);
+
 // --- QR Code ---
 
 export enum QrErrorCorrectionLevel {

@@ -13,6 +13,7 @@ import { meetingTemplatesRouter } from "./meetingTemplates";
 import { documentsRouter } from "./documents";
 import { committeesRouter } from "./committees";
 import { websiteAdminRouter } from "./websiteAdmin";
+import { usersRouter } from "./users";
 
 export const adminRouter = t.router({
   events: eventsRouter,
@@ -29,4 +30,5 @@ export const adminRouter = t.router({
   committees: committeesRouter,
   website: websiteAdminRouter,
   incidents: incidentsRouter,
+  users: usersRouter,
 });

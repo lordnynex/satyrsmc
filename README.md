@@ -4,9 +4,9 @@ Monorepo: API (tRPC), public website, and admin app.
 
 ## Structure
 
-- **packages/api** – tRPC server (Bun). Database, services, `website` router (public), `admin` router (protected). Serves tRPC at `/trpc`, static at `/` (app-public) and `/admin` (app-admin).
+- **packages/api** – tRPC server (Bun). Database, services, `website` router (public), `admin` router (protected). Serves tRPC at `/trpc`, static at `/` (app-public) and `/admin` (app-members).
 - **packages/app-public** – Public React app. Base path `/`. Uses `trpc.website.*` only. `src/pages/` for pages, `src/components/` for UI.
-- **packages/app-admin** – Admin React app. Base path `/admin`. Uses full tRPC client. `src/pages/` for page components, `src/components/` for shared UI.
+- **packages/app-members** – Admin React app. Base path `/admin`. Uses full tRPC client. `src/pages/` for page components, `src/components/` for shared UI.
 
 ## Install
 
@@ -50,7 +50,7 @@ bun run migrate
 
 - `dev` – build then run API server
 - `start` – run API server (production)
-- `build` – build app-public and app-admin
+- `build` – build app-public and app-members
 - `migrate` – run DB migrations (from packages/api)
 - `backfill-member-photos` – see scripts/
 - `deduplicate-contact-addresses` – see scripts/
