@@ -83,7 +83,7 @@ function memberSelectQuery(ds: DataSource) {
       .getRepository(Member)
       .createQueryBuilder("m")
       .select("m.id", "id")
-      .addSelect("m.birthday", "birthday")
+      .addSelect("c.birthday", "birthday")
       .addSelect("m.memberSince", "member_since")
       .addSelect("m.isBaby", "is_baby")
       .addSelect("m.position", "position")
@@ -295,11 +295,10 @@ export class MembersService {
     // Create member (only member-specific columns)
     const position = body.position && VALID_POSITIONS.has(body.position) ? body.position : null;
     await this.db.run(
-      `INSERT INTO members (id, contact_id, birthday, member_since, is_baby, position, show_on_website, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO members (id, contact_id, member_since, is_baby, position, show_on_website, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         contactId,
-        body.birthday ?? null,
         body.member_since ?? null,
         body.is_baby ? true : false,
         position,
@@ -307,6 +306,14 @@ export class MembersService {
         new Date().toISOString(),
       ],
     );
+
+    // Store birthday on contact
+    if (body.birthday !== undefined) {
+      await this.ds.getRepository(ContactEntity).update(contactId, {
+        birthday: body.birthday ? new Date(body.birthday) : null,
+        updatedAt: new Date(),
+      });
+    }
     return this.get(id)!;
   }
 
@@ -331,7 +338,6 @@ export class MembersService {
     if (!existing) return null;
 
     const contactId = existing.contactId;
-    const birthday = body.birthday !== undefined ? body.birthday : existing.birthday;
     const member_since = body.member_since !== undefined ? body.member_since : existing.memberSince;
     const is_baby = body.is_baby !== undefined ? body.is_baby : existing.isBaby;
     const positionRaw = body.position !== undefined ? body.position : existing.position;
@@ -341,16 +347,19 @@ export class MembersService {
 
     // Update member-specific columns only
     await this.db.run(
-      `UPDATE members SET birthday = ?, member_since = ?, is_baby = ?, position = ?, show_on_website = ? WHERE id = ?`,
-      [birthday, member_since, is_baby, position, show_on_website, id],
+      `UPDATE members SET member_since = ?, is_baby = ?, position = ?, show_on_website = ? WHERE id = ?`,
+      [member_since, is_baby, position, show_on_website, id],
     );
 
-    // Sync contact display name
-    if (body.name !== undefined) {
-      await this.ds.getRepository(ContactEntity).update(contactId, {
-        displayName: body.name,
-        updatedAt: new Date(),
-      });
+    // Sync contact fields (display name + birthday)
+    const contactUpdates: Partial<{ displayName: string; birthday: Date | null; updatedAt: Date }> =
+      {};
+    if (body.name !== undefined) contactUpdates.displayName = body.name;
+    if (body.birthday !== undefined)
+      contactUpdates.birthday = body.birthday ? new Date(body.birthday) : null;
+    if (Object.keys(contactUpdates).length > 0) {
+      contactUpdates.updatedAt = new Date();
+      await this.ds.getRepository(ContactEntity).update(contactId, contactUpdates);
     }
 
     // Sync email

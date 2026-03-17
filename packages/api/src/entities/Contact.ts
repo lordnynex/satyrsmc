@@ -96,4 +96,7 @@ export class Contact {
 
   @Column({ name: "deceased_year", type: "integer", nullable: true })
   deceasedYear!: number | null;
+
+  @Column({ type: "timestamptz", nullable: true })
+  birthday!: Date | null;
 }

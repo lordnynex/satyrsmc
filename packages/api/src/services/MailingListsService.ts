@@ -719,4 +719,58 @@ export class MailingListsService {
 
     return { contacts, total, page, limit };
   }
+
+  /**
+   * Returns mailing lists that a contact belongs to, with their unsubscribed status.
+   * Used by members to see and manage their own mailing list subscriptions.
+   */
+  async getSubscriptionsForContact(
+    contactId: string,
+  ): Promise<
+    Array<{ list_id: string; name: string; description: string | null; unsubscribed: boolean }>
+  > {
+    const rows = await this.ds
+      .getRepository(MailingListMemberEntity)
+      .createQueryBuilder("mlm")
+      .innerJoin(MailingListEntity, "ml", "ml.id = mlm.list_id")
+      .select([
+        "mlm.list_id AS list_id",
+        "ml.name AS name",
+        "ml.description AS description",
+        "mlm.unsubscribed AS unsubscribed",
+      ])
+      .where("mlm.contact_id = :contactId", { contactId })
+      .andWhere("mlm.suppressed = false")
+      .orderBy("ml.name", "ASC")
+      .getRawMany();
+
+    return rows.map((r) => ({
+      list_id: r.list_id,
+      name: r.name,
+      description: r.description ?? null,
+      unsubscribed: r.unsubscribed ?? false,
+    }));
+  }
+
+  /**
+   * Toggles a contact's unsubscribed flag on a specific mailing list.
+   * Only works if the contact has a membership record and is not suppressed.
+   */
+  async setUnsubscribed(
+    contactId: string,
+    listId: string,
+    unsubscribed: boolean,
+  ): Promise<{ success: boolean }> {
+    const repo = this.ds.getRepository(MailingListMemberEntity);
+    const member = await repo.findOne({ where: { contactId, listId } });
+
+    if (!member || member.suppressed) {
+      throw new Error("Mailing list membership not found");
+    }
+
+    member.unsubscribed = unsubscribed;
+    await repo.save(member);
+
+    return { success: true };
+  }
 }

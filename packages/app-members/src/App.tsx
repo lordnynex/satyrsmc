@@ -12,15 +12,23 @@ import { EventsLayout } from "@/components/layout/EventsLayout";
 import { MeetingsLayout } from "@/components/layout/MeetingsLayout";
 import { WebsiteLayout } from "@/components/layout/WebsiteLayout";
 import { MembersLayout } from "@/components/layout/MembersLayout";
+import { SettingsLayout } from "@/components/layout/SettingsLayout";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { ProtectedRoute, AdminRoute, MemberRoute } from "@/components/auth";
 import {
   MembersDashboard,
   RosterPage,
   ProfilePage,
+  MemberProfilePage,
   MemberEventsPage,
   MemberEventDetailPage,
 } from "@/components/members-section";
+import {
+  ProfileSettingsPage,
+  GarageSettingsPage,
+  AccountSettingsPage,
+  NotificationSettingsPage,
+} from "@/components/settings";
 import {
   HomePage,
   NotFoundPage,
@@ -735,6 +743,21 @@ function App() {
           }
         />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route
+          path="/roster/:username"
+          element={
+            <MemberRoute>
+              <MemberProfilePage />
+            </MemberRoute>
+          }
+        />
+        <Route path="/settings" element={<SettingsLayout />}>
+          <Route index element={<Navigate to="/settings/profile" replace />} />
+          <Route path="profile" element={<ProfileSettingsPage />} />
+          <Route path="garage" element={<GarageSettingsPage />} />
+          <Route path="account" element={<AccountSettingsPage />} />
+          <Route path="notifications" element={<NotificationSettingsPage />} />
+        </Route>
       </Route>
 
       {/* Admin section — requires admin role */}

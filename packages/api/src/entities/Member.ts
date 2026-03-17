@@ -9,9 +9,6 @@ export class Member {
   @Column({ name: "contact_id", type: "text" })
   contactId!: string;
 
-  @Column({ type: "timestamptz", nullable: true })
-  birthday!: Date | null;
-
   @Column({ name: "member_since", type: "timestamptz", nullable: true })
   memberSince!: Date | null;
 

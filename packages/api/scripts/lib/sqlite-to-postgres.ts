@@ -10,6 +10,7 @@ export const TIMESTAMP_COLUMNS = new Set([
   "updated_at",
   "deleted_at",
   "event_date",
+  "start_date",
   "birthday",
   "member_since",
   "due_date",
@@ -40,6 +41,22 @@ export const BOOLEAN_COLUMNS = new Set([
   "completed",
   "suppressed",
   "unsubscribed",
+]);
+
+/**
+ * Column renames: maps old SQLite column names to current Postgres names.
+ * Keyed by "table.column" for table-specific renames.
+ */
+const COLUMN_RENAMES: Record<string, string> = {
+  "events.event_date": "start_date",
+};
+
+/**
+ * Columns that exist in SQLite but were moved to a different table in Postgres.
+ * These should be skipped during seed. Keyed by "table.column".
+ */
+const DROPPED_COLUMNS: Set<string> = new Set([
+  "members.birthday", // moved to contacts table
 ]);
 
 /** Tables in FK-dependency order (parents before children) */
@@ -136,13 +153,18 @@ export async function seedPgliteFromSqlite(ds: DataSource, sqlitePath: string): 
         const rows = sqlite.query(`SELECT * FROM ${table}`).all() as Record<string, unknown>[];
         if (rows.length === 0) continue;
 
-        const columns = Object.keys(rows[0] as Record<string, unknown>);
-        const colNames = columns.map((c) => `"${c}"`).join(", ");
-        const placeholders = columns.map((_, i) => `$${i + 1}`).join(", ");
+        const rawColumns = Object.keys(rows[0] as Record<string, unknown>);
+
+        // Filter out columns that were dropped/moved and apply renames
+        const columns = rawColumns.filter((c) => !DROPPED_COLUMNS.has(`${table}.${c}`));
+        const pgColumns = columns.map((c) => COLUMN_RENAMES[`${table}.${c}`] ?? c);
+
+        const colNames = pgColumns.map((c) => `"${c}"`).join(", ");
+        const placeholders = pgColumns.map((_, i) => `$${i + 1}`).join(", ");
         const sql = `INSERT INTO "${table}" (${colNames}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`;
 
         for (const row of rows) {
-          const values = columns.map((col) => convertValue(col, row[col]));
+          const values = columns.map((col, i) => convertValue(pgColumns[i]!, row[col]));
           await ds.query(sql, values);
           totalRows += 1;
         }
@@ -151,6 +173,24 @@ export async function seedPgliteFromSqlite(ds: DataSource, sqlitePath: string): 
         if (String(err).includes("no such table")) continue;
         throw err;
       }
+    }
+    // Post-seed: copy birthday from SQLite members into contacts
+    // (The migration moved birthday from members to contacts, so we seed it separately)
+    try {
+      const memberRows = sqlite
+        .query(`SELECT contact_id, birthday FROM members WHERE birthday IS NOT NULL`)
+        .all() as { contact_id: string; birthday: string }[];
+      for (const row of memberRows) {
+        const birthday = convertValue("birthday", row.birthday);
+        if (birthday) {
+          await ds.query(`UPDATE contacts SET birthday = $1 WHERE id = $2`, [
+            birthday,
+            row.contact_id,
+          ]);
+        }
+      }
+    } catch {
+      // members table may not have birthday column in some SQLite versions
     }
   } finally {
     sqlite.close();

@@ -35,6 +35,10 @@
     "./dto/admin/membershipLog": "./src/dto/admin/membershipLog.ts",
     "./dto/member/event": "./src/dto/member/event.ts",
     "./dto/member/activityLog": "./src/dto/member/activityLog.ts",
+    "./dto/member/profile": "./src/dto/member/profile.ts",
+    "./dto/member/bike": "./src/dto/member/bike.ts",
+    "./dto/member/settings": "./src/dto/member/settings.ts",
+    "./dto/member/notifications": "./src/dto/member/notifications.ts",
     "./dto/auth": "./src/dto/auth.ts",
     "./styles/*": "./styles/*",
     "./components": "./src/components/index.ts"

@@ -155,6 +155,26 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
       });
     }
 
+    const bikePhotoMatch = path.match(/^\/api\/bikes\/([^/]+)\/photo$/);
+    if (request.method === "GET" && bikePhotoMatch) {
+      const bikeId = bikePhotoMatch[1];
+      const size = (url.searchParams.get("size") as "thumbnail" | "full") ?? "full";
+      const buffer = await api.bikes.getPhoto(bikeId!, size);
+      const durationMs = Math.round(performance.now() - start);
+      const ip = server?.requestIP?.(request)?.address ?? "unknown";
+      if (!buffer) {
+        logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
+        return new Response("Not Found", { status: 404 });
+      }
+      logger.info({ method: request.method, path, status: 200, durationMs, ip }, "http request");
+      return new Response(new Uint8Array(buffer), {
+        headers: {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "private, max-age=3600",
+        },
+      });
+    }
+
     const eventAssetMatch = path.match(/^\/api\/events\/([^/]+)\/assets\/([^/]+)$/);
     if (request.method === "GET" && eventAssetMatch) {
       const eventId = eventAssetMatch[1];

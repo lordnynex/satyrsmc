@@ -29,6 +29,9 @@ export function MembersLayout() {
           <Link to="/profile" className="px-2.5 py-1.5 rounded text-sm hover:bg-white/10">
             Profile
           </Link>
+          <Link to="/settings" className="px-2.5 py-1.5 rounded text-sm hover:bg-white/10">
+            Settings
+          </Link>
           {isAdmin && (
             <>
               <div className="ml-1 pl-1 border-l border-slate-600/40 h-5" />
