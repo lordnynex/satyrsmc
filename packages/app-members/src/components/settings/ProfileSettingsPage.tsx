@@ -72,6 +72,7 @@ export function ProfileSettingsPage() {
       }
     };
     reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   if (isLoading) {
@@ -244,7 +245,7 @@ export function ProfileSettingsPage() {
                     postal_code: "",
                     country: "US",
                     type: "home",
-                    is_primary_mailing: true,
+                    is_primary_mailing: false,
                   })
                 }
               >

@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { ActivityMessageCode } from "@satyrsmc/shared/client";
+import { MemberPosition } from "@satyrsmc/shared/lib/enums";
 import { trpc } from "@/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +67,7 @@ export function MemberProfilePage() {
           )}
           <div>
             <h1 className="text-2xl font-bold">{profile.display_name}</h1>
-            {profile.position && profile.position !== "Member" && (
+            {profile.position && profile.position !== MemberPosition.Member && (
               <Badge variant="secondary" className="mt-1">
                 {profile.position}
               </Badge>

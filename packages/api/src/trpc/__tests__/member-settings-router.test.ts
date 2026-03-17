@@ -6,10 +6,14 @@ import { UserType, UserStatus } from "@satyrsmc/shared/lib/enums";
 
 const TEST_PASSWORD = "TestPass1!";
 
-async function seedUser(harness: TrpcTestHarness, userId: string) {
+async function seedUser(
+  harness: TrpcTestHarness,
+  userId: string,
+  overrides: { username?: string; password?: string } = {},
+) {
   const contactId = `contact-${userId}`;
-  const username = `user-${userId}`;
-  const passwordHash = await hash(TEST_PASSWORD, 12);
+  const username = overrides.username ?? `user-${userId}`;
+  const passwordHash = await hash(overrides.password ?? TEST_PASSWORD, 12);
 
   await harness.ds.query(
     `INSERT INTO contacts (id, display_name, type, status) VALUES ($1, $2, 'person', 'active')`,
@@ -93,6 +97,22 @@ describe("members.settings tRPC router", () => {
   });
 
   describe("changeEmail", () => {
+    // Use a separate user so this test doesn't depend on changePassword above
+    const emailUserId = "settings-email-user-1";
+    let emailHarness: TrpcTestHarness;
+
+    beforeAll(async () => {
+      emailHarness = await createTrpcTestHarness({
+        session: {
+          userId: emailUserId,
+          userType: UserType.User,
+          memberId: "settings-email-member-1",
+          contactId: `contact-${emailUserId}`,
+        },
+      });
+      await seedUser(emailHarness, emailUserId);
+    });
+
     test("rejects unauthenticated request", async () => {
       await expect(
         unauthHarness.caller.members.settings.changeEmail({
@@ -103,13 +123,13 @@ describe("members.settings tRPC router", () => {
     });
 
     test("updates email with correct password", async () => {
-      const result = await userHarness.caller.members.settings.changeEmail({
+      const result = await emailHarness.caller.members.settings.changeEmail({
         new_email: "updated@test.com",
-        password: "NewPass2!",
+        password: TEST_PASSWORD,
       });
       expect(result.success).toBe(true);
 
-      const account = await userHarness.caller.members.settings.getAccount();
+      const account = await emailHarness.caller.members.settings.getAccount();
       expect(account.email).toBe("updated@test.com");
     });
   });
