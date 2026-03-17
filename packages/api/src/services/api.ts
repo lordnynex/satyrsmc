@@ -23,6 +23,11 @@ import { ConsoleEmailService } from "./EmailService";
 import type { EmailService } from "./EmailService";
 import { MemberEventsService } from "./MemberEventsService";
 import { RecaptchaService } from "./RecaptchaService";
+import { ActivityLogsService } from "./ActivityLogsService";
+import { MembershipLogsService } from "./MembershipLogsService";
+import { ProfileService } from "./ProfileService";
+import { BikeService } from "./BikeService";
+import { SettingsService } from "./SettingsService";
 
 export function createApi(db: DbLike, ds: DataSource, emailService?: EmailService) {
   const email = emailService ?? new ConsoleEmailService();
@@ -38,6 +43,7 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
   const meetingTemplatesService = new MeetingTemplatesService(ds);
   const documentsService = new DocumentsService(ds);
   const committeesService = new CommitteesService(ds);
+  const activityLogsService = new ActivityLogsService(ds);
 
   return {
     events: eventsService,
@@ -61,6 +67,11 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
     users: new UsersService(ds, email),
     memberEvents: new MemberEventsService(ds),
     recaptcha: new RecaptchaService(),
+    activityLogs: activityLogsService,
+    membershipLogs: new MembershipLogsService(ds),
+    profile: new ProfileService(ds, activityLogsService),
+    bikes: new BikeService(ds),
+    settings: new SettingsService(ds),
   };
 }
 

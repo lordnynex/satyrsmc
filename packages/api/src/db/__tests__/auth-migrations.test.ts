@@ -237,7 +237,7 @@ describe("Auth migrations", () => {
       // Still has member-specific columns
       expect(colNames).toContain("id");
       expect(colNames).toContain("contact_id");
-      expect(colNames).toContain("birthday");
+      expect(colNames).not.toContain("birthday"); // birthday moved to contacts table
       expect(colNames).toContain("member_since");
       expect(colNames).toContain("is_baby");
       expect(colNames).toContain("position");

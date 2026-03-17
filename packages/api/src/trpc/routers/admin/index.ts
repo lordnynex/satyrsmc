@@ -14,6 +14,8 @@ import { documentsRouter } from "./documents";
 import { committeesRouter } from "./committees";
 import { websiteAdminRouter } from "./websiteAdmin";
 import { usersRouter } from "./users";
+import { activityLogsRouter } from "./activityLogs";
+import { membershipLogsRouter } from "./membershipLogs";
 
 export const adminRouter = t.router({
   events: eventsRouter,
@@ -31,4 +33,6 @@ export const adminRouter = t.router({
   website: websiteAdminRouter,
   incidents: incidentsRouter,
   users: usersRouter,
+  activityLogs: activityLogsRouter,
+  membershipLogs: membershipLogsRouter,
 });

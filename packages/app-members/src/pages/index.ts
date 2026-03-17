@@ -57,3 +57,9 @@ export {
   WebsiteSettingsPanel,
 } from "@/components/website";
 export { UsersPanel, UserDetailPage } from "@/components/users";
+export {
+  ProfileSettingsPage,
+  GarageSettingsPage,
+  AccountSettingsPage,
+  NotificationSettingsPage,
+} from "@/components/settings";
