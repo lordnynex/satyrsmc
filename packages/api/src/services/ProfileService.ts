@@ -195,17 +195,18 @@ export class ProfileService {
     // Update phones
     if (input.phones !== undefined) {
       const phoneRepo = this.ds.getRepository(ContactPhone);
-      // Delete existing
       await phoneRepo.delete({ contactId });
-      // Insert new (strip non-digits from phone)
-      for (const phone of input.phones) {
+      // If none marked primary, auto-promote the first one
+      const hasPrimary = input.phones.some((p) => p.is_primary);
+      for (let i = 0; i < input.phones.length; i++) {
+        const phone = input.phones[i];
         await phoneRepo.save(
           phoneRepo.create({
             id: phone.id ?? uuid(),
             contactId,
             phone: phone.phone.replace(/\D/g, ""),
             type: phone.type as never,
-            isPrimary: phone.is_primary,
+            isPrimary: phone.is_primary || (!hasPrimary && i === 0),
           }),
         );
       }
@@ -215,7 +216,10 @@ export class ProfileService {
     if (input.addresses !== undefined) {
       const addrRepo = this.ds.getRepository(ContactAddress);
       await addrRepo.delete({ contactId });
-      for (const addr of input.addresses) {
+      // If none marked primary mailing, auto-promote the first one
+      const hasPrimaryMailing = input.addresses.some((a) => a.is_primary_mailing);
+      for (let i = 0; i < input.addresses.length; i++) {
+        const addr = input.addresses[i];
         await addrRepo.save(
           addrRepo.create({
             id: addr.id ?? uuid(),
@@ -227,7 +231,7 @@ export class ProfileService {
             postalCode: addr.postal_code ?? null,
             country: addr.country ?? "US",
             type: addr.type as never,
-            isPrimaryMailing: addr.is_primary_mailing,
+            isPrimaryMailing: addr.is_primary_mailing || (!hasPrimaryMailing && i === 0),
           }),
         );
       }

@@ -239,6 +239,50 @@ describe("members.profile tRPC router", () => {
       expect(settings.phones.length).toBe(1);
       expect(settings.phones[0]!.phone).toBe("5551234567");
     });
+
+    test("auto-promotes first phone to primary when none marked", async () => {
+      await userHarness.caller.members.profile.updateOwnSettings({
+        first_name: "Updated",
+        last_name: "User",
+        phones: [{ phone: "5559999999", type: "cell", is_primary: false }],
+      });
+
+      const settings = await userHarness.caller.members.profile.getOwnSettings();
+      expect(settings.phones.length).toBe(1);
+      expect(settings.phones[0]!.is_primary).toBe(true);
+
+      // Verify it shows on the profile
+      const profile = await userHarness.caller.members.profile.get({ username });
+      expect(profile.phone).toBe("(555) 999-9999");
+    });
+
+    test("auto-promotes first address to primary mailing when none marked", async () => {
+      await userHarness.caller.members.profile.updateOwnSettings({
+        first_name: "Updated",
+        last_name: "User",
+        addresses: [
+          {
+            address_line1: "789 Elm St",
+            city: "Portland",
+            state: "OR",
+            postal_code: "97201",
+            country: "US",
+            type: "home",
+            is_primary_mailing: false,
+          },
+        ],
+      });
+
+      const settings = await userHarness.caller.members.profile.getOwnSettings();
+      expect(settings.addresses.length).toBe(1);
+      expect(settings.addresses[0]!.is_primary_mailing).toBe(true);
+
+      // Verify it shows on the profile
+      const profile = await userHarness.caller.members.profile.get({ username });
+      expect(profile.address).not.toBeNull();
+      expect(profile.address!.line1).toBe("789 Elm St");
+      expect(profile.address!.city).toBe("Portland");
+    });
   });
 
   describe("uploadPhoto", () => {
