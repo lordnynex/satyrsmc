@@ -47,36 +47,32 @@ export class ProfileService {
     const contact = await this.ds.getRepository(Contact).findOne({ where: { id: user.contactId } });
     if (!contact) return null;
 
-    // Get primary email
-    const primaryEmail = await this.ds
-      .getRepository(ContactEmail)
-      .findOne({ where: { contactId: user.contactId, isPrimary: true } });
+    const isOwnProfile = user.id === viewerUserId;
 
-    // Get primary phone
-    const primaryPhone = await this.ds
-      .getRepository(ContactPhone)
-      .findOne({ where: { contactId: user.contactId, isPrimary: true } });
-
-    // Get primary address
-    const address = await this.ds
-      .getRepository(ContactAddress)
-      .findOne({ where: { contactId: user.contactId, isPrimaryMailing: true } });
-
-    // Get emergency contacts
-    const emergencyContacts = await this.ds
-      .getRepository(ContactEmergencyContact)
-      .find({ where: { contactId: user.contactId } });
-
-    // Check for profile photo
-    const photoExists = await this.ds
-      .getRepository(ContactPhoto)
-      .findOne({ where: { contactId: user.contactId, type: ContactPhotoType.Profile } });
+    const [primaryEmail, primaryPhone, address, emergencyContacts, photoExists, bikes] =
+      await Promise.all([
+        this.ds
+          .getRepository(ContactEmail)
+          .findOne({ where: { contactId: user.contactId, isPrimary: true } }),
+        this.ds
+          .getRepository(ContactPhone)
+          .findOne({ where: { contactId: user.contactId, isPrimary: true } }),
+        this.ds
+          .getRepository(ContactAddress)
+          .findOne({ where: { contactId: user.contactId, isPrimaryMailing: true } }),
+        isOwnProfile
+          ? this.ds
+              .getRepository(ContactEmergencyContact)
+              .find({ where: { contactId: user.contactId } })
+          : Promise.resolve([]),
+        this.ds
+          .getRepository(ContactPhoto)
+          .findOne({ where: { contactId: user.contactId, type: ContactPhotoType.Profile } }),
+        this.ds
+          .getRepository(Bike)
+          .find({ where: { userId: user.id }, order: { isPrimary: "DESC", createdAt: "ASC" } }),
+      ]);
     const hasPhoto = !!photoExists;
-
-    // Get bikes
-    const bikes = await this.ds
-      .getRepository(Bike)
-      .find({ where: { userId: user.id }, order: { isPrimary: "DESC", createdAt: "ASC" } });
 
     return {
       id: user.id,
@@ -103,7 +99,7 @@ export class ProfileService {
         phone: formatPhoneNumber(ec.phone),
         relationship: ec.relationship,
       })),
-      is_own_profile: user.id === viewerUserId,
+      is_own_profile: isOwnProfile,
       has_photo: hasPhoto,
       photo_url: hasPhoto ? `/api/members/${user.memberId}/photo?size=full` : null,
       photo_thumbnail_url: hasPhoto ? `/api/members/${user.memberId}/photo?size=thumbnail` : null,

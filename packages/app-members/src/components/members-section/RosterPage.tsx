@@ -308,6 +308,19 @@ function RosterMemberCard({ member }: { member: RosterMember }) {
 
 type SortField = "default" | "name" | "position" | "joined" | "phone";
 
+function compareNullLast(
+  a: string | null | undefined,
+  b: string | null | undefined,
+  dir: 1 | -1,
+): number {
+  const aNull = a == null || a === "";
+  const bNull = b == null || b === "";
+  if (aNull && bNull) return 0;
+  if (aNull) return 1;
+  if (bNull) return -1;
+  return dir * a!.localeCompare(b!);
+}
+
 function RosterMemberTable({ members }: { members: RosterMember[] }) {
   const [sortField, setSortField] = useState<SortField>("default");
   const [sortAsc, setSortAsc] = useState(true);
@@ -325,16 +338,16 @@ function RosterMemberTable({ members }: { members: RosterMember[] }) {
     sortField === "default"
       ? members
       : [...members].sort((a, b) => {
-          const dir = sortAsc ? 1 : -1;
+          const dir: 1 | -1 = sortAsc ? 1 : -1;
           switch (sortField) {
             case "name":
-              return dir * (a.last_name ?? "").localeCompare(b.last_name ?? "");
+              return compareNullLast(a.last_name, b.last_name, dir);
             case "position":
-              return dir * (a.position ?? "zzz").localeCompare(b.position ?? "zzz");
+              return compareNullLast(a.position, b.position, dir);
             case "joined":
-              return dir * (a.member_since ?? "").localeCompare(b.member_since ?? "");
+              return compareNullLast(a.member_since, b.member_since, dir);
             case "phone":
-              return dir * (a.phone ?? "").localeCompare(b.phone ?? "");
+              return compareNullLast(a.phone, b.phone, dir);
             default:
               return 0;
           }

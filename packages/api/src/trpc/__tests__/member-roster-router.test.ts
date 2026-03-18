@@ -91,6 +91,13 @@ describe("members.roster tRPC router", () => {
       ["roster-bike-2", user2Id, 2021, "Honda", "Rebel 500"],
     );
 
+    // Alice's non-primary bike (should NOT appear in filter options)
+    await memberHarness.ds.query(
+      `INSERT INTO bikes (id, user_id, year, make, model, is_primary)
+       VALUES ($1, $2, $3, $4, $5, false)`,
+      ["roster-bike-extra", userId, 2018, "Yamaha", "MT-07"],
+    );
+
     // Seed member 3 — Treasurer, inactive user (should NOT appear)
     await memberHarness.ds.query(
       `INSERT INTO contacts (id, display_name, first_name, last_name, type, status)
@@ -233,6 +240,14 @@ describe("members.roster tRPC router", () => {
       for (let i = 1; i < options.years_joined.length; i++) {
         expect(options.years_joined[i - 1]).toBeGreaterThanOrEqual(options.years_joined[i]);
       }
+    });
+
+    test("excludes non-primary bikes from filter options", async () => {
+      const options = await memberHarness.caller.members.roster.getFilterOptions();
+
+      // Yamaha MT-07 is non-primary, should not appear
+      expect(options.bike_makes).not.toContain("Yamaha");
+      expect(options.bike_models).not.toContain("MT-07");
     });
 
     test("bike makes sorted ascending", async () => {

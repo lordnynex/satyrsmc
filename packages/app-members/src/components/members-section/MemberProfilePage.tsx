@@ -199,7 +199,7 @@ export function MemberProfilePage() {
               </CardContent>
             </Card>
 
-            {profile.emergency_contacts.length > 0 && (
+            {profile.is_own_profile && profile.emergency_contacts.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">

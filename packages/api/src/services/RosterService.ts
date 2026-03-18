@@ -166,6 +166,7 @@ export class RosterService {
        JOIN members m ON m.id = u.member_id
        WHERE m.id != $1
          AND u.user_status = $2
+         AND b.is_primary = true
        ORDER BY b.make ASC`,
       baseParams,
     )) as Array<{ make: string }>;
@@ -178,6 +179,7 @@ export class RosterService {
        JOIN members m ON m.id = u.member_id
        WHERE m.id != $1
          AND u.user_status = $2
+         AND b.is_primary = true
        ORDER BY b.model ASC`,
       baseParams,
     )) as Array<{ model: string }>;
