@@ -1,0 +1,142 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+
+jobs:
+  deploy-preview:
+    if: github.event.action != 'closed' && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Create Neon database branch for this PR
+      - name: Create Neon branch
+        id: neon
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch_name: pr-${{ github.event.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          username: ${{ secrets.NEON_DB_USER }}
+
+      # Run migrations on the preview database
+      - name: Run migrations
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_with_pooler }}
+        run: bun run migrate
+
+      # Build public SPA with preview API origin
+      - name: Build public SPA
+        env:
+          API_ORIGIN: ${{ secrets.RAILWAY_PREVIEW_URL_PATTERN }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+          MEMBERS_URL: ${{ secrets.MEMBERS_PREVIEW_URL }}
+        run: bun run build:public
+
+      # Deploy public SPA to Netlify
+      - name: Deploy public to Netlify
+        id: netlify-public
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: packages/app-public/dist
+          production-deploy: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "PR #${{ github.event.number }} — public"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PUBLIC_SITE_ID }}
+
+      # Build members SPA with preview API origin
+      - name: Build members SPA
+        env:
+          API_ORIGIN: ${{ secrets.RAILWAY_PREVIEW_URL_PATTERN }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          PUBLIC_PATH: /
+        run: bun run build:admin
+
+      # Deploy members SPA to Netlify
+      - name: Deploy members to Netlify
+        id: netlify-members
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: packages/app-members/dist
+          production-deploy: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "PR #${{ github.event.number }} — members"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_MEMBERS_SITE_ID }}
+
+      # Post comment with all preview URLs
+      - name: Comment preview URLs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publicUrl = '${{ steps.netlify-public.outputs.deploy-url }}';
+            const membersUrl = '${{ steps.netlify-members.outputs.deploy-url }}';
+            const body = [
+              '## Preview Deploy',
+              '',
+              '| App | URL |',
+              '|-----|-----|',
+              `| Public | ${publicUrl} |`,
+              `| Members | ${membersUrl} |`,
+              '',
+              '_Deployed by Preview Deploy workflow_',
+            ].join('\n');
+
+            // Find existing comment to update
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body?.includes('## Preview Deploy'));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      # Delete Neon branch when PR is closed
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch: pr-${{ github.event.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}

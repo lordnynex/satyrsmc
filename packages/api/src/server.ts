@@ -17,10 +17,32 @@ export interface CreateFetchHandlerOptions {
   projectRoot: string;
 }
 
+function getCorsHeaders(request: Request, allowedOrigins: string[]): Record<string, string> {
+  const origin = request.headers.get("origin");
+  if (!origin || allowedOrigins.length === 0) return {};
+  if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
+  }
+  return {};
+}
+
+function withCors(response: Response, corsHeaders: Record<string, string>): Response {
+  for (const [key, value] of Object.entries(corsHeaders)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
+
 export function createFetchHandler(options: CreateFetchHandlerOptions) {
   const { api, createContext, serveFrontend, projectRoot } = options;
   const webDist = join(projectRoot, "packages", "app-public", "dist");
   const adminDist = join(projectRoot, "packages", "app-members", "dist");
+  const allowedOrigins = (process.env.CORS_ORIGINS ?? "").split(",").filter(Boolean);
 
   return async (
     request: Request,
@@ -29,7 +51,24 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
     const start = performance.now();
     const url = new URL(request.url);
     const path = url.pathname;
+    const corsHeaders = getCorsHeaders(request, allowedOrigins);
 
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    const response = await handleRequest(request, server, start, url, path);
+    return withCors(response, corsHeaders);
+  };
+
+  async function handleRequest(
+    request: Request,
+    server: { requestIP?: (req: Request) => { address: string } | null },
+    start: number,
+    url: URL,
+    path: string,
+  ): Promise<Response> {
     if (request.method === "GET" && path === "/panel") {
       if (process.env.NODE_ENV === "production") {
         const durationMs = Math.round(performance.now() - start);
@@ -327,5 +366,5 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
     const ip = server?.requestIP?.(request)?.address ?? "unknown";
     logger.info({ method: request.method, path, status: 404, durationMs, ip }, "http request");
     return new Response("Not Found", { status: 404 });
-  };
+  }
 }

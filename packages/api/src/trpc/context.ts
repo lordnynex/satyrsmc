@@ -29,7 +29,10 @@ export function createContextFn(options: ContextOptions) {
     let session: Session | null = null;
 
     const cookieHeader = req.headers.get("cookie");
-    const accessToken = parseCookie(cookieHeader, "satyrs_access");
+    const accessToken =
+      parseCookie(cookieHeader, "satyrs_access") ??
+      req.headers.get("authorization")?.replace("Bearer ", "") ??
+      null;
 
     if (accessToken) {
       const payload = await api.auth.verifyAccessToken(accessToken);

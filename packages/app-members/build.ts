@@ -25,7 +25,7 @@ const result = await Bun.build({
   minify: !isDev,
   target: "browser",
   sourcemap: "linked",
-  publicPath: "/admin/",
+  publicPath: process.env.PUBLIC_PATH ?? "/admin/",
   define: {
     "process.env.NODE_ENV": JSON.stringify(isDev ? "development" : "production"),
     __BUILD_API_ORIGIN__: JSON.stringify(apiOrigin),

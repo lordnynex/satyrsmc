@@ -1,0 +1,13 @@
+[build]
+  base = "."
+  command = "bun install && bun run build:public"
+  publish = "packages/app-public/dist"
+
+[build.environment]
+  BUN_VERSION = "1"
+
+# SPA fallback — all routes serve index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

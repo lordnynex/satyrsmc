@@ -56,10 +56,14 @@ export const authRouter = t.router({
       try {
         const result = await ctx.api.auth.login(input);
 
-        // Set cookies
-        const isProduction = process.env.NODE_ENV === "production";
-        const sameSite = isProduction ? "Strict" : "Lax";
-        const secure = isProduction ? "; Secure" : "";
+        // Set cookies — use SameSite=None for cross-origin deployments
+        const crossOrigin = !!process.env.CORS_ORIGINS;
+        const sameSite = crossOrigin
+          ? "None"
+          : process.env.NODE_ENV === "production"
+            ? "Strict"
+            : "Lax";
+        const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
 
         ctx.resHeaders.append(
           "Set-Cookie",
@@ -105,9 +109,13 @@ export const authRouter = t.router({
       try {
         const result = await ctx.api.auth.refresh(refreshToken);
 
-        const isProduction = process.env.NODE_ENV === "production";
-        const sameSite = isProduction ? "Strict" : "Lax";
-        const secure = isProduction ? "; Secure" : "";
+        const crossOrigin = !!process.env.CORS_ORIGINS;
+        const sameSite = crossOrigin
+          ? "None"
+          : process.env.NODE_ENV === "production"
+            ? "Strict"
+            : "Lax";
+        const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
 
         ctx.resHeaders.append(
           "Set-Cookie",
@@ -129,9 +137,13 @@ export const authRouter = t.router({
     .output(GenericMessageSchema)
     .meta({ description: "Log out and clear auth cookies." })
     .mutation(async ({ ctx }) => {
-      const isProduction = process.env.NODE_ENV === "production";
-      const sameSite = isProduction ? "Strict" : "Lax";
-      const secure = isProduction ? "; Secure" : "";
+      const crossOrigin = !!process.env.CORS_ORIGINS;
+      const sameSite = crossOrigin
+        ? "None"
+        : process.env.NODE_ENV === "production"
+          ? "Strict"
+          : "Lax";
+      const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
       ctx.resHeaders.append(
         "Set-Cookie",
         `satyrs_access=; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=0`,
