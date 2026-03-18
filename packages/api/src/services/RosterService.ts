@@ -144,20 +144,18 @@ export class RosterService {
   }
 
   async getFilterOptions(): Promise<RosterFilterOptionsOutput> {
-    // Base query: active users with members (excluding ALL_MEMBERS placeholder)
-    const baseCondition = `
-      m.id != '${ALL_MEMBERS_ID}'
-      AND u.user_status = 'active'
-    `;
+    const baseParams = [ALL_MEMBERS_ID, "active"];
 
     // Years joined (distinct, sorted descending)
     const yearsRows = (await this.ds.query(
       `SELECT DISTINCT EXTRACT(YEAR FROM m.member_since)::int AS year
        FROM members m
        JOIN users u ON u.member_id = m.id
-       WHERE ${baseCondition}
+       WHERE m.id != $1
+         AND u.user_status = $2
          AND m.member_since IS NOT NULL
        ORDER BY year DESC`,
+      baseParams,
     )) as Array<{ year: number }>;
 
     // Bike makes (distinct, sorted ascending)
@@ -166,8 +164,10 @@ export class RosterService {
        FROM bikes b
        JOIN users u ON u.id = b.user_id
        JOIN members m ON m.id = u.member_id
-       WHERE ${baseCondition}
+       WHERE m.id != $1
+         AND u.user_status = $2
        ORDER BY b.make ASC`,
+      baseParams,
     )) as Array<{ make: string }>;
 
     // Bike models (distinct, sorted ascending)
@@ -176,8 +176,10 @@ export class RosterService {
        FROM bikes b
        JOIN users u ON u.id = b.user_id
        JOIN members m ON m.id = u.member_id
-       WHERE ${baseCondition}
+       WHERE m.id != $1
+         AND u.user_status = $2
        ORDER BY b.model ASC`,
+      baseParams,
     )) as Array<{ model: string }>;
 
     return {

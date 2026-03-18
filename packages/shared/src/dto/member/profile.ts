@@ -88,10 +88,9 @@ const EmergencyContactOutputSchema = z.object({
   relationship: z.string().nullable(),
 });
 
-const ProfileEmergencyContactSchema = z.object({
-  name: z.string(),
-  phone: z.string(),
-  relationship: z.string().nullable(),
+const ProfileEmergencyContactSchema = EmergencyContactOutputSchema.omit({
+  id: true,
+  email: true,
 });
 
 export const MemberProfileGetOutputSchema = z.object({

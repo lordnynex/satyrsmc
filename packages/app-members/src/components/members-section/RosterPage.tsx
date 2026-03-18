@@ -43,7 +43,8 @@ export function RosterPage() {
   if (yearJoined) input.year_joined = Number(yearJoined);
   if (bikeMake) input.bike_make = bikeMake;
   if (bikeModel) input.bike_model = bikeModel;
-  if (position) input.position = position as MemberPosition;
+  const validPosition = Object.values(MemberPosition).find((p) => p === position);
+  if (validPosition) input.position = validPosition;
 
   const hasFilters = !!(search || yearJoined || bikeMake || bikeModel || position);
 
@@ -305,11 +306,13 @@ function RosterMemberCard({ member }: { member: RosterMember }) {
 
 // ---- List View ----
 
+type SortField = "default" | "name" | "position" | "joined" | "phone";
+
 function RosterMemberTable({ members }: { members: RosterMember[] }) {
-  const [sortField, setSortField] = useState<"name" | "position" | "joined" | "phone">("name");
+  const [sortField, setSortField] = useState<SortField>("default");
   const [sortAsc, setSortAsc] = useState(true);
 
-  function handleSort(field: typeof sortField) {
+  function handleSort(field: SortField) {
     if (sortField === field) {
       setSortAsc(!sortAsc);
     } else {
@@ -318,21 +321,24 @@ function RosterMemberTable({ members }: { members: RosterMember[] }) {
     }
   }
 
-  const sorted = [...members].sort((a, b) => {
-    const dir = sortAsc ? 1 : -1;
-    switch (sortField) {
-      case "name":
-        return dir * (a.last_name ?? "").localeCompare(b.last_name ?? "");
-      case "position":
-        return dir * (a.position ?? "zzz").localeCompare(b.position ?? "zzz");
-      case "joined":
-        return dir * (a.member_since ?? "").localeCompare(b.member_since ?? "");
-      case "phone":
-        return dir * (a.phone ?? "").localeCompare(b.phone ?? "");
-      default:
-        return 0;
-    }
-  });
+  const sorted =
+    sortField === "default"
+      ? members
+      : [...members].sort((a, b) => {
+          const dir = sortAsc ? 1 : -1;
+          switch (sortField) {
+            case "name":
+              return dir * (a.last_name ?? "").localeCompare(b.last_name ?? "");
+            case "position":
+              return dir * (a.position ?? "zzz").localeCompare(b.position ?? "zzz");
+            case "joined":
+              return dir * (a.member_since ?? "").localeCompare(b.member_since ?? "");
+            case "phone":
+              return dir * (a.phone ?? "").localeCompare(b.phone ?? "");
+            default:
+              return 0;
+          }
+        });
 
   const sortIndicator = (field: typeof sortField) =>
     sortField === field ? (sortAsc ? " \u25B2" : " \u25BC") : "";
