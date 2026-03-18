@@ -38,6 +38,7 @@
     "./dto/member/profile": "./src/dto/member/profile.ts",
     "./dto/member/bike": "./src/dto/member/bike.ts",
     "./dto/member/settings": "./src/dto/member/settings.ts",
+    "./dto/member/roster": "./src/dto/member/roster.ts",
     "./dto/member/notifications": "./src/dto/member/notifications.ts",
     "./dto/auth": "./src/dto/auth.ts",
     "./styles/*": "./styles/*",

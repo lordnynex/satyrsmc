@@ -50,8 +50,16 @@ describe("MemberProfilePage", () => {
     position: "President",
     member_since: "2020-01-01T12:00:00.000Z",
     birthday: "1990-06-15T12:00:00.000Z",
-    city: "Los Angeles",
-    state: "CA",
+    email: "john@example.com",
+    phone: "(555) 123-4567",
+    address: {
+      line1: "123 Main St",
+      line2: null,
+      city: "Los Angeles",
+      state: "CA",
+      postal_code: "90001",
+    },
+    emergency_contacts: [{ name: "Jane Doe", phone: "(555) 987-6543", relationship: "Spouse" }],
     is_own_profile: true,
     has_photo: false,
     photo_url: null,
@@ -76,8 +84,10 @@ describe("MemberProfilePage", () => {
     });
 
     await waitFor(() => {
-      expect(getScreen().getByText("John Doe")).not.toBeNull();
+      expect(getScreen().getByRole("heading", { name: "John Doe" })).not.toBeNull();
       expect(getScreen().getByText("President")).not.toBeNull();
+      expect(getScreen().getByText("john@example.com")).not.toBeNull();
+      expect(getScreen().getByText("(555) 123-4567")).not.toBeNull();
     });
   });
 
@@ -97,7 +107,7 @@ describe("MemberProfilePage", () => {
     });
 
     await waitFor(() => {
-      expect(getScreen().getByText("John Doe")).not.toBeNull();
+      expect(getScreen().getByRole("heading", { name: "John Doe" })).not.toBeNull();
       expect(getScreen().queryByText("Edit Profile")).toBeNull();
     });
   });

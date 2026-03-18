@@ -15,11 +15,13 @@ import { ContactEmergencyContact } from "../entities/ContactEmergencyContact";
 import { ContactPhoto } from "../entities/ContactPhoto";
 import { Bike } from "../entities/Bike";
 import { ContactPhotoType } from "@satyrsmc/shared/lib/enums";
+import { ContactEmail } from "../entities/ContactEmail";
 import { ImageService } from "./ImageService";
 import { toISOStringOrNull } from "../lib/date";
 import { uuid, parsePhotoToBlob } from "./utils";
 import type { ActivityLogsService } from "./ActivityLogsService";
 import { ActivityMessageCode } from "@satyrsmc/shared/lib/enums";
+import { formatPhoneNumber } from "@satyrsmc/shared/lib/phone";
 
 export class ProfileService {
   constructor(
@@ -45,10 +47,25 @@ export class ProfileService {
     const contact = await this.ds.getRepository(Contact).findOne({ where: { id: user.contactId } });
     if (!contact) return null;
 
-    // Get primary address for city/state
+    // Get primary email
+    const primaryEmail = await this.ds
+      .getRepository(ContactEmail)
+      .findOne({ where: { contactId: user.contactId, isPrimary: true } });
+
+    // Get primary phone
+    const primaryPhone = await this.ds
+      .getRepository(ContactPhone)
+      .findOne({ where: { contactId: user.contactId, isPrimary: true } });
+
+    // Get primary address
     const address = await this.ds
       .getRepository(ContactAddress)
       .findOne({ where: { contactId: user.contactId, isPrimaryMailing: true } });
+
+    // Get emergency contacts
+    const emergencyContacts = await this.ds
+      .getRepository(ContactEmergencyContact)
+      .find({ where: { contactId: user.contactId } });
 
     // Check for profile photo
     const photoExists = await this.ds
@@ -70,8 +87,22 @@ export class ProfileService {
       position: member.position,
       member_since: toISOStringOrNull(member.memberSince),
       birthday: toISOStringOrNull(contact.birthday),
-      city: address?.city ?? null,
-      state: address?.state ?? null,
+      email: primaryEmail?.email ?? null,
+      phone: primaryPhone ? formatPhoneNumber(primaryPhone.phone) : null,
+      address: address
+        ? {
+            line1: address.addressLine1,
+            line2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            postal_code: address.postalCode,
+          }
+        : null,
+      emergency_contacts: emergencyContacts.map((ec) => ({
+        name: ec.name,
+        phone: formatPhoneNumber(ec.phone),
+        relationship: ec.relationship,
+      })),
       is_own_profile: user.id === viewerUserId,
       has_photo: hasPhoto,
       photo_url: hasPhoto ? `/api/members/${user.memberId}/photo?size=full` : null,
