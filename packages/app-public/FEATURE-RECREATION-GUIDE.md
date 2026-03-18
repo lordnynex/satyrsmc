@@ -435,3 +435,317 @@ When implementing any feature phase, ensure:
 - [ ] No suppression comments, no `any`, no unsafe casts
 - [ ] Type-only imports for types
 - [ ] Tests written (when testing infrastructure exists)
+
+---
+
+## Feature Recreation: Member Roster Page
+
+Use this prompt to recreate the member roster feature. It describes the complete implementation across all layers (DTO, service, router, frontend).
+
+---
+
+### 1. Member Roster (`/roster`)
+
+A member-facing page for browsing the club directory. Supports two display modes (Card and List), with filtering and summary statistics.
+
+#### Access Control
+
+- Uses `memberProcedure` — requires authenticated user who is a member or admin/webmaster
+- Route guarded by `<MemberRoute>` component in `app-members`
+- Existing stub: `packages/app-members/src/components/members-section/RosterPage.tsx`
+
+#### Display Modes
+
+- **Card View** (default): Grid of member cards
+- **List View**: Sortable table
+- Toggle via icon buttons in the header (grid/list icons from `lucide-react`)
+- View preference persisted in `localStorage`
+
+---
+
+#### 1a. Roster Summary Card
+
+A statistics card displayed above the member list showing:
+
+| Stat            | Description                                          |
+| --------------- | ---------------------------------------------------- |
+| Officers        | Count of members with a position other than "Member" |
+| Regular Members | Count of members with position "Member" or null      |
+| Total Members   | Sum of all (highlighted)                             |
+
+Responsive layout using Tailwind: `grid grid-cols-2 md:grid-cols-3 gap-4`
+
+Uses shadcn/ui `Card` component.
+
+---
+
+#### 1b. Roster Filters
+
+A filter bar with search and dropdowns. All filters are optional and combinable.
+
+| Filter      | Type            | Behavior                                                                                  |
+| ----------- | --------------- | ----------------------------------------------------------------------------------------- |
+| Search      | text input      | Case-insensitive contains match on Contact `firstName` or `lastName`                      |
+| Year Joined | select dropdown | Exact year match on Member `memberSince` (options populated from data, sorted descending) |
+| Bike Make   | select dropdown | Exact string match on Bike `make` (options populated from data, sorted ascending)         |
+| Bike Model  | select dropdown | Exact string match on Bike `model` (options populated from data, sorted ascending)        |
+| Position    | select dropdown | Filter by `MemberPosition` enum value                                                     |
+
+- **Clear Filters** button appears only when filters are active
+- Responsive layout using Tailwind: search spans full width on mobile (`col-span-2`), dropdowns are `w-full` in a responsive grid
+- Filters are stored in local component state (not URL params)
+- Use shadcn/ui `Input` for search, `Select` for dropdowns
+
+#### Filter Options API
+
+A separate endpoint provides the distinct values for dropdowns:
+
+```
+members.roster.getFilterOptions() → {
+  years_joined: number[]       // sorted descending
+  bike_makes: string[]         // sorted ascending
+  bike_models: string[]        // sorted ascending
+}
+```
+
+Only includes values from members with active user accounts (`user_status = 'active'`).
+
+---
+
+#### 1c. Card View (RosterMemberCard)
+
+Each card displays:
+
+- **Bike photo** as background overlay (full card width, darkened) — served from `/api/bikes/:bikeId/photo?size=full` if the primary bike has a photo
+- **Profile photo** overlapping the bike image (circular, with fallback to default placeholder) — served from `/api/members/:memberId/photo?size=thumbnail`
+- **Member name** (`firstName lastName` from Contact)
+- **Position** (if not "Member", displayed as badge — e.g., President, Vice President)
+- **Bike info** (year make model trim from primary Bike)
+- **Joined year** (year extracted from `memberSince`)
+- **"View Profile"** link to `/roster/:username`
+
+Responsive grid using Tailwind: `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4`
+
+Uses shadcn/ui `Card`, `Badge` components.
+
+---
+
+#### 1d. List View (RosterMemberTable)
+
+| Column   | Data                                                         | Sortable                             | Responsive              |
+| -------- | ------------------------------------------------------------ | ------------------------------------ | ----------------------- |
+| Member   | Profile photo thumbnail + name (link to `/roster/:username`) | Yes, by `lastName` (default: ascend) | Always visible          |
+| Position | `MemberPosition` label                                       | Yes, alphabetical                    | Visible on `sm:` and up |
+| Joined   | Year from `memberSince`                                      | Yes, by date                         | Visible on `sm:` and up |
+| Phone    | Formatted US phone from primary contact_phone                | Yes, by string                       | Visible on `md:` and up |
+
+- No pagination (all results displayed)
+- Null values sort last
+- Custom table using Tailwind (not a table library)
+
+---
+
+#### 1e. Server-Side Sorting
+
+Members are sorted by a two-tier system:
+
+**Tier 1 — Officers first, by priority:**
+
+| Position                 | Priority |
+| ------------------------ | -------- |
+| President                | 1        |
+| Vice President           | 2        |
+| Road Captain             | 3        |
+| Recording Secretary      | 4        |
+| Correspondence Secretary | 5        |
+| Treasurer                | 6        |
+| Member (or null)         | 7        |
+
+**Tier 2 — Alphabetically:**
+
+- By Contact `lastName` (`localeCompare`)
+- Then by Contact `firstName` (`localeCompare`)
+
+---
+
+#### 1f. States
+
+- **Loading**: Skeleton loader placeholders using shadcn/ui `Skeleton` component
+- **Error**: Alert with error message and retry button using shadcn/ui `Alert`
+- **Empty**: Empty state with message and "Clear Filters" button
+
+---
+
+### 2. API Endpoints
+
+#### `members.roster.list`
+
+**Procedure:** `memberProcedure` (requires member or admin/webmaster)
+
+**Input:**
+
+```typescript
+RosterListInputSchema = z.object({
+  search: z.string().optional(),
+  year_joined: z.number().int().min(1900).max(2100).optional(),
+  bike_make: z.string().optional(),
+  bike_model: z.string().optional(),
+  position: z.nativeEnum(MemberPosition).optional(),
+});
+```
+
+**Output:**
+
+```typescript
+RosterListOutputSchema = z.object({
+  members: z.array(RosterMemberSchema),
+  summary: RosterSummarySchema,
+});
+```
+
+**RosterMember:**
+
+```typescript
+RosterMemberSchema = z.object({
+  id: z.string(), // member.id
+  first_name: z.string().nullable(), // contact.firstName
+  last_name: z.string().nullable(), // contact.lastName
+  display_name: z.string(), // contact.displayName
+  username: z.string(), // user.username
+  position: z.nativeEnum(MemberPosition).nullable(), // member.position
+  member_since: z.string().nullable(), // ISO date
+  has_photo: z.boolean(), // profile photo exists
+  photo_thumbnail_url: z.string().nullable(), // /api/members/:id/photo?size=thumbnail
+  bike: z
+    .object({
+      id: z.string(),
+      year: z.number(),
+      make: z.string(),
+      model: z.string(),
+      trim: z.string().nullable(),
+      has_photo: z.boolean(),
+    })
+    .nullable(), // primary bike only
+  phone: z.string().nullable(), // formatted US phone from primary contact_phone
+});
+```
+
+**RosterSummary:**
+
+```typescript
+RosterSummarySchema = z.object({
+  total: z.number(),
+  officers: z.number(),
+  regular_members: z.number(),
+});
+```
+
+**Server-side filtering defaults applied:**
+
+- Only members linked to a User with `user_status = 'active'`
+- Excludes the ALL_MEMBERS placeholder (`ALL_MEMBERS_ID` from `@satyrsmc/shared/lib/constants`)
+
+#### `members.roster.getFilterOptions`
+
+**Procedure:** `memberProcedure`
+
+**Input:** None
+
+**Output:**
+
+```typescript
+RosterFilterOptionsOutputSchema = z.object({
+  years_joined: z.array(z.number()), // sorted descending
+  bike_makes: z.array(z.string()), // sorted ascending
+  bike_models: z.array(z.string()), // sorted ascending
+});
+```
+
+Only includes values from members matching the default active-user filter.
+
+---
+
+### 3. Data Relationships
+
+```
+User (1) → (0..1) Member        — user.member_id FK
+User (1) → (1) Contact          — user.contact_id FK
+User (1) → (many) Bike          — bike.user_id FK
+Member (1) → (1) Contact        — member.contact_id FK
+Contact (1) → (many) ContactPhone    — contact_phones.contact_id, is_primary flag
+Contact (1) → (0..1) ContactPhoto    — contact_photos.contact_id, type='profile'
+```
+
+The roster query joins:
+
+- `members` → `contacts` (for name)
+- `members` → `users` (for username, to filter by active status)
+- `users` → `bikes` (for primary bike info, `WHERE is_primary = true`)
+- `contacts` → `contact_phones` (for primary phone, `WHERE is_primary = true`)
+- `contacts` → `contact_photos` (for profile photo existence check)
+
+---
+
+### 4. DTO Location
+
+New file: `packages/shared/src/dto/member/roster.ts`
+
+Follow the existing pattern in `packages/shared/src/dto/member/profile.ts`:
+
+- Import enums from `../../lib/enums`
+- Define input/output Zod schemas
+- Export inferred types via `z.infer<>`
+
+---
+
+### 5. Service Layer
+
+New methods in `RosterService` (or extend existing `MembersService`):
+
+**Location option A:** New `packages/api/src/services/RosterService.ts`
+**Location option B:** Add methods to `packages/api/src/services/MembersService.ts`
+
+Service should:
+
+- Use TypeORM QueryBuilder (following `memberSelectQuery` pattern in `MembersService`)
+- Join members → contacts → users → bikes → contact_phones → contact_photos
+- Apply position-priority sorting with a CASE expression
+- Return shared DTO types with explicit return type annotations
+- Format phone numbers to US format `(XXX) XXX-XXXX` for 10-digit strings
+
+---
+
+### 6. Router
+
+New file: `packages/api/src/trpc/routers/members/roster.ts`
+
+Follow the pattern in `packages/api/src/trpc/routers/members/profile.ts`:
+
+- Import `memberProcedure` and `t` from `../../trpc`
+- Import schemas from `@satyrsmc/shared/dto/member/roster`
+- Use `.input()`, `.output()`, `.meta()` chain
+- Delegate to `ctx.api.roster.*` (or `ctx.api.members.*`)
+
+Register in `packages/api/src/trpc/routers/members/index.ts`:
+
+```typescript
+export const membersRouter = t.router({
+  // ... existing sub-routers
+  roster: memberRosterRouter,
+});
+```
+
+---
+
+### 7. Key Patterns
+
+- **No server-side pagination**: All matching members returned in a single response; client handles display
+- **Filter options derived from data**: Dropdowns populated from distinct values of active members, not hardcoded
+- **Officer priority sorting**: Officers always appear first, ordered by rank, before alphabetical members
+- **Phone formatting**: Raw digit strings formatted to US style `(XXX) XXX-XXXX` for 10-digit numbers
+- **Photo URLs**: Profile photos served at `/api/members/:memberId/photo?size=thumbnail|full`; bike photos would need a new endpoint at `/api/bikes/:bikeId/photo?size=thumbnail|full` in `server.ts`
+- **Primary bike only**: Roster shows only the primary bike (`is_primary = true`) per member
+- **Stale times**: Member data cached for 30 seconds, filter options cached for 5 minutes (React Query `staleTime`)
+- **Local storage**: Card/List view preference persisted across page navigations
+- **Existing constants**: Use `ALL_MEMBERS_ID` from `@satyrsmc/shared/lib/constants` to exclude placeholder record
+- **Enums**: Use `MemberPosition` from `@satyrsmc/shared/lib/enums` — never hardcode position strings

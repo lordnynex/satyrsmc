@@ -28,6 +28,7 @@ import { MembershipLogsService } from "./MembershipLogsService";
 import { ProfileService } from "./ProfileService";
 import { BikeService } from "./BikeService";
 import { SettingsService } from "./SettingsService";
+import { RosterService } from "./RosterService";
 
 export function createApi(db: DbLike, ds: DataSource, emailService?: EmailService) {
   const email = emailService ?? new ConsoleEmailService();
@@ -72,6 +73,7 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
     profile: new ProfileService(ds, activityLogsService),
     bikes: new BikeService(ds),
     settings: new SettingsService(ds),
+    roster: new RosterService(ds),
   };
 }
 

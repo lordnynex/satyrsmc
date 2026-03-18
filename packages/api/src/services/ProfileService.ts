@@ -15,11 +15,13 @@ import { ContactEmergencyContact } from "../entities/ContactEmergencyContact";
 import { ContactPhoto } from "../entities/ContactPhoto";
 import { Bike } from "../entities/Bike";
 import { ContactPhotoType } from "@satyrsmc/shared/lib/enums";
+import { ContactEmail } from "../entities/ContactEmail";
 import { ImageService } from "./ImageService";
 import { toISOStringOrNull } from "../lib/date";
 import { uuid, parsePhotoToBlob } from "./utils";
 import type { ActivityLogsService } from "./ActivityLogsService";
 import { ActivityMessageCode } from "@satyrsmc/shared/lib/enums";
+import { formatPhoneNumber } from "@satyrsmc/shared/lib/phone";
 
 export class ProfileService {
   constructor(
@@ -45,21 +47,32 @@ export class ProfileService {
     const contact = await this.ds.getRepository(Contact).findOne({ where: { id: user.contactId } });
     if (!contact) return null;
 
-    // Get primary address for city/state
-    const address = await this.ds
-      .getRepository(ContactAddress)
-      .findOne({ where: { contactId: user.contactId, isPrimaryMailing: true } });
+    const isOwnProfile = user.id === viewerUserId;
 
-    // Check for profile photo
-    const photoExists = await this.ds
-      .getRepository(ContactPhoto)
-      .findOne({ where: { contactId: user.contactId, type: ContactPhotoType.Profile } });
+    const [primaryEmail, primaryPhone, address, emergencyContacts, photoExists, bikes] =
+      await Promise.all([
+        this.ds
+          .getRepository(ContactEmail)
+          .findOne({ where: { contactId: user.contactId, isPrimary: true } }),
+        this.ds
+          .getRepository(ContactPhone)
+          .findOne({ where: { contactId: user.contactId, isPrimary: true } }),
+        this.ds
+          .getRepository(ContactAddress)
+          .findOne({ where: { contactId: user.contactId, isPrimaryMailing: true } }),
+        isOwnProfile
+          ? this.ds
+              .getRepository(ContactEmergencyContact)
+              .find({ where: { contactId: user.contactId } })
+          : Promise.resolve([]),
+        this.ds
+          .getRepository(ContactPhoto)
+          .findOne({ where: { contactId: user.contactId, type: ContactPhotoType.Profile } }),
+        this.ds
+          .getRepository(Bike)
+          .find({ where: { userId: user.id }, order: { isPrimary: "DESC", createdAt: "ASC" } }),
+      ]);
     const hasPhoto = !!photoExists;
-
-    // Get bikes
-    const bikes = await this.ds
-      .getRepository(Bike)
-      .find({ where: { userId: user.id }, order: { isPrimary: "DESC", createdAt: "ASC" } });
 
     return {
       id: user.id,
@@ -70,9 +83,23 @@ export class ProfileService {
       position: member.position,
       member_since: toISOStringOrNull(member.memberSince),
       birthday: toISOStringOrNull(contact.birthday),
-      city: address?.city ?? null,
-      state: address?.state ?? null,
-      is_own_profile: user.id === viewerUserId,
+      email: primaryEmail?.email ?? null,
+      phone: primaryPhone ? formatPhoneNumber(primaryPhone.phone) : null,
+      address: address
+        ? {
+            line1: address.addressLine1,
+            line2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            postal_code: address.postalCode,
+          }
+        : null,
+      emergency_contacts: emergencyContacts.map((ec) => ({
+        name: ec.name,
+        phone: formatPhoneNumber(ec.phone),
+        relationship: ec.relationship,
+      })),
+      is_own_profile: isOwnProfile,
       has_photo: hasPhoto,
       photo_url: hasPhoto ? `/api/members/${user.memberId}/photo?size=full` : null,
       photo_thumbnail_url: hasPhoto ? `/api/members/${user.memberId}/photo?size=thumbnail` : null,
@@ -168,17 +195,18 @@ export class ProfileService {
     // Update phones
     if (input.phones !== undefined) {
       const phoneRepo = this.ds.getRepository(ContactPhone);
-      // Delete existing
       await phoneRepo.delete({ contactId });
-      // Insert new (strip non-digits from phone)
-      for (const phone of input.phones) {
+      // If none marked primary, auto-promote the first one
+      const hasPrimary = input.phones.some((p) => p.is_primary);
+      for (let i = 0; i < input.phones.length; i++) {
+        const phone = input.phones[i];
         await phoneRepo.save(
           phoneRepo.create({
             id: phone.id ?? uuid(),
             contactId,
             phone: phone.phone.replace(/\D/g, ""),
             type: phone.type as never,
-            isPrimary: phone.is_primary,
+            isPrimary: phone.is_primary || (!hasPrimary && i === 0),
           }),
         );
       }
@@ -188,7 +216,10 @@ export class ProfileService {
     if (input.addresses !== undefined) {
       const addrRepo = this.ds.getRepository(ContactAddress);
       await addrRepo.delete({ contactId });
-      for (const addr of input.addresses) {
+      // If none marked primary mailing, auto-promote the first one
+      const hasPrimaryMailing = input.addresses.some((a) => a.is_primary_mailing);
+      for (let i = 0; i < input.addresses.length; i++) {
+        const addr = input.addresses[i];
         await addrRepo.save(
           addrRepo.create({
             id: addr.id ?? uuid(),
@@ -200,7 +231,7 @@ export class ProfileService {
             postalCode: addr.postal_code ?? null,
             country: addr.country ?? "US",
             type: addr.type as never,
-            isPrimaryMailing: addr.is_primary_mailing,
+            isPrimaryMailing: addr.is_primary_mailing || (!hasPrimaryMailing && i === 0),
           }),
         );
       }

@@ -30,6 +30,8 @@ import { dataSourceOptions } from "../src/db/dataSource";
 import { User } from "../src/entities/User";
 import { Contact } from "../src/entities/Contact";
 import { ContactEmail } from "../src/entities/ContactEmail";
+import { ContactPhone } from "../src/entities/ContactPhone";
+import { ContactAddress } from "../src/entities/ContactAddress";
 import { Member } from "../src/entities/Member";
 import { Event } from "../src/entities/Event";
 import { MailingList } from "../src/entities/MailingList";
@@ -40,6 +42,8 @@ import {
   ContactType,
   ContactStatus,
   ContactEmailType,
+  ContactPhoneType,
+  ContactAddressType,
   EventType,
   MailingListType,
   MailingDeliveryType,
@@ -227,6 +231,8 @@ async function main() {
   const userRepo = ds.getRepository(User);
   const contactRepo = ds.getRepository(Contact);
   const emailRepo = ds.getRepository(ContactEmail);
+  const phoneRepo = ds.getRepository(ContactPhone);
+  const addressRepo = ds.getRepository(ContactAddress);
   const memberRepo = ds.getRepository(Member);
   const eventRepo = ds.getRepository(Event);
   const mailingListRepo = ds.getRepository(MailingList);
@@ -275,6 +281,32 @@ async function main() {
       isPrimary: true,
     });
     await emailRepo.save(contactEmail);
+
+    // Create contact phone
+    await phoneRepo.save(
+      phoneRepo.create({
+        id: crypto.randomUUID(),
+        contactId: contact.id,
+        phone: "5551234567",
+        type: ContactPhoneType.Cell,
+        isPrimary: true,
+      }),
+    );
+
+    // Create contact address
+    await addressRepo.save(
+      addressRepo.create({
+        id: crypto.randomUUID(),
+        contactId: contact.id,
+        addressLine1: "123 Main St",
+        city: "Los Angeles",
+        state: "CA",
+        postalCode: "90001",
+        country: "US",
+        type: ContactAddressType.Home,
+        isPrimaryMailing: true,
+      }),
+    );
 
     // Optionally create member
     let memberId: string | null = null;

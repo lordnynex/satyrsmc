@@ -88,6 +88,11 @@ const EmergencyContactOutputSchema = z.object({
   relationship: z.string().nullable(),
 });
 
+const ProfileEmergencyContactSchema = EmergencyContactOutputSchema.omit({
+  id: true,
+  email: true,
+});
+
 export const MemberProfileGetOutputSchema = z.object({
   id: z.string(),
   username: z.string(),
@@ -97,8 +102,18 @@ export const MemberProfileGetOutputSchema = z.object({
   position: z.nativeEnum(MemberPosition).nullable(),
   member_since: z.string().nullable(),
   birthday: z.string().nullable(),
-  city: z.string().nullable(),
-  state: z.string().nullable(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  address: z
+    .object({
+      line1: z.string().nullable(),
+      line2: z.string().nullable(),
+      city: z.string().nullable(),
+      state: z.string().nullable(),
+      postal_code: z.string().nullable(),
+    })
+    .nullable(),
+  emergency_contacts: z.array(ProfileEmergencyContactSchema),
   is_own_profile: z.boolean(),
   has_photo: z.boolean(),
   photo_url: z.string().nullable(),

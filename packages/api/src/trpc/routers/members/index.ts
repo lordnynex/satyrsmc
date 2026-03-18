@@ -5,6 +5,7 @@ import { memberProfileRouter } from "./profile";
 import { memberBikesRouter } from "./bikes";
 import { memberSettingsRouter } from "./settings";
 import { memberNotificationsRouter } from "./notifications";
+import { memberRosterRouter } from "./roster";
 
 export const membersRouter = t.router({
   events: memberEventsRouter,
@@ -13,4 +14,5 @@ export const membersRouter = t.router({
   bikes: memberBikesRouter,
   settings: memberSettingsRouter,
   notifications: memberNotificationsRouter,
+  roster: memberRosterRouter,
 });
