@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, closed]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   deploy-preview:
     if: github.event.action != 'closed' && github.event.pull_request.draft == false
@@ -21,7 +25,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'bun.lockb') }}
           restore-keys: |
             bun-${{ runner.os }}-
 

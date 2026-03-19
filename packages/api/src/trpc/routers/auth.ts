@@ -13,6 +13,13 @@ import {
   AuthUserSchema,
 } from "@satyrsmc/shared/dto/auth";
 
+function getCookiePolicyAttributes() {
+  const crossOrigin = !!process.env.CORS_ORIGINS;
+  const sameSite = crossOrigin ? "None" : process.env.NODE_ENV === "production" ? "Strict" : "Lax";
+  const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
+  return { sameSite, secure };
+}
+
 export const authRouter = t.router({
   register: t.procedure
     .input(RegisterInputSchema)
@@ -56,14 +63,7 @@ export const authRouter = t.router({
       try {
         const result = await ctx.api.auth.login(input);
 
-        // Set cookies — use SameSite=None for cross-origin deployments
-        const crossOrigin = !!process.env.CORS_ORIGINS;
-        const sameSite = crossOrigin
-          ? "None"
-          : process.env.NODE_ENV === "production"
-            ? "Strict"
-            : "Lax";
-        const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
+        const { sameSite, secure } = getCookiePolicyAttributes();
 
         ctx.resHeaders.append(
           "Set-Cookie",
@@ -109,13 +109,7 @@ export const authRouter = t.router({
       try {
         const result = await ctx.api.auth.refresh(refreshToken);
 
-        const crossOrigin = !!process.env.CORS_ORIGINS;
-        const sameSite = crossOrigin
-          ? "None"
-          : process.env.NODE_ENV === "production"
-            ? "Strict"
-            : "Lax";
-        const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
+        const { sameSite, secure } = getCookiePolicyAttributes();
 
         ctx.resHeaders.append(
           "Set-Cookie",
@@ -137,13 +131,7 @@ export const authRouter = t.router({
     .output(GenericMessageSchema)
     .meta({ description: "Log out and clear auth cookies." })
     .mutation(async ({ ctx }) => {
-      const crossOrigin = !!process.env.CORS_ORIGINS;
-      const sameSite = crossOrigin
-        ? "None"
-        : process.env.NODE_ENV === "production"
-          ? "Strict"
-          : "Lax";
-      const secure = crossOrigin || process.env.NODE_ENV === "production" ? "; Secure" : "";
+      const { sameSite, secure } = getCookiePolicyAttributes();
       ctx.resHeaders.append(
         "Set-Cookie",
         `satyrs_access=; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=0`,

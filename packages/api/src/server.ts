@@ -26,6 +26,7 @@ function getCorsHeaders(request: Request, allowedOrigins: string[]): Record<stri
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      Vary: "Origin",
     };
   }
   return {};
@@ -42,7 +43,10 @@ export function createFetchHandler(options: CreateFetchHandlerOptions) {
   const { api, createContext, serveFrontend, projectRoot } = options;
   const webDist = join(projectRoot, "packages", "app-public", "dist");
   const adminDist = join(projectRoot, "packages", "app-members", "dist");
-  const allowedOrigins = (process.env.CORS_ORIGINS ?? "").split(",").filter(Boolean);
+  const allowedOrigins = (process.env.CORS_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   return async (
     request: Request,

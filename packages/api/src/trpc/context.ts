@@ -19,6 +19,14 @@ function parseCookie(header: string | null, name: string): string | null {
   return match ? decodeURIComponent(match[1]!) : null;
 }
 
+function parseBearerToken(header: string | null): string | null {
+  if (!header) return null;
+  const value = header.trim();
+  if (!value.toLowerCase().startsWith("bearer ")) return null;
+  const token = value.slice("Bearer ".length).trim();
+  return token || null;
+}
+
 /**
  * Creates a per-request context for tRPC procedures.
  * Parses the JWT access token from cookies to populate the session.
@@ -31,7 +39,7 @@ export function createContextFn(options: ContextOptions) {
     const cookieHeader = req.headers.get("cookie");
     const accessToken =
       parseCookie(cookieHeader, "satyrs_access") ??
-      req.headers.get("authorization")?.replace("Bearer ", "") ??
+      parseBearerToken(req.headers.get("authorization")) ??
       null;
 
     if (accessToken) {
