@@ -43,3 +43,6 @@ data/*.db
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+
+# Local Netlify folder
+.netlify
