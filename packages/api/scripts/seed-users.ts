@@ -3,8 +3,8 @@
  * Seed script — creates sample users, mailing lists, and events for manual testing.
  *
  * Usage:
- *   bun run seed                           # Requires DATABASE_URL
- *   USE_PGLITE=1 bun run seed              # In-memory PGlite (lost on restart)
+ *   bun run seed                           # Uses DATABASE_URL from packages/api/.env
+ *                                          # Set USE_PGLITE=1 in .env for in-memory PGlite
  *
  * Creates these accounts (all passwords: "Password1!"):
  *
@@ -24,7 +24,7 @@
  * The script is idempotent — it skips records that already exist.
  */
 import "reflect-metadata";
-import { DataSource } from "typeorm";
+import { DataSource, type DataSourceOptions } from "typeorm";
 import { hash } from "bcryptjs";
 import { dataSourceOptions } from "../src/db/dataSource";
 import { User } from "../src/entities/User";
@@ -217,13 +217,26 @@ function makeSeedEvents(): SeedEvent[] {
   ];
 }
 
+async function getSeederDataSource(): Promise<DataSource> {
+  const opts = { ...dataSourceOptions, migrationsRun: true };
+
+  if (process.env.USE_PGLITE === "1") {
+    const { PGliteDriver } = await import("typeorm-pglite");
+    const ds = new DataSource({
+      ...opts,
+      url: undefined,
+      driver: new PGliteDriver().driver,
+    } as DataSourceOptions);
+    return ds;
+  }
+
+  return new DataSource(opts);
+}
+
 async function main() {
   logger.info("Seeding sample data...");
 
-  const ds = new DataSource({
-    ...dataSourceOptions,
-    migrationsRun: true,
-  });
+  const ds = await getSeederDataSource();
   await ds.initialize();
 
   const passwordHash = await hash(SEED_PASSWORD, BCRYPT_COST);

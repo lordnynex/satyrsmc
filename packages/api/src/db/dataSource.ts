@@ -54,6 +54,12 @@ import {
   ActivityLog,
   MembershipLog,
   Bike,
+  EventRsvp,
+  RsvpSubmission,
+  BadgerRegistration,
+  Invitation,
+  WaiverVersion,
+  RsvpLog,
 } from "../entities";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
 import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
@@ -69,6 +75,7 @@ import { EventDateAndHostChanges1800000010000 } from "./migrations/1800000010000
 import { CreateLogTables1800000011000 } from "./migrations/1800000011000-CreateLogTables.ts";
 import { CreateBikesAndMoveBirthday1800000012000 } from "./migrations/1800000012000-CreateBikesAndMoveBirthday.ts";
 import { AddBikePhotos1800000013000 } from "./migrations/1800000013000-AddBikePhotos.ts";
+import { CreateEventRsvpSystem1800000014000 } from "./migrations/1800000014000-CreateEventRsvpSystem.ts";
 
 export function getProjectRoot(): string {
   return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
@@ -127,6 +134,12 @@ const entities = [
   ActivityLog,
   MembershipLog,
   Bike,
+  EventRsvp,
+  RsvpSubmission,
+  BadgerRegistration,
+  Invitation,
+  WaiverVersion,
+  RsvpLog,
 ];
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -149,6 +162,7 @@ export const dataSourceOptions: DataSourceOptions = {
     CreateLogTables1800000011000,
     CreateBikesAndMoveBirthday1800000012000,
     AddBikePhotos1800000013000,
+    CreateEventRsvpSystem1800000014000,
   ],
   migrationsRun: true,
   entities,

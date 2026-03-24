@@ -29,6 +29,9 @@ import { ProfileService } from "./ProfileService";
 import { BikeService } from "./BikeService";
 import { SettingsService } from "./SettingsService";
 import { RosterService } from "./RosterService";
+import { RsvpLogService } from "./RsvpLogService";
+import { RsvpService } from "./RsvpService";
+import { InvitationService } from "./InvitationService";
 
 export function createApi(db: DbLike, ds: DataSource, emailService?: EmailService) {
   const email = emailService ?? new ConsoleEmailService();
@@ -45,6 +48,7 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
   const documentsService = new DocumentsService(ds);
   const committeesService = new CommitteesService(ds);
   const activityLogsService = new ActivityLogsService(ds);
+  const rsvpLogService = new RsvpLogService(ds);
 
   return {
     events: eventsService,
@@ -74,6 +78,9 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
     bikes: new BikeService(ds),
     settings: new SettingsService(ds),
     roster: new RosterService(ds),
+    rsvpLogs: rsvpLogService,
+    rsvps: new RsvpService(ds, rsvpLogService),
+    invitations: new InvitationService(ds),
   };
 }
 

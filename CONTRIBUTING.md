@@ -41,21 +41,19 @@ graph TB
 ## Prerequisites
 
 - [Bun](https://bun.sh) v1.x
-- [PostgreSQL](https://www.postgresql.org/) (or use docker-compose for local dev, or `bun run dev:pglite` for in-memory PGlite with no Postgres)
-- [Docker](https://docker.com) (optional — for running the API as a container)
+- [PostgreSQL](https://www.postgresql.org/) via Docker (`bun run db:start`) or set `USE_PGLITE=1` in `packages/api/.env` for in-memory PGlite
+- [Docker](https://docker.com) (optional — for local Postgres or running the API as a container)
 
 ## Local Development
 
-**Dev server** (builds frontends, starts API with HMR). Requires `DATABASE_URL` unless you use PGlite (see below):
+1. Copy the env template: `cp packages/api/.env.example packages/api/.env`
+2. Choose a database mode:
+   - **Postgres (recommended):** Run `bun run db:start` to start a local Postgres container, or set `DATABASE_URL` to an existing instance.
+   - **PGlite (no Postgres needed):** Uncomment `USE_PGLITE=1` in `packages/api/.env`. Data is in-memory and lost on restart.
+3. Start the dev server:
 
 ```bash
 bun run dev
-```
-
-**Dev with in-memory PGlite** (no Postgres server or `DATABASE_URL`). Optionally seeds from `data/badger.db` (or `SQLITE_SEED_PATH`) at startup:
-
-```bash
-bun run dev:pglite
 ```
 
 **API only** (no frontend serving):
@@ -81,8 +79,9 @@ bun run storybook     # Dev server on :6006
 
 ```bash
 # Root (from repo root)
-bun run dev              # Build frontends + start API dev server (requires DATABASE_URL)
-bun run dev:pglite       # Same as dev but in-memory PGlite, no Postgres; seeds from SQLite if present
+bun run dev              # Build frontends + start API dev server
+bun run db:start         # Start local Postgres in Docker
+bun run db:stop          # Stop local Postgres
 bun run build            # Build both SPAs (app-public + app-members)
 bun run start            # Start API server (production mode)
 bun run start:api-only   # Start API without serving static files
@@ -99,7 +98,7 @@ make deploy-static-dry   # Dry-run deploy
 
 ## Seed Data
 
-Run `bun run seed` to create sample user accounts for manual testing. The script is idempotent — it skips users that already exist. Requires `DATABASE_URL` (or `USE_PGLITE=1`).
+Run `bun run seed` to create sample user accounts for manual testing. The script is idempotent — it skips users that already exist. Configure `DATABASE_URL` or `USE_PGLITE=1` in `packages/api/.env`.
 
 All seed accounts use the password: **`Password1!`**
 
@@ -233,15 +232,19 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 ## Environment Variables
 
-| Variable           | Description                                                                                           |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`     | Postgres connection string (required unless `USE_PGLITE=1`)                                           |
-| `USE_PGLITE`       | Set to `1` to use in-memory PGlite instead of Postgres (local dev only)                               |
-| `SQLITE_SEED_PATH` | Optional path to SQLite file when `USE_PGLITE=1` (default: `data/badger.db` relative to project root) |
-| `PORT`             | API server port (default: 3000)                                                                       |
-| `NODE_ENV`         | `production` for production mode                                                                      |
+| Variable           | Description           |
+| ------------------ | --------------------- | --------------------------------------------------------------------------- |
+| Variable           | Location              | Description                                                                 |
+| ------------------ | --------------------- | ------------------------------------------------------------------------    |
+| `DATABASE_URL`     | `packages/api/.env`   | Postgres connection string (required unless `USE_PGLITE=1`)                 |
+| `JWT_SECRET`       | `packages/api/.env`   | JWT signing secret (required)                                               |
+| `USE_PGLITE`       | `packages/api/.env`   | Set to `1` to use in-memory PGlite instead of Postgres (local dev only)     |
+| `SQLITE_SEED_PATH` | `packages/api/.env`   | Path to legacy SQLite file for PGlite auto-seed (default: `data/badger.db`) |
+| `PORT`             | `packages/api/.env`   | API server port (default: 3000)                                             |
+| `BUILD_DEV`        | inline in `bun dev`   | Set to `1` for dev builds (set automatically by `bun run dev`)              |
+| `NODE_ENV`         | inline in `bun start` | `production` for production mode                                            |
 
-Bun automatically loads `.env` files — do not use `dotenv`.
+Bun automatically loads `.env` files from the working directory — do not use `dotenv`. See `packages/api/.env.example` for a template.
 
 ---
 

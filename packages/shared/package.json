@@ -40,6 +40,8 @@
     "./dto/member/settings": "./src/dto/member/settings.ts",
     "./dto/member/roster": "./src/dto/member/roster.ts",
     "./dto/member/notifications": "./src/dto/member/notifications.ts",
+    "./dto/admin/rsvp": "./src/dto/admin/rsvp.ts",
+    "./dto/admin/invitation": "./src/dto/admin/invitation.ts",
     "./dto/auth": "./src/dto/auth.ts",
     "./styles/*": "./styles/*",
     "./components": "./src/components/index.ts"
