@@ -232,10 +232,8 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 ## Environment Variables
 
-| Variable           | Description           |
-| ------------------ | --------------------- | --------------------------------------------------------------------------- |
 | Variable           | Location              | Description                                                                 |
-| ------------------ | --------------------- | ------------------------------------------------------------------------    |
+| ------------------ | --------------------- | --------------------------------------------------------------------------- |
 | `DATABASE_URL`     | `packages/api/.env`   | Postgres connection string (required unless `USE_PGLITE=1`)                 |
 | `JWT_SECRET`       | `packages/api/.env`   | JWT signing secret (required)                                               |
 | `USE_PGLITE`       | `packages/api/.env`   | Set to `1` to use in-memory PGlite instead of Postgres (local dev only)     |

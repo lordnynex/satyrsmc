@@ -9,7 +9,6 @@ import BadgerPage from "./pages/BadgerPage";
 import MembersPage from "./pages/MembersPage";
 
 import ContactPage from "./pages/ContactPage";
-import InvitationPage from "./pages/InvitationPage";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +26,6 @@ function AppWithProviders() {
               <Route path="/members" element={<MembersPage />} />
               <Route path="/members/:memberId" element={<Navigate to="/members" replace />} />
               <Route path="/contact" element={<ContactPage />} />
-              <Route path="/invite/:token" element={<InvitationPage />} />
               <Route path="/events" element={<Navigate to="/" replace />} />
               <Route path="/gallery" element={<Navigate to="/" replace />} />
             </Routes>

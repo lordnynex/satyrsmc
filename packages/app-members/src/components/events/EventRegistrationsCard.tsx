@@ -127,11 +127,16 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
     (r) => r.paymentStatus === PaymentStatus.RefundRequested,
   ).length;
 
+  const BULK_PAYMENT_LIMIT = 20;
+
   const toggleSelected = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < BULK_PAYMENT_LIMIT) {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -223,6 +228,7 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
                 key={rsvp.id}
                 rsvp={rsvp}
                 isSelected={selectedIds.has(rsvp.id)}
+                selectionAtLimit={selectedIds.size >= BULK_PAYMENT_LIMIT}
                 onToggleSelect={() => toggleSelected(rsvp.id)}
                 isMatchingMode={matchingRsvpId === rsvp.id}
                 contactSearch={matchingRsvpId === rsvp.id ? contactSearch : ""}
@@ -269,6 +275,7 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
 type RegistrationRowProps = {
   rsvp: RsvpAdminOutput;
   isSelected: boolean;
+  selectionAtLimit: boolean;
   onToggleSelect: () => void;
   isMatchingMode: boolean;
   contactSearch: string;
@@ -286,6 +293,7 @@ type RegistrationRowProps = {
 function RegistrationRow({
   rsvp,
   isSelected,
+  selectionAtLimit,
   onToggleSelect,
   isMatchingMode,
   contactSearch,
@@ -321,6 +329,7 @@ function RegistrationRow({
             type="checkbox"
             checked={isSelected}
             onChange={onToggleSelect}
+            disabled={!isSelected && selectionAtLimit}
             className="shrink-0"
           />
         )}

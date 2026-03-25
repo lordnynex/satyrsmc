@@ -18,7 +18,6 @@ const ALL_SECTIONS: { id: string; label: string; types: EventType[]; route?: boo
   { id: "volunteers", label: "Volunteers", types: NON_RIDES },
   { id: "ride-attendees", label: "Attendees", types: ALL_TYPES, route: true },
   { id: "registrations", label: "Registrations", types: ALL_TYPES },
-  { id: "invitations", label: "Share", types: ALL_TYPES },
   { id: "ride-assets", label: "Flyers", types: ALL_TYPES },
   { id: "event-photos", label: "Event photos", types: ALL_TYPES },
   { id: "notes", label: "Notes", types: ALL_TYPES },
@@ -48,23 +47,26 @@ export function EventDetailSubNav({ className, eventType }: EventDetailSubNavPro
         className="flex items-center gap-1 overflow-x-auto min-w-0 shrink"
         aria-label="Event detail page sections"
       >
-        {sections.map(({ id, label, route }) => (
-          <a
-            key={id}
-            href={route ? undefined : `#${id}`}
-            onClick={
-              route && eventId
-                ? (e) => {
-                    e.preventDefault();
-                    navigate(`/admin/events/${eventId}/attendees`);
-                  }
-                : undefined
-            }
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            {label}
-          </a>
-        ))}
+        {sections.map(({ id, label, route }) =>
+          route && eventId ? (
+            <button
+              key={id}
+              type="button"
+              onClick={() => navigate(`/admin/events/${eventId}/attendees`)}
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              {label}
+            </button>
+          ) : (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap shrink-0"
+            >
+              {label}
+            </a>
+          ),
+        )}
       </nav>
       <Button
         variant="ghost"

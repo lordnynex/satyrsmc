@@ -52,6 +52,5 @@ export { MembershipLog } from "./MembershipLog";
 export { Bike } from "./Bike";
 export { RsvpSubmission } from "./RsvpSubmission";
 export { BadgerRegistration } from "./BadgerRegistration";
-export { Invitation } from "./Invitation";
 export { WaiverVersion } from "./WaiverVersion";
 export { RsvpLog } from "./RsvpLog";

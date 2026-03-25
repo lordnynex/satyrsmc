@@ -37,7 +37,6 @@ import { Event } from "../src/entities/Event";
 import { MailingList } from "../src/entities/MailingList";
 import { MailingListMember } from "../src/entities/MailingListMember";
 import { WaiverVersion } from "../src/entities/WaiverVersion";
-import { Invitation } from "../src/entities/Invitation";
 import { RsvpSubmission } from "../src/entities/RsvpSubmission";
 import { BadgerRegistration } from "../src/entities/BadgerRegistration";
 import { EventAttendee } from "../src/entities/EventAttendee";
@@ -53,7 +52,6 @@ import {
   MailingListType,
   MailingDeliveryType,
   MailingMemberSource,
-  InvitationPurpose,
   AttendeeStatus,
   RegistrationMethod,
   PaymentStatus,
@@ -81,21 +79,12 @@ In consideration of being permitted to participate in any and all activities of 
 
 I HAVE READ THIS RELEASE OF LIABILITY AND ASSUMPTION OF RISK AGREEMENT, FULLY UNDERSTAND ITS TERMS, UNDERSTAND THAT I HAVE GIVEN UP SUBSTANTIAL RIGHTS BY SIGNING IT, AND SIGN IT FREELY AND VOLUNTARILY WITHOUT ANY INDUCEMENT.`;
 
-import { v5 as uuidv5 } from "uuid";
-
-/** Must match the namespace in InvitationService.ts */
-const TOKEN_NAMESPACE = "7f3c8a2e-5d1b-4e9f-a6c0-3b8d7e2f1a4c";
-
 async function hashToken(raw: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(raw);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function generateToken(invitationId: string): string {
-  return uuidv5(invitationId, TOKEN_NAMESPACE);
 }
 
 async function contentHash(text: string): Promise<string> {
@@ -547,61 +536,6 @@ async function main() {
     }
   } else {
     logger.info("  skip badger ticket cost: no Badger event found for current year");
-  }
-
-  // ── Badger Event Registration Token ────────────────────────────────────
-
-  const invitationRepo = ds.getRepository(Invitation);
-
-  if (badgerEvent) {
-    const existingToken = await invitationRepo
-      .createQueryBuilder("i")
-      .where("i.event_id = :eventId", { eventId: badgerEvent.id })
-      .andWhere("i.purpose = :purpose", {
-        purpose: InvitationPurpose.EventOpenRegistration,
-      })
-      .getOne();
-
-    if (existingToken) {
-      logger.info("  skip badger token: event registration token already exists");
-      logger.info("  (to get a new URL, delete the existing invitation and re-run seed)");
-    } else {
-      // Find the admin user to set as creator
-      const adminUser = await userRepo
-        .createQueryBuilder("u")
-        .where("LOWER(u.username) = :username", { username: "admin" })
-        .getOne();
-
-      const invitationId = crypto.randomUUID();
-      const rawToken = generateToken(invitationId);
-      const tokenHash = await hashToken(rawToken);
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 6); // 6 months from now
-
-      const invitation = invitationRepo.create({
-        id: invitationId,
-        contactId: null,
-        tokenHash,
-        purpose: InvitationPurpose.EventOpenRegistration,
-        eventId: badgerEvent.id,
-        createdByUserId: adminUser?.id ?? null,
-        expiresAt,
-        claimedAt: null,
-        rsvpId: null,
-        createdUserId: null,
-        createdAt: new Date(),
-      });
-      await invitationRepo.save(invitation);
-
-      const registrationUrl = `/register/badger/${rawToken}`;
-      logger.info("  created badger registration token");
-      logger.info("");
-      logger.info("  ┌──────────────────────────────────────────────────┐");
-      logger.info("  │  Badger Registration URL (for QR code):         │");
-      logger.info(`  │  ${registrationUrl}`);
-      logger.info("  └──────────────────────────────────────────────────┘");
-      logger.info("");
-    }
   }
 
   // ── Sample RSVPs & Attendees for Badger ─────────────────────────────────

@@ -285,7 +285,7 @@ export enum PaymentMethod {
   Check = "check",
   Cash = "cash",
   Zelle = "zelle",
-  Stripe = "stripe",
+  CreditCard = "credit_card",
 }
 export const PAYMENT_METHODS = Object.values(PaymentMethod);
 
@@ -332,14 +332,3 @@ export enum RsvpLogCode {
   StatusChanged = "status_changed",
 }
 export const RSVP_LOG_CODES = Object.values(RsvpLogCode);
-
-// --- Invitation ---
-
-export enum InvitationPurpose {
-  EventOpenRegistration = "event_open_registration",
-  EventRegistration = "event_registration",
-  RideWalkin = "ride_walkin",
-  OfficerInvite = "officer_invite",
-  AccountSetup = "account_setup",
-}
-export const INVITATION_PURPOSES = Object.values(InvitationPurpose);

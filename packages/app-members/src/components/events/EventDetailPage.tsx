@@ -52,7 +52,6 @@ import { RideAssetsCard } from "./RideAssetsCard";
 import { EventIncidentsCard } from "./EventIncidentsCard";
 import { EditEventDialog } from "./EditEventDialog";
 import { EventRegistrationsCard } from "./EventRegistrationsCard";
-import { EventInvitationsCard } from "./EventInvitationsCard";
 import { EventDetailSubNav } from "@/components/layout/EventDetailSubNav";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { EventType } from "@satyrsmc/shared/lib/enums";
@@ -464,7 +463,6 @@ function EventDetailContent({ id }: { id: string }) {
       )}
 
       <EventRegistrationsCard eventId={id} onRefresh={refresh} />
-      <EventInvitationsCard eventId={id} />
 
       {event.event_type !== EventType.Rides && (
         <>

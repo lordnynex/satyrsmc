@@ -109,7 +109,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   [PaymentMethod.Check]: "Check",
   [PaymentMethod.Cash]: "Cash",
   [PaymentMethod.Zelle]: "Zelle",
-  [PaymentMethod.Stripe]: "Credit/Debit Card",
+  [PaymentMethod.CreditCard]: "Credit Card",
 };
 
 const TSHIRT_SIZE_LABELS: Record<string, string> = {

@@ -4,7 +4,6 @@ import {
   RegisterInputSchema,
   ValidateTokenInputSchema,
   SignupInputSchema,
-  InvitationSignupInputSchema,
   LoginInputSchema,
   ForgotPasswordInputSchema,
   ResetPasswordInputSchema,
@@ -41,19 +40,6 @@ export const authRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       try {
         return await ctx.api.auth.signup(input);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Signup failed";
-        throw new TRPCError({ code: "BAD_REQUEST", message });
-      }
-    }),
-
-  signupWithInvitation: t.procedure
-    .input(InvitationSignupInputSchema)
-    .output(AuthResultSchema)
-    .meta({ description: "Complete signup using an invitation token." })
-    .mutation(async ({ ctx, input }) => {
-      try {
-        return await ctx.api.auth.signupWithInvitation(input);
       } catch (e) {
         const message = e instanceof Error ? e.message : "Signup failed";
         throw new TRPCError({ code: "BAD_REQUEST", message });
