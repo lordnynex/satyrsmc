@@ -13,9 +13,13 @@ export function EventInvitationsCard({ eventId }: Props) {
   const memberEventUrl = `${window.location.origin}/events/${eventId}`;
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(memberEventUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(memberEventUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard unavailable or permission denied — URL is visible for manual copy
+    }
   };
 
   return (

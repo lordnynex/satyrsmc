@@ -153,6 +153,7 @@ describe("members.events tRPC router", () => {
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
         status: AttendeeStatus.Yes,
+        waiver_signed: true,
       });
 
       const result = await authedHarness.caller.members.events.get({ id: ev.id });
@@ -175,6 +176,7 @@ describe("members.events tRPC router", () => {
       const result = await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
         status: AttendeeStatus.Yes,
+        waiver_signed: true,
       });
 
       expect(result.ok).toBe(true);
@@ -230,6 +232,7 @@ describe("members.events tRPC router", () => {
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
         status: AttendeeStatus.Yes,
+        waiver_signed: true,
       });
 
       const list = await authedHarness.caller.members.events.list({

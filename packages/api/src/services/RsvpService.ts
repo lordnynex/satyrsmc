@@ -107,14 +107,18 @@ export class RsvpService {
       await this.ds.query(
         `UPDATE event_attendees
          SET status = $1, cancelled_at = NULL, registration_method = $2,
-             waiver_signed = true, waiver_content_hash = $3, waiver_accepted_at = $4,
-             waiver_ip = $5, waiver_user_agent = $6,
-             payment_method = $7, payment_status = $8, payment_amount_cents = $9,
-             updated_at = $10
-         WHERE id = $11`,
+             contact_id = $3, user_id = $4, invitation_id = $5,
+             waiver_signed = true, waiver_content_hash = $6, waiver_accepted_at = $7,
+             waiver_ip = $8, waiver_user_agent = $9,
+             payment_method = $10, payment_status = $11, payment_amount_cents = $12,
+             updated_at = $13
+         WHERE id = $14`,
         [
           AttendeeStatus.Yes,
           input.registrationMethod,
+          input.contactId,
+          input.userId,
+          input.invitationId ?? null,
           input.waiverContentHash,
           now,
           input.waiverIp,
@@ -220,12 +224,15 @@ export class RsvpService {
       rsvpId = existingId;
       await this.ds.query(
         `UPDATE event_attendees
-         SET status = $1, cancelled_at = NULL, waiver_signed = true,
-             waiver_content_hash = $2, waiver_accepted_at = $3, waiver_ip = $4, waiver_user_agent = $5,
-             payment_method = $6, payment_status = $7, payment_amount_cents = $8, updated_at = $9
-         WHERE id = $10`,
+         SET status = $1, cancelled_at = NULL, registration_method = $2, user_id = $3,
+             waiver_signed = true,
+             waiver_content_hash = $4, waiver_accepted_at = $5, waiver_ip = $6, waiver_user_agent = $7,
+             payment_method = $8, payment_status = $9, payment_amount_cents = $10, updated_at = $11
+         WHERE id = $12`,
         [
           AttendeeStatus.Yes,
+          RegistrationMethod.Auth,
+          userId,
           input.waiverContentHash,
           now,
           input.waiverIp,

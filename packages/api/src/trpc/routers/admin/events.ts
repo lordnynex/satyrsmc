@@ -1,4 +1,4 @@
-import { t } from "../../trpc";
+import { t, adminProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import {
   EventAddAssetInputSchema,
@@ -98,7 +98,7 @@ export const eventsRouter = t.router({
       return event;
     }),
 
-  getAttendees: t.procedure
+  getAttendees: adminProcedure
     .input(EventGetAttendeesInputSchema)
     .output(EventGetAttendeesOutputSchema)
     .meta({ description: "Get enriched attendee list for an event (admin view)." })
