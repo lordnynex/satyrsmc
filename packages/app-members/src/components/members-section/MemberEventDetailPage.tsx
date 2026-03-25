@@ -149,7 +149,7 @@ function RsvpSheet({
   const [club, setClub] = useState("");
 
   const isPaidEvent = event.ga_ticket_cost != null && event.ga_ticket_cost > 0;
-  const hasExistingRsvp = event.my_rsvp !== null && event.my_rsvp !== AttendeeStatus.NoResponse;
+  const hasExistingRsvp = event.my_rsvp !== null;
   const alreadyGoing = event.my_rsvp === AttendeeStatus.Yes;
   const badgerFieldsComplete = !isBadgerEvent || (tshirtSize !== null && travelMode !== null);
   const canRsvpYes =
@@ -363,7 +363,7 @@ function Sidebar({ event, onOpenRsvp }: { event: MemberEventDetail; onOpenRsvp: 
 
   const staticMapUrl = getStaticMapUrl(event.event_location, GOOGLE_MAPS_API_KEY ?? null);
 
-  const hasExistingRsvp = event.my_rsvp !== null && event.my_rsvp !== AttendeeStatus.NoResponse;
+  const hasExistingRsvp = event.my_rsvp !== null;
 
   return (
     <div className="space-y-4">

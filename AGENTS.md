@@ -49,7 +49,9 @@ make docker-api-run      # Run API container on :3000
 
 6. **No unsafe type casts** — never use `as never`, `as any`, or `as Record<string, unknown>` to bypass tRPC's inferred types.
 
-7. **Test coverage required** — every new feature, service, migration, router, and component must include corresponding unit and/or integration tests. Use PGlite for backend integration tests and `bun:test` for all tests. Run `bun test` after changes to ensure no regressions. Do not merge code without adequate test coverage.
+7. **Test coverage required** — every new feature, service, migration, router, and component must include corresponding unit and/or integration tests. Use PGlite for backend integration tests and `bun:test` for all tests. **All tests must pass before merging — no exceptions.** Run `bun run test` (not bare `bun test`) from the repo root to run the full suite. Do not pass the buck on pre-existing failures: fix them. Do not merge code with failing tests, regardless of whether you introduced the failure.
+
+   **bcrypt in tests** — test fixtures that set up password hashes must use cost `4` (not `12`). The services use `BCRYPT_COST` which is auto-lowered to `4` when `NODE_ENV=test` (set by the `test:api` script). High bcrypt costs cause timeouts in the full suite due to parallelism.
 
 8. **Zero lint warnings and type errors** — run `bun run typecheck` and `bunx eslint .` before committing. All TypeScript errors and ESLint warnings must be fixed — including pre-existing ones in files you didn't touch. CI fails on any warning or error. Do not leave them for later.
 

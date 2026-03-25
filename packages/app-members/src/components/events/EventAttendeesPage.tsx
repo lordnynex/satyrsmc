@@ -34,14 +34,12 @@ import type { EventAttendeeAdmin } from "@satyrsmc/shared/dto/admin/event";
 // --- Labels ---
 
 const STATUS_LABELS: Record<string, string> = {
-  [AttendeeStatus.NoResponse]: "No Response",
   [AttendeeStatus.Pending]: "Pending",
   [AttendeeStatus.Yes]: "Confirmed",
   [AttendeeStatus.No]: "Cancelled",
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  [AttendeeStatus.NoResponse]: "bg-gray-100 text-gray-800",
   [AttendeeStatus.Pending]: "bg-yellow-100 text-yellow-800",
   [AttendeeStatus.Yes]: "bg-green-100 text-green-800",
   [AttendeeStatus.No]: "bg-red-100 text-red-800",

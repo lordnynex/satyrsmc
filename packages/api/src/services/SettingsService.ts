@@ -9,7 +9,7 @@ import { User } from "../entities/User";
 import { ContactEmail } from "../entities/ContactEmail";
 import { toISOStringOrNull } from "../lib/date";
 
-const BCRYPT_COST = 12;
+const BCRYPT_COST = process.env.NODE_ENV === "test" ? 4 : 12;
 
 export class SettingsService {
   constructor(private ds: DataSource) {}

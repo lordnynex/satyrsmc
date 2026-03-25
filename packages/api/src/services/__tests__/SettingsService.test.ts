@@ -13,7 +13,7 @@ async function createTestUser(
   const contactId = crypto.randomUUID();
   const username = overrides.username ?? `testuser-${Date.now()}`;
   const password = overrides.password ?? "TestPass1!";
-  const passwordHash = await hash(password, 12);
+  const passwordHash = await hash(password, 4);
 
   await ds.query(
     `INSERT INTO contacts (id, display_name, type, status) VALUES ($1, $2, 'person', 'active')`,

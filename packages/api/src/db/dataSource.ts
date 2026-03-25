@@ -62,6 +62,7 @@ import {
 import { MergeRsvpIntoAttendees1800000015000 } from "./migrations/1800000015000-MergeRsvpIntoAttendees.ts";
 import { RemoveOrphanedPendingRegistrations1800000016000 } from "./migrations/1800000016000-RemoveOrphanedPendingRegistrations.ts";
 import { CleanPaymentMethodEnum1800000017000 } from "./migrations/1800000017000-CleanPaymentMethodEnum.ts";
+import { RemoveNoResponseStatus1800000018000 } from "./migrations/1800000018000-RemoveNoResponseStatus.ts";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
 import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
 import { AddContactIdToMembers1800000002000 } from "./migrations/1800000002000-AddContactIdToMembers.ts";
@@ -165,6 +166,7 @@ export const dataSourceOptions: DataSourceOptions = {
     MergeRsvpIntoAttendees1800000015000,
     RemoveOrphanedPendingRegistrations1800000016000,
     CleanPaymentMethodEnum1800000017000,
+    RemoveNoResponseStatus1800000018000,
   ],
   migrationsRun: true,
   entities,

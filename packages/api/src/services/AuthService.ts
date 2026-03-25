@@ -16,7 +16,7 @@ import type { EmailService } from "./EmailService";
 import { toISOStringOrNull } from "../lib/date";
 import { uuid } from "./utils";
 
-const BCRYPT_COST = 12;
+const BCRYPT_COST = process.env.NODE_ENV === "test" ? 4 : 12;
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "7d";
 const REGISTRATION_EXPIRY_DAYS = 14;

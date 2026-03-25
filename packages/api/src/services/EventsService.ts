@@ -1003,7 +1003,7 @@ export class EventsService {
       });
 
       const waiverSigned = body.waiver_signed ?? false;
-      const status = body.status ?? "no_response";
+      const status = body.status ?? "pending";
 
       if (existing) {
         // Update existing

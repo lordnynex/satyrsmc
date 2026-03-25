@@ -13,7 +13,7 @@ async function seedUser(
 ) {
   const contactId = `contact-${userId}`;
   const username = overrides.username ?? `user-${userId}`;
-  const passwordHash = await hash(overrides.password ?? TEST_PASSWORD, 12);
+  const passwordHash = await hash(overrides.password ?? TEST_PASSWORD, 4);
 
   await harness.ds.query(
     `INSERT INTO contacts (id, display_name, type, status) VALUES ($1, $2, 'person', 'active')`,

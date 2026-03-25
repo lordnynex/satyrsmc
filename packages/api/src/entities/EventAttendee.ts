@@ -33,7 +33,7 @@ export class EventAttendee {
     type: "enum",
     enum: AttendeeStatus,
     enumName: "attendee_status_enum",
-    default: AttendeeStatus.NoResponse,
+    default: AttendeeStatus.Pending,
   })
   status!: AttendeeStatusType;
 

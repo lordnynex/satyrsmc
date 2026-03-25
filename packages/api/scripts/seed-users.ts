@@ -686,7 +686,7 @@ async function main() {
               contactId,
               sortOrder: i,
               waiverSigned: i < 2,
-              status: AttendeeStatus.Yes,
+              status: i < 2 ? AttendeeStatus.Yes : AttendeeStatus.Pending,
               createdAt: now,
               updatedAt: now,
             }),

@@ -216,7 +216,6 @@ export const USER_STATUSES = Object.values(UserStatus);
 // --- Attendee Status ---
 
 export enum AttendeeStatus {
-  NoResponse = "no_response",
   Pending = "pending",
   Yes = "yes",
   No = "no",

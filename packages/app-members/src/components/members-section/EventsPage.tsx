@@ -77,10 +77,7 @@ function EventCardSkeleton() {
 function EventCard({ event }: { event: MemberEventCard }) {
   const formattedDate = event.start_date ? formatDateOnly(event.start_date) : null;
 
-  const rsvpConfig =
-    event.my_rsvp && event.my_rsvp !== AttendeeStatus.NoResponse
-      ? RSVP_BADGE_CONFIG[event.my_rsvp]
-      : null;
+  const rsvpConfig = event.my_rsvp ? RSVP_BADGE_CONFIG[event.my_rsvp] : null;
 
   return (
     <div className="group relative overflow-hidden rounded-lg border border-border bg-card aspect-[4/3]">
