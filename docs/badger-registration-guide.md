@@ -9,8 +9,8 @@ Badger Flat is the club's annual camping event. Registration is handled online t
 ### Registering via QR Code
 
 1. **Scan the QR code** on your Badger Flat mailer with your phone's camera.
-2. The link opens the Badger Flat registration form at `satyrsmc.club/register/badger/...`.
-3. **Log in** to your Satyrs MC account. If you don't have one yet, contact an officer to get an account set up before registration opens.
+2. The link opens the Badger Flat registration form at `members.satyrsmc.club/events/{id}`.
+3. **Log in** to your Satyrs MC account. If you don't have one yet, register for an account at `members.satyrsmc.club/register`
 4. Your name, email, phone, and emergency contact are displayed (read-only, pulled from your profile). If anything is out of date, update your profile first.
 5. **Fill out the Badger-specific fields:**
    - **T-shirt size** (S, M, L, XL, XXL, XXXL)
@@ -52,10 +52,8 @@ The treasurer will confirm your payment once it's received. Your payment status 
    - Event: the Badger event
    - Contact: leave blank (this is an event-level token, not tied to a specific person)
    - Expiration: set to after the registration deadline (e.g., 60 days)
-3. **Generate a QR code** pointing to `satyrsmc.club/register/badger/{token}`. Use the QR Codes tool in the admin panel.
+3. **Generate a QR code** pointing to `members.satyrsmc.club/events/{id}`. Use the QR Codes tool in the admin panel.
 4. **Print the QR code on the Badger mailer** and distribute.
-
-The same token/URL is used by all recipients — it's reusable and not single-use.
 
 ### Payment Dashboard (Treasurer)
 
@@ -91,17 +89,17 @@ To process a refund:
 
 ### Cancelling a Registration (Admin)
 
-1. Navigate to the event registrations list.
-2. Select a registration and click **"Cancel Registration."**
+1. Navigate to the event attendees list.
+2. Select a attendees and click **"Cancel Registration."**
 3. The same cancellation and refund flow applies as when a user cancels themselves.
 
 ### Registration Statuses
 
-| Status      | Meaning                                  |
-| ----------- | ---------------------------------------- |
-| **Pending** | Registered but payment not yet confirmed |
-| **Yes**     | Confirmed attending                      |
-| **No**      | Registration cancelled by user or admin  |
+| Status      | Meaning                                      |
+| ----------- | -------------------------------------------- |
+| **Pending** | Registered but **payment** not yet confirmed |
+| **Yes**     | Confirmed attending                          |
+| **No**      | Registration cancelled by user or admin      |
 
 ### Payment Statuses
 
