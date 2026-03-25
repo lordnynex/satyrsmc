@@ -440,8 +440,8 @@ function RosterSkeleton({ viewMode }: { viewMode: ViewMode }) {
   if (viewMode === "list") {
     return (
       <div className="space-y-2">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 p-3">
+        {["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"].map((id) => (
+          <div key={id} className="flex items-center gap-3 p-3">
             <Skeleton className="size-8 rounded-full" />
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-4 w-24 hidden sm:block" />
@@ -454,8 +454,8 @@ function RosterSkeleton({ viewMode }: { viewMode: ViewMode }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <Card key={i} className="overflow-hidden">
+      {["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"].map((id) => (
+        <Card key={id} className="overflow-hidden">
           <Skeleton className="h-36 w-full" />
           <CardContent className="pt-10 pb-4 space-y-2">
             <Skeleton className="h-5 w-3/4" />

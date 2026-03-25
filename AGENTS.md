@@ -39,7 +39,7 @@ make docker-api-run      # Run API container on :3000
 
 1. **Bun only** — never use Node.js, npm, Vite, Express, or dotenv. See [CONTRIBUTING.md](CONTRIBUTING.md) for full Bun conventions.
 
-2. **No suppression comments** — never use `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, or `@ts-nocheck`. Fix root causes.
+2. **No suppression comments** — never use `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, or `@ts-nocheck` (including inline JSX `{/* eslint-disable-next-line */}` variants). Fix root causes. Only add a suppression comment if the user explicitly approves it.
 
 3. **No `any`** — use proper types or `unknown` with type narrowing.
 
@@ -51,7 +51,7 @@ make docker-api-run      # Run API container on :3000
 
 7. **Test coverage required** — every new feature, service, migration, router, and component must include corresponding unit and/or integration tests. Use PGlite for backend integration tests and `bun:test` for all tests. Run `bun test` after changes to ensure no regressions. Do not merge code without adequate test coverage.
 
-8. **No type errors** — run `bun run typecheck` before committing. All type errors (including pre-existing ones) must be fixed before any changes can be committed or pushed. Do not leave type errors for later.
+8. **Zero lint warnings and type errors** — run `bun run typecheck` and `bunx eslint .` before committing. All TypeScript errors and ESLint warnings must be fixed — including pre-existing ones in files you didn't touch. CI fails on any warning or error. Do not leave them for later.
 
 ## Type Safety Chain
 
