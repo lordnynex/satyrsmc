@@ -47,13 +47,8 @@ The treasurer will confirm your payment once it's received. Your payment status 
 ### Setting Up a Badger Event for Registration
 
 1. **Create the Badger event** in the admin panel (Events section) with `event_type: badger`. Set the `ga_ticket_cost` field to the ticket price (e.g., 200.00). This determines whether registrants are prompted for a payment method.
-2. **Generate a registration token:** Create an invitation with:
-   - Purpose: `event_open_registration`
-   - Event: the Badger event
-   - Contact: leave blank (this is an event-level token, not tied to a specific person)
-   - Expiration: set to after the registration deadline (e.g., 60 days)
-3. **Generate a QR code** pointing to `members.satyrsmc.club/events/{id}`. Use the QR Codes tool in the admin panel.
-4. **Print the QR code on the Badger mailer** and distribute.
+2. **Generate a QR code** pointing to `members.satyrsmc.club/events/{id}`. Use the QR Codes tool in the admin panel.
+3. **Print the QR code on the Badger mailer** and distribute.
 
 ### Payment Dashboard (Treasurer)
 
@@ -145,4 +140,4 @@ Beyond Badger registration, the platform includes a general invitation system fo
 | **Officer invite** | Officers can send personalized invitations to known contacts.                                                                                                      |
 | **Account setup**  | Admins can bulk-generate account setup invitations for contacts who don't have platform accounts yet. Each contact receives a unique link to create their account. |
 
-All invitations are single-use (except event registration tokens), time-limited, and tracked in the system.
+All invitations are single-use, time-limited, and tracked in the system.

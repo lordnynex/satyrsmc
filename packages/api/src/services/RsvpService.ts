@@ -37,9 +37,13 @@ function rsvpRowToOutput(row: Record<string, unknown>, displayName: string | nul
     paymentStatus: row.payment_status as PaymentStatus,
     paymentAmountCents: (row.payment_amount_cents as number) ?? null,
     waiverAcceptedAt:
-      row.waiver_accepted_at instanceof Date
-        ? row.waiver_accepted_at.toISOString()
-        : String(row.waiver_accepted_at),
+      toISOStringOrNull(
+        row.waiver_accepted_at instanceof Date
+          ? row.waiver_accepted_at
+          : row.waiver_accepted_at
+            ? new Date(row.waiver_accepted_at as string)
+            : null,
+      ) ?? "",
     createdAt: toISOStringOrNull(
       row.created_at instanceof Date
         ? row.created_at

@@ -63,8 +63,9 @@ export const registrationRouter = t.router({
       const waiver = await ctx.api.rsvps.getCurrentWaiver();
       const waiverContentHash = waiver?.contentHash ?? "";
 
-      const ip =
+      const rawIp =
         ctx.req.headers.get("x-forwarded-for") ?? ctx.req.headers.get("x-real-ip") ?? "unknown";
+      const ip = rawIp.split(",")[0].trim();
       const userAgent = ctx.req.headers.get("user-agent") ?? null;
 
       const paymentAmountCents = event.ga_ticket_cost

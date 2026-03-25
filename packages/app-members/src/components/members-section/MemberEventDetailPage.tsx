@@ -167,7 +167,8 @@ function RsvpSheet({
       {
         eventId: event.id,
         status,
-        waiver_signed: waiverAccepted || undefined,
+        waiver_signed:
+          alreadyGoing && status === AttendeeStatus.Yes ? true : waiverAccepted || undefined,
         paymentMethod:
           isYes && isPaidEvent && selectedPaymentMethod ? selectedPaymentMethod : undefined,
         badgerDetails:

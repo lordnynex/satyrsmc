@@ -47,6 +47,8 @@ export const memberEventsRouter = t.router({
         : undefined;
       const waiverIp = input.waiver_signed
         ? (ctx.req.headers.get("x-forwarded-for") ?? ctx.req.headers.get("x-real-ip") ?? "unknown")
+            .split(",")[0]
+            .trim()
         : undefined;
       const waiverUserAgent = input.waiver_signed ? ctx.req.headers.get("user-agent") : undefined;
 
