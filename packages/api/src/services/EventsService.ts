@@ -344,7 +344,10 @@ export class EventsService {
           byContact.set(a.contactId, a);
         } else if (!aHasReg && existingHasReg) {
           // keep existing
-        } else if ((a.updatedAt ?? a.createdAt) > (existing.updatedAt ?? existing.createdAt)) {
+        } else if (
+          (a.updatedAt ?? a.createdAt ?? new Date(0)) >
+          (existing.updatedAt ?? existing.createdAt ?? new Date(0))
+        ) {
           byContact.set(a.contactId, a);
         }
       }
@@ -425,7 +428,10 @@ export class EventsService {
           byContact.set(a.contactId, a);
         } else if (!aHasReg && existingHasReg) {
           // keep existing
-        } else if ((a.updatedAt ?? a.createdAt) > (existing.updatedAt ?? existing.createdAt)) {
+        } else if (
+          (a.updatedAt ?? a.createdAt ?? new Date(0)) >
+          (existing.updatedAt ?? existing.createdAt ?? new Date(0))
+        ) {
           byContact.set(a.contactId, a);
         }
       }

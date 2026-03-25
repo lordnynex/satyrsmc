@@ -470,26 +470,26 @@ describe("RsvpService", () => {
   describe("linkUserAccount", () => {
     test("links a user account to an RSVP", async () => {
       const event = await createEvent(api);
-      const { userId } = await createUser(ds, api);
+      const { userId, contactId } = await createUser(ds, api);
+      const { userId: targetUserId } = await createUser(ds, api);
 
       const rsvp = await api.rsvps.submitBadgerRegistration({
         eventId: event.id,
-        registrationMethod: RegistrationMethod.EventToken,
-        contactId: null,
-        userId: null,
+        registrationMethod: RegistrationMethod.Auth,
+        contactId,
+        userId,
         paymentMethod: PaymentMethod.Cash,
         paymentAmountCents: 20000,
         waiverContentHash: "hash",
         waiverIp: "127.0.0.1",
         waiverUserAgent: null,
         badgerDetails,
-        submission: submissionData,
       });
 
-      await api.rsvps.linkUserAccount(rsvp.id, userId);
+      await api.rsvps.linkUserAccount(rsvp.id, targetUserId);
 
       const updated = await api.rsvps.findById(rsvp.id);
-      expect(updated!.userId).toBe(userId);
+      expect(updated!.userId).toBe(targetUserId);
 
       const logs = await api.rsvpLogs.listByRsvp(rsvp.id);
       const linkLog = logs.find((l) => l.messageCode === RsvpLogCode.AccountLinked);

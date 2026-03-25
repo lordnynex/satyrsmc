@@ -22,25 +22,18 @@ describe("RsvpLogService", () => {
   });
 
   async function createTestRsvp(eventId: string): Promise<string> {
+    const { userId, contactId } = await createUser(ds, api);
     const rsvp = await api.rsvps.submitBadgerRegistration({
       eventId,
-      registrationMethod: RegistrationMethod.EventToken,
-      contactId: null,
-      userId: null,
+      registrationMethod: RegistrationMethod.Auth,
+      contactId,
+      userId,
       paymentMethod: PaymentMethod.Cash,
       paymentAmountCents: 20000,
       waiverContentHash: "hash123",
       waiverIp: "127.0.0.1",
       waiverUserAgent: "test",
       badgerDetails: { tshirtSize: TshirtSize.L, travelingBy: TravelMode.Motorcycle },
-      submission: {
-        firstName: "Test",
-        lastName: "User",
-        email: "test@example.com",
-        phone: "5551234567",
-        emergencyContactName: "Em Contact",
-        emergencyContactPhone: "5559876543",
-      },
     });
     return rsvp.id;
   }
