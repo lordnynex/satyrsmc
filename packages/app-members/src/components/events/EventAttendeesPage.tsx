@@ -28,24 +28,25 @@ import {
   PaymentStatus,
   RegistrationMethod,
   RsvpLogCode,
+  TravelMode,
 } from "@satyrsmc/shared/lib/enums";
 import type { EventAttendeeAdmin } from "@satyrsmc/shared/dto/admin/event";
 
 // --- Labels ---
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS: Record<AttendeeStatus, string> = {
   [AttendeeStatus.Pending]: "Pending",
   [AttendeeStatus.Yes]: "Confirmed",
   [AttendeeStatus.No]: "Cancelled",
 };
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<AttendeeStatus, string> = {
   [AttendeeStatus.Pending]: "bg-yellow-100 text-yellow-800",
   [AttendeeStatus.Yes]: "bg-green-100 text-green-800",
   [AttendeeStatus.No]: "bg-red-100 text-red-800",
 };
 
-const PAYMENT_LABELS: Record<string, string> = {
+const PAYMENT_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.NotRequired]: "N/A",
   [PaymentStatus.Pending]: "Pending",
   [PaymentStatus.Confirmed]: "Paid",
@@ -53,7 +54,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   [PaymentStatus.Refunded]: "Refunded",
 };
 
-const PAYMENT_COLORS: Record<string, string> = {
+const PAYMENT_COLORS: Record<PaymentStatus, string> = {
   [PaymentStatus.NotRequired]: "text-muted-foreground",
   [PaymentStatus.Pending]: "text-yellow-600",
   [PaymentStatus.Confirmed]: "text-green-600",
@@ -61,19 +62,18 @@ const PAYMENT_COLORS: Record<string, string> = {
   [PaymentStatus.Refunded]: "text-muted-foreground",
 };
 
-const REGISTRATION_METHOD_LABELS: Record<string, string> = {
+const REGISTRATION_METHOD_LABELS: Record<RegistrationMethod, string> = {
   [RegistrationMethod.Auth]: "Website",
-  [RegistrationMethod.EventToken]: "Token",
   [RegistrationMethod.Invitation]: "Invitation",
 };
 
-const TRAVEL_LABELS: Record<string, string> = {
-  motorcycle: "Motorcycle",
-  car_truck: "Car/Truck",
-  rv_camper: "RV/Camper",
+const TRAVEL_LABELS: Record<TravelMode, string> = {
+  [TravelMode.Motorcycle]: "Motorcycle",
+  [TravelMode.CarTruck]: "Car/Truck",
+  [TravelMode.RvCamper]: "RV/Camper",
 };
 
-const LOG_CODE_LABELS: Record<string, string> = {
+const LOG_CODE_LABELS: Record<RsvpLogCode, string> = {
   [RsvpLogCode.Registered]: "Registered",
   [RsvpLogCode.MatchedToContact]: "Matched to contact",
   [RsvpLogCode.NewContactCreated]: "New contact created",

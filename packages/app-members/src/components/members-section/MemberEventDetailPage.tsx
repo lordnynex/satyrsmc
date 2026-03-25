@@ -105,14 +105,14 @@ function AttendeeCard({ attendee }: { attendee: MemberEventAttendee }) {
 
 // ─── Payment method labels ───────────────────────────────────────────────────
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   [PaymentMethod.Check]: "Check",
   [PaymentMethod.Cash]: "Cash",
   [PaymentMethod.Zelle]: "Zelle",
   [PaymentMethod.CreditCard]: "Credit Card",
 };
 
-const TSHIRT_SIZE_LABELS: Record<string, string> = {
+const TSHIRT_SIZE_LABELS: Record<TshirtSize, string> = {
   [TshirtSize.S]: "S",
   [TshirtSize.M]: "M",
   [TshirtSize.L]: "L",
@@ -121,7 +121,7 @@ const TSHIRT_SIZE_LABELS: Record<string, string> = {
   [TshirtSize.XXXL]: "3XL",
 };
 
-const TRAVEL_MODE_LABELS: Record<string, string> = {
+const TRAVEL_MODE_LABELS: Record<TravelMode, string> = {
   [TravelMode.Motorcycle]: "Motorcycle",
   [TravelMode.CarTruck]: "Car/Truck",
   [TravelMode.RvCamper]: "RV/Camper",

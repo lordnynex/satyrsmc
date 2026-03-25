@@ -57,6 +57,9 @@ export const registrationRouter = t.router({
         });
       }
 
+      // Legal audit trail: records the exact waiver version signed (by content hash),
+      // the user's IP address, and browser at the time of submission. This provides
+      // verifiable evidence of consent if the waiver is ever disputed.
       const waiver = await ctx.api.rsvps.getCurrentWaiver();
       const waiverContentHash = waiver?.contentHash ?? "";
 

@@ -2,8 +2,6 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { t, adminProcedure } from "../../trpc";
 import {
-  MatchRegistrationInputSchema,
-  ConfirmNewContactInputSchema,
   ConfirmPaymentInputSchema,
   ConfirmBulkPaymentInputSchema,
   AdminCancelRsvpInputSchema,
@@ -44,22 +42,6 @@ export const adminRsvpRouter = t.router({
     .input(z.object({ rsvpId: z.string() }))
     .meta({ description: "Get audit logs for an RSVP." })
     .query(async ({ ctx, input }) => ctx.api.rsvpLogs.listByRsvp(input.rsvpId)),
-
-  matchToContact: adminProcedure
-    .input(MatchRegistrationInputSchema)
-    .meta({ description: "Match a pending registration to an existing contact." })
-    .mutation(async ({ ctx, input }) => {
-      await ctx.api.rsvps.matchToContact(input.rsvpId, input.contactId, ctx.session.userId);
-      return { ok: true as const };
-    }),
-
-  confirmNewContact: adminProcedure
-    .input(ConfirmNewContactInputSchema)
-    .meta({ description: "Create a new contact from submission data." })
-    .mutation(async ({ ctx, input }) => {
-      const contactId = await ctx.api.rsvps.confirmAsNewContact(input.rsvpId, ctx.session.userId);
-      return { ok: true as const, contactId };
-    }),
 
   confirmPayment: adminProcedure
     .input(ConfirmPaymentInputSchema)

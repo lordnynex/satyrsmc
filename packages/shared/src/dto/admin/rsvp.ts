@@ -20,26 +20,6 @@ export type BadgerDetails = z.infer<typeof BadgerDetailsSchema>;
 
 // --- Input schemas ---
 
-export const SubmitTokenBadgerRegistrationInputSchema = z.object({
-  token: z.string(),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().min(10),
-  address: z.string().optional(),
-  zip: z.string().optional(),
-  emergencyContactName: z.string().min(1),
-  emergencyContactPhone: z.string().min(10),
-  paymentMethod: z.nativeEnum(PaymentMethod),
-  badgerDetails: BadgerDetailsSchema,
-  waiverAccepted: z.boolean().refine((val) => val === true, {
-    message: "Waiver must be accepted",
-  }),
-});
-export type SubmitTokenBadgerRegistrationInput = z.infer<
-  typeof SubmitTokenBadgerRegistrationInputSchema
->;
-
 export const SubmitAuthBadgerRegistrationInputSchema = z.object({
   eventId: z.string(),
   paymentMethod: z.nativeEnum(PaymentMethod),
@@ -60,17 +40,6 @@ export const CreateAuthRsvpInputSchema = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod).optional(),
 });
 export type CreateAuthRsvpInput = z.infer<typeof CreateAuthRsvpInputSchema>;
-
-export const MatchRegistrationInputSchema = z.object({
-  rsvpId: z.string(),
-  contactId: z.string(),
-});
-export type MatchRegistrationInput = z.infer<typeof MatchRegistrationInputSchema>;
-
-export const ConfirmNewContactInputSchema = z.object({
-  rsvpId: z.string(),
-});
-export type ConfirmNewContactInput = z.infer<typeof ConfirmNewContactInputSchema>;
 
 export const ConfirmPaymentInputSchema = z.object({
   rsvpId: z.string(),
@@ -109,25 +78,11 @@ export type RequestAccountFromRegistrationInput = z.infer<
   typeof RequestAccountFromRegistrationInputSchema
 >;
 
-// --- Submission schema ---
-
-export const RsvpSubmissionSchema = z.object({
-  firstName: z.string(),
-  lastName: z.string(),
-  email: z.string(),
-  phone: z.string(),
-  address: z.string().nullable(),
-  zip: z.string().nullable(),
-  emergencyContactName: z.string(),
-  emergencyContactPhone: z.string(),
-});
-export type RsvpSubmissionOutput = z.infer<typeof RsvpSubmissionSchema>;
-
 // --- Output schemas ---
 
 export const RsvpOutputSchema = z.object({
   id: z.string(),
-  contactId: z.string().nullable(),
+  contactId: z.string(),
   userId: z.string().nullable(),
   eventId: z.string(),
   status: z.nativeEnum(AttendeeStatus),
@@ -142,7 +97,6 @@ export const RsvpOutputSchema = z.object({
 export type RsvpOutput = z.infer<typeof RsvpOutputSchema>;
 
 export const RsvpAdminOutputSchema = RsvpOutputSchema.extend({
-  submission: RsvpSubmissionSchema.nullable(),
   paymentConfirmedAt: z.string().nullable(),
   reviewedByUserId: z.string().nullable(),
   reviewedAt: z.string().nullable(),

@@ -12,6 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 import { EventType, AttendeeStatus } from "@satyrsmc/shared/client";
+import type { BadgeVariant } from "@/lib/types";
 import { formatDateOnly } from "@/lib/date-utils";
 import type { MemberEventCard } from "@satyrsmc/shared/dto/member/event";
 import { useMemberEventsList } from "@/queries/member-events";
@@ -40,10 +41,7 @@ const EVENT_TYPE_BADGE_COLORS: Record<EventType, string> = {
   [EventType.Rides]: "bg-purple-600",
 };
 
-const RSVP_BADGE_CONFIG: Record<
-  string,
-  { label: string; variant: "success" | "destructive" | "warning" }
-> = {
+const RSVP_BADGE_CONFIG: Record<AttendeeStatus, { label: string; variant: BadgeVariant }> = {
   [AttendeeStatus.Yes]: { label: "Going", variant: "success" },
   [AttendeeStatus.No]: { label: "Not Going", variant: "destructive" },
   [AttendeeStatus.Pending]: { label: "Pending", variant: "warning" },

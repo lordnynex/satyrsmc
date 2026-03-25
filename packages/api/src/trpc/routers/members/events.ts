@@ -39,7 +39,9 @@ export const memberEventsRouter = t.router({
         ? Math.round(event.ga_ticket_cost * 100)
         : null;
 
-      // Waiver metadata from request headers
+      // Legal audit trail: records the exact waiver version signed (by content hash),
+      // the user's IP address, and browser at the time of submission. This provides
+      // verifiable evidence of consent if the waiver is ever disputed.
       const waiverContentHash = input.waiver_signed
         ? ((await ctx.api.rsvps.getCurrentWaiver())?.contentHash ?? "")
         : undefined;

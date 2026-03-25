@@ -20,8 +20,8 @@ export class EventAttendee {
   @Column({ name: "event_id", type: "text" })
   eventId!: string;
 
-  @Column({ name: "contact_id", type: "text", nullable: true })
-  contactId!: string | null;
+  @Column({ name: "contact_id", type: "text" })
+  contactId!: string;
 
   @Column({ name: "sort_order", type: "integer", default: 0 })
   sortOrder!: number;

@@ -453,14 +453,12 @@ function EventDetailContent({ id }: { id: string }) {
         onAdd={handleAddAsset}
         onDelete={handleDeleteAsset}
       />
-      {event.event_type === EventType.Rides && (
-        <EventIncidentsCard
-          incidents={event.incidents ?? []}
-          onAddIncident={handleAddIncident}
-          onUpdateIncident={handleUpdateIncident}
-          onDeleteIncident={handleDeleteIncident}
-        />
-      )}
+      <EventIncidentsCard
+        incidents={event.incidents ?? []}
+        onAddIncident={handleAddIncident}
+        onUpdateIncident={handleUpdateIncident}
+        onDeleteIncident={handleDeleteIncident}
+      />
 
       <EventRegistrationsCard eventId={id} onRefresh={refresh} />
 

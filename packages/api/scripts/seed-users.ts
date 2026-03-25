@@ -37,7 +37,6 @@ import { Event } from "../src/entities/Event";
 import { MailingList } from "../src/entities/MailingList";
 import { MailingListMember } from "../src/entities/MailingListMember";
 import { WaiverVersion } from "../src/entities/WaiverVersion";
-import { RsvpSubmission } from "../src/entities/RsvpSubmission";
 import { BadgerRegistration } from "../src/entities/BadgerRegistration";
 import { EventAttendee } from "../src/entities/EventAttendee";
 import {
@@ -542,7 +541,6 @@ async function main() {
 
   if (badgerEvent) {
     const attendeeRepo = ds.getRepository(EventAttendee);
-    const submissionRepo = ds.getRepository(RsvpSubmission);
     const badgerRegRepo = ds.getRepository(BadgerRegistration);
 
     const existingAttendees = await attendeeRepo
@@ -607,18 +605,54 @@ async function main() {
         },
       ];
 
+      const contactRepo = ds.getRepository(Contact);
+      const contactEmailRepo = ds.getRepository(ContactEmail);
+      const contactPhoneRepo = ds.getRepository(ContactPhone);
+
       for (const reg of sampleRegistrants) {
+        const contactId = crypto.randomUUID();
         const attendeeId = crypto.randomUUID();
-        const submissionId = crypto.randomUUID();
         const badgerRegId = crypto.randomUUID();
+        const displayName = `${reg.firstName} ${reg.lastName}`;
+
+        // Create a contact for this registrant
+        await contactRepo.save(
+          contactRepo.create({
+            id: contactId,
+            type: ContactType.Person,
+            status: ContactStatus.Active,
+            displayName,
+            firstName: reg.firstName,
+            lastName: reg.lastName,
+            uid: `seed-${contactId}@satyrsmc`,
+          }),
+        );
+        await contactEmailRepo.save(
+          contactEmailRepo.create({
+            id: crypto.randomUUID(),
+            contactId,
+            email: reg.email,
+            type: ContactEmailType.Other,
+            isPrimary: true,
+          }),
+        );
+        await contactPhoneRepo.save(
+          contactPhoneRepo.create({
+            id: crypto.randomUUID(),
+            contactId,
+            phone: reg.phone,
+            type: ContactPhoneType.Cell,
+            isPrimary: true,
+          }),
+        );
 
         await attendeeRepo.save(
           attendeeRepo.create({
             id: attendeeId,
-            contactId: null,
+            contactId,
             userId: null,
             eventId: badgerEvent.id,
-            registrationMethod: RegistrationMethod.EventToken,
+            registrationMethod: RegistrationMethod.Auth,
             invitationId: null,
             status: reg.status,
             sortOrder: 0,
@@ -639,22 +673,6 @@ async function main() {
             reviewedAt: null,
             createdAt: now,
             updatedAt: now,
-          }),
-        );
-
-        await submissionRepo.save(
-          submissionRepo.create({
-            id: submissionId,
-            rsvpId: attendeeId,
-            firstName: reg.firstName,
-            lastName: reg.lastName,
-            email: reg.email,
-            phone: reg.phone,
-            address: reg.address,
-            zip: reg.zip,
-            emergencyContactName: reg.emergencyName,
-            emergencyContactPhone: reg.emergencyPhone,
-            createdAt: now,
           }),
         );
 

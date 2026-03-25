@@ -7,7 +7,6 @@ import type { RsvpAdminOutput } from "@satyrsmc/shared/dto/admin/rsvp";
 import { AttendeeStatus, PaymentStatus } from "@satyrsmc/shared/lib/enums";
 import {
   ClipboardCheck,
-  UserPlus,
   Search,
   CheckCircle,
   XCircle,
@@ -15,19 +14,19 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS: Record<AttendeeStatus, string> = {
   [AttendeeStatus.Pending]: "Pending Review",
   [AttendeeStatus.Yes]: "Registered",
   [AttendeeStatus.No]: "Cancelled",
 };
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<AttendeeStatus, string> = {
   [AttendeeStatus.Pending]: "bg-yellow-100 text-yellow-800",
   [AttendeeStatus.Yes]: "bg-green-100 text-green-800",
   [AttendeeStatus.No]: "bg-red-100 text-red-800",
 };
 
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
+const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.NotRequired]: "N/A",
   [PaymentStatus.Pending]: "Pending",
   [PaymentStatus.Confirmed]: "Paid",
@@ -35,7 +34,7 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
   [PaymentStatus.Refunded]: "Refunded",
 };
 
-const PAYMENT_STATUS_COLORS: Record<string, string> = {
+const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
   [PaymentStatus.NotRequired]: "text-muted-foreground",
   [PaymentStatus.Pending]: "text-yellow-600",
   [PaymentStatus.Confirmed]: "text-green-600",
@@ -53,8 +52,6 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [matchingRsvpId, setMatchingRsvpId] = useState<string | null>(null);
-  const [contactSearch, setContactSearch] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -62,21 +59,6 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
   }, [search]);
 
   const { data: rsvps, isLoading } = trpc.admin.rsvps.listActionRequired.useQuery({ eventId });
-
-  const matchToContactMutation = trpc.admin.rsvps.matchToContact.useMutation({
-    onSuccess: () => {
-      setMatchingRsvpId(null);
-      setContactSearch("");
-      invalidate();
-    },
-  });
-
-  const confirmNewContactMutation = trpc.admin.rsvps.confirmNewContact.useMutation({
-    onSuccess: () => {
-      setMatchingRsvpId(null);
-      invalidate();
-    },
-  });
 
   const confirmPaymentMutation = trpc.admin.rsvps.confirmPayment.useMutation({
     onSuccess: invalidate,
@@ -106,13 +88,11 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
 
   const allRsvps = rsvps ?? [];
 
-  // Filter by search only (status filtering removed — all items need attention)
   const filtered = allRsvps.filter((r) => {
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
-      const name = (r.displayName ?? r.submission?.firstName ?? "").toLowerCase();
-      const email = (r.submission?.email ?? "").toLowerCase();
-      if (!name.includes(q) && !email.includes(q)) return false;
+      const name = (r.displayName ?? "").toLowerCase();
+      if (!name.includes(q)) return false;
     }
     return true;
   });
@@ -185,7 +165,7 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name or email..."
+              placeholder="Search by name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 w-64"
@@ -228,20 +208,6 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
                 isSelected={selectedIds.has(rsvp.id)}
                 selectionAtLimit={selectedIds.size >= BULK_PAYMENT_LIMIT}
                 onToggleSelect={() => toggleSelected(rsvp.id)}
-                isMatchingMode={matchingRsvpId === rsvp.id}
-                contactSearch={matchingRsvpId === rsvp.id ? contactSearch : ""}
-                onContactSearchChange={setContactSearch}
-                onStartMatching={() => {
-                  setMatchingRsvpId(rsvp.id);
-                  setContactSearch("");
-                }}
-                onCancelMatching={() => setMatchingRsvpId(null)}
-                onMatchToContact={(contactId) => {
-                  matchToContactMutation.mutate({ rsvpId: rsvp.id, contactId });
-                }}
-                onConfirmNewContact={() => {
-                  confirmNewContactMutation.mutate({ rsvpId: rsvp.id });
-                }}
                 onConfirmPayment={() => {
                   confirmPaymentMutation.mutate({ rsvpId: rsvp.id });
                 }}
@@ -255,8 +221,6 @@ export function EventRegistrationsCard({ eventId, onRefresh }: Props) {
                   processRefundMutation.mutate({ rsvpId: rsvp.id, note: note ?? undefined });
                 }}
                 isPending={
-                  matchToContactMutation.isPending ||
-                  confirmNewContactMutation.isPending ||
                   confirmPaymentMutation.isPending ||
                   adminCancelMutation.isPending ||
                   processRefundMutation.isPending
@@ -275,13 +239,6 @@ type RegistrationRowProps = {
   isSelected: boolean;
   selectionAtLimit: boolean;
   onToggleSelect: () => void;
-  isMatchingMode: boolean;
-  contactSearch: string;
-  onContactSearchChange: (val: string) => void;
-  onStartMatching: () => void;
-  onCancelMatching: () => void;
-  onMatchToContact: (contactId: string) => void;
-  onConfirmNewContact: () => void;
   onConfirmPayment: () => void;
   onAdminCancel: () => void;
   onProcessRefund: () => void;
@@ -293,30 +250,13 @@ function RegistrationRow({
   isSelected,
   selectionAtLimit,
   onToggleSelect,
-  isMatchingMode,
-  contactSearch,
-  onContactSearchChange,
-  onStartMatching,
-  onCancelMatching,
-  onMatchToContact,
-  onConfirmNewContact,
   onConfirmPayment,
   onAdminCancel,
   onProcessRefund,
   isPending,
 }: RegistrationRowProps) {
-  const isPendingReview = rsvp.status === AttendeeStatus.Pending;
   const isCancelled = rsvp.status === AttendeeStatus.No;
-  const displayName =
-    rsvp.displayName ?? rsvp.contactDisplayName ?? rsvp.submission?.firstName ?? "Unknown";
-  const email = rsvp.submission?.email ?? "";
-
-  // Contact search for matching
-  const { data: contactListData } = trpc.admin.contacts.list.useQuery(
-    { q: contactSearch },
-    { enabled: isMatchingMode && contactSearch.length >= 2 },
-  );
-  const contactResults = contactListData?.contacts;
+  const displayName = rsvp.displayName ?? rsvp.contactDisplayName ?? "Unknown";
 
   return (
     <div className={`rounded-lg border p-4 space-y-3 ${isCancelled ? "opacity-60" : ""}`}>
@@ -348,13 +288,6 @@ function RegistrationRow({
                 )}
             </span>
           </div>
-          {email && <p className="text-sm text-muted-foreground truncate">{email}</p>}
-          {rsvp.submission && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {rsvp.submission.phone}
-              {rsvp.submission.address && <> &middot; {rsvp.submission.address}</>}
-            </p>
-          )}
           {rsvp.badgerDetails && (
             <p className="text-xs text-muted-foreground">
               Shirt: {rsvp.badgerDetails.tshirtSize} &middot; Travel:{" "}
@@ -369,12 +302,6 @@ function RegistrationRow({
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {isPendingReview && !isMatchingMode && (
-            <Button size="sm" variant="outline" onClick={onStartMatching} disabled={isPending}>
-              <UserPlus className="size-3.5" />
-              Review
-            </Button>
-          )}
           {rsvp.paymentStatus === PaymentStatus.Pending && (
             <Button size="sm" variant="outline" onClick={onConfirmPayment} disabled={isPending}>
               <DollarSign className="size-3.5" />
@@ -393,56 +320,6 @@ function RegistrationRow({
           )}
         </div>
       </div>
-
-      {/* Contact matching panel */}
-      {isMatchingMode && rsvp.submission && (
-        <div className="rounded-md border bg-muted/30 p-3 space-y-3">
-          <div className="text-sm">
-            <p className="font-medium mb-1">Match to existing contact or create new:</p>
-            <p className="text-muted-foreground text-xs">
-              Submitted: {rsvp.submission.firstName} {rsvp.submission.lastName} &middot;{" "}
-              {rsvp.submission.email} &middot; {rsvp.submission.phone}
-            </p>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search contacts by name or email..."
-              value={contactSearch}
-              onChange={(e) => onContactSearchChange(e.target.value)}
-              className="pl-9"
-              autoFocus
-            />
-          </div>
-
-          {contactResults && contactResults.length > 0 && (
-            <div className="space-y-1 max-h-40 overflow-y-auto">
-              {contactResults.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-accent/10 transition-colors"
-                  onClick={() => onMatchToContact(c.id)}
-                  disabled={isPending}
-                >
-                  <span className="font-medium">{c.display_name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <Button size="sm" variant="default" onClick={onConfirmNewContact} disabled={isPending}>
-              <UserPlus className="size-3.5" />
-              Create New Contact
-            </Button>
-            <Button size="sm" variant="ghost" onClick={onCancelMatching}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

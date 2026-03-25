@@ -28,7 +28,7 @@ interface SubmitBadgerInput {
 function rsvpRowToOutput(row: Record<string, unknown>, displayName: string | null): RsvpOutput {
   return {
     id: row.id as string,
-    contactId: (row.contact_id as string) ?? null,
+    contactId: row.contact_id as string,
     userId: (row.user_id as string) ?? null,
     eventId: row.event_id as string,
     status: row.status as AttendeeStatus,
@@ -53,17 +53,11 @@ function rsvpRowToOutput(row: Record<string, unknown>, displayName: string | nul
 
 function rsvpRowToAdminOutput(
   row: Record<string, unknown>,
-  submission: RsvpAdminOutput["submission"],
   badgerDetails: RsvpAdminOutput["badgerDetails"],
 ): RsvpAdminOutput {
-  const base = rsvpRowToOutput(
-    row,
-    (row.contact_display_name as string) ??
-      (submission ? `${submission.firstName} ${submission.lastName}` : null),
-  );
+  const base = rsvpRowToOutput(row, (row.contact_display_name as string) ?? null);
   return {
     ...base,
-    submission,
     paymentConfirmedAt: toISOStringOrNull(
       row.payment_confirmed_at instanceof Date
         ? row.payment_confirmed_at
@@ -377,10 +371,8 @@ export class RsvpService {
 
     return Promise.all(
       rows.map(async (row) => {
-        const rsvpId = row.id as string;
-        const submission = await this.getSubmission(rsvpId);
-        const badgerDetails = await this.getBadgerDetails(rsvpId);
-        return rsvpRowToAdminOutput(row, submission, badgerDetails);
+        const badgerDetails = await this.getBadgerDetails(row.id as string);
+        return rsvpRowToAdminOutput(row, badgerDetails);
       }),
     );
   }
@@ -397,10 +389,8 @@ export class RsvpService {
 
     return Promise.all(
       rows.map(async (row) => {
-        const rsvpId = row.id as string;
-        const submission = await this.getSubmission(rsvpId);
-        const badgerDetails = await this.getBadgerDetails(rsvpId);
-        return rsvpRowToAdminOutput(row, submission, badgerDetails);
+        const badgerDetails = await this.getBadgerDetails(row.id as string);
+        return rsvpRowToAdminOutput(row, badgerDetails);
       }),
     );
   }
@@ -430,124 +420,10 @@ export class RsvpService {
 
     return Promise.all(
       rows.map(async (row) => {
-        const rsvpId = row.id as string;
-        const submission = await this.getSubmission(rsvpId);
-        const badgerDetails = await this.getBadgerDetails(rsvpId);
-        return rsvpRowToAdminOutput(row, submission, badgerDetails);
+        const badgerDetails = await this.getBadgerDetails(row.id as string);
+        return rsvpRowToAdminOutput(row, badgerDetails);
       }),
     );
-  }
-
-  async matchToContact(rsvpId: string, contactId: string, reviewedByUserId: string): Promise<void> {
-    const now = new Date();
-    await this.ds.query(
-      `UPDATE event_attendees
-       SET contact_id = $1, status = $2, reviewed_by_user_id = $3, reviewed_at = $4, updated_at = $5
-       WHERE id = $6`,
-      [contactId, AttendeeStatus.Yes, reviewedByUserId, now, now, rsvpId],
-    );
-
-    // Delete the temporary submission data
-    await this.ds.query(`DELETE FROM rsvp_submissions WHERE rsvp_id = $1`, [rsvpId]);
-
-    // Fetch contact name for log message
-    const contactRows = (await this.ds.query(`SELECT display_name FROM contacts WHERE id = $1`, [
-      contactId,
-    ])) as Array<{ display_name: string }>;
-    const contactName = contactRows[0]?.display_name ?? contactId;
-
-    await this.rsvpLogService.create(
-      rsvpId,
-      RsvpLogCode.MatchedToContact,
-      reviewedByUserId,
-      `Matched to contact: ${contactName}`,
-    );
-  }
-
-  async confirmAsNewContact(rsvpId: string, reviewedByUserId: string): Promise<string> {
-    // Read submission data
-    const subRows = (await this.ds.query(`SELECT * FROM rsvp_submissions WHERE rsvp_id = $1`, [
-      rsvpId,
-    ])) as Array<Record<string, unknown>>;
-
-    const sub = subRows[0];
-    if (!sub) {
-      throw new Error(`No submission found for RSVP ${rsvpId}`);
-    }
-
-    const contactId = uuid();
-    const firstName = sub.first_name as string;
-    const lastName = sub.last_name as string;
-    const displayName = `${firstName} ${lastName}`;
-
-    // Create contact
-    await this.ds.query(
-      `INSERT INTO contacts (id, type, status, display_name, first_name, last_name, uid)
-       VALUES ($1, 'person', 'active', $2, $3, $4, $5)`,
-      [contactId, displayName, firstName, lastName, `contact-${contactId}@satyrsmc`],
-    );
-
-    // Create contact email
-    const emailId = uuid();
-    await this.ds.query(
-      `INSERT INTO contact_emails (id, contact_id, email, type, is_primary)
-       VALUES ($1, $2, $3, 'other', true)`,
-      [emailId, contactId, sub.email as string],
-    );
-
-    // Create contact phone
-    const phoneId = uuid();
-    await this.ds.query(
-      `INSERT INTO contact_phones (id, contact_id, phone, type, is_primary)
-       VALUES ($1, $2, $3, 'cell', true)`,
-      [phoneId, contactId, sub.phone as string],
-    );
-
-    // Create contact address (if provided)
-    const address = sub.address as string | null;
-    const zip = sub.zip as string | null;
-    if (address || zip) {
-      const addrId = uuid();
-      await this.ds.query(
-        `INSERT INTO contact_addresses (id, contact_id, address_line1, postal_code, type, is_primary_mailing)
-         VALUES ($1, $2, $3, $4, 'home', true)`,
-        [addrId, contactId, address, zip],
-      );
-    }
-
-    // Create emergency contact
-    const ecId = uuid();
-    await this.ds.query(
-      `INSERT INTO contact_emergency_contacts (id, contact_id, name, phone)
-       VALUES ($1, $2, $3, $4)`,
-      [
-        ecId,
-        contactId,
-        sub.emergency_contact_name as string,
-        sub.emergency_contact_phone as string,
-      ],
-    );
-
-    // Link RSVP to new contact
-    const now = new Date();
-    await this.ds.query(
-      `UPDATE event_attendees
-       SET contact_id = $1, status = $2, reviewed_by_user_id = $3, reviewed_at = $4, updated_at = $5
-       WHERE id = $6`,
-      [contactId, AttendeeStatus.Yes, reviewedByUserId, now, now, rsvpId],
-    );
-
-    // Delete submission
-    await this.ds.query(`DELETE FROM rsvp_submissions WHERE rsvp_id = $1`, [rsvpId]);
-
-    await this.rsvpLogService.create(
-      rsvpId,
-      RsvpLogCode.NewContactCreated,
-      reviewedByUserId,
-      `New contact created: ${displayName}`,
-    );
-
-    return contactId;
   }
 
   async cancel(rsvpId: string, cancelledByUserId?: string): Promise<void> {
@@ -719,26 +595,6 @@ export class RsvpService {
       zip: (addressRows[0]?.postal_code as string) ?? null,
       emergencyContactName: (ecRows[0]?.name as string) ?? null,
       emergencyContactPhone: (ecRows[0]?.phone as string) ?? null,
-    };
-  }
-
-  private async getSubmission(rsvpId: string): Promise<RsvpAdminOutput["submission"]> {
-    const rows = (await this.ds.query(`SELECT * FROM rsvp_submissions WHERE rsvp_id = $1`, [
-      rsvpId,
-    ])) as Array<Record<string, unknown>>;
-
-    const row = rows[0];
-    if (!row) return null;
-
-    return {
-      firstName: row.first_name as string,
-      lastName: row.last_name as string,
-      email: row.email as string,
-      phone: row.phone as string,
-      address: (row.address as string) ?? null,
-      zip: (row.zip as string) ?? null,
-      emergencyContactName: row.emergency_contact_name as string,
-      emergencyContactPhone: row.emergency_contact_phone as string,
     };
   }
 

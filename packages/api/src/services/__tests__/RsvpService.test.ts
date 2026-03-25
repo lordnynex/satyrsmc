@@ -11,73 +11,7 @@ import {
   TravelMode,
   RsvpLogCode,
 } from "@satyrsmc/shared/lib/enums";
-import { createEvent, createContact, createUser } from "./helpers";
-import { uuid } from "../utils";
-
-/** Insert a legacy token-based pending registration directly (simulates pre-removal data). */
-async function insertLegacyPendingRegistration(
-  dataSource: DataSource,
-  eventId: string,
-  submission: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    zip: string;
-    emergencyContactName: string;
-    emergencyContactPhone: string;
-  },
-  badgerDets: { tshirtSize: string; travelingBy: string; club?: string | null },
-) {
-  const rsvpId = uuid();
-  const now = new Date();
-  await dataSource.query(
-    `INSERT INTO event_attendees (
-      id, contact_id, user_id, event_id, registration_method,
-      status, sort_order, waiver_signed,
-      waiver_content_hash, waiver_accepted_at, waiver_ip,
-      payment_method, payment_status, payment_amount_cents, created_at, updated_at
-    ) VALUES ($1, NULL, NULL, $2, $3, $4, 0, true, $5, $6, $7, $8, $9, $10, $11, $12)`,
-    [
-      rsvpId,
-      eventId,
-      RegistrationMethod.EventToken,
-      AttendeeStatus.Pending,
-      "hash",
-      now,
-      "127.0.0.1",
-      PaymentMethod.Cash,
-      PaymentStatus.Pending,
-      20000,
-      now,
-      now,
-    ],
-  );
-  await dataSource.query(
-    `INSERT INTO badger_registrations (id, rsvp_id, tshirt_size, traveling_by, club, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [uuid(), rsvpId, badgerDets.tshirtSize, badgerDets.travelingBy, badgerDets.club ?? null, now],
-  );
-  await dataSource.query(
-    `INSERT INTO rsvp_submissions (id, rsvp_id, first_name, last_name, email, phone, address, zip, emergency_contact_name, emergency_contact_phone, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-    [
-      uuid(),
-      rsvpId,
-      submission.firstName,
-      submission.lastName,
-      submission.email,
-      submission.phone,
-      submission.address,
-      submission.zip,
-      submission.emergencyContactName,
-      submission.emergencyContactPhone,
-      now,
-    ],
-  );
-  return rsvpId;
-}
+import { createEvent, createUser } from "./helpers";
 
 describe("RsvpService", () => {
   let api: Api;
@@ -93,17 +27,6 @@ describe("RsvpService", () => {
     tshirtSize: TshirtSize.L,
     travelingBy: TravelMode.Motorcycle,
     club: "Satyrs MC",
-  };
-
-  const submissionData = {
-    firstName: "Craig",
-    lastName: "Thompson",
-    email: "craig@example.com",
-    phone: "5551234567",
-    address: "123 Main St",
-    zip: "90001",
-    emergencyContactName: "Jane Thompson",
-    emergencyContactPhone: "5559876543",
   };
 
   describe("submitBadgerRegistration", () => {
@@ -251,90 +174,6 @@ describe("RsvpService", () => {
 
       const rsvps = await api.rsvps.findByEvent(event.id);
       expect(rsvps.length).toBe(2);
-    });
-  });
-
-  describe("findPendingReview", () => {
-    test("returns only pending_review RSVPs with submission data", async () => {
-      const event = await createEvent(api);
-
-      // Insert legacy token-based pending entry directly
-      await insertLegacyPendingRegistration(ds, event.id, submissionData, badgerDetails);
-
-      // Create an auth RSVP (registered, not pending)
-      const { userId, contactId } = await createUser(ds, api);
-      await api.rsvps.createAuthRsvp(contactId, userId, {
-        eventId: event.id,
-        waiverContentHash: "hash",
-        waiverIp: "127.0.0.1",
-        waiverUserAgent: null,
-      });
-
-      const pending = await api.rsvps.findPendingReview(event.id);
-      expect(pending.length).toBe(1);
-      expect(pending[0]!.status).toBe(AttendeeStatus.Pending);
-      expect(pending[0]!.submission).not.toBeNull();
-      expect(pending[0]!.submission!.firstName).toBe("Craig");
-      expect(pending[0]!.badgerDetails).not.toBeNull();
-      expect(pending[0]!.badgerDetails!.tshirtSize).toBe(TshirtSize.L);
-    });
-  });
-
-  describe("matchToContact", () => {
-    test("matches a pending RSVP to an existing contact", async () => {
-      const event = await createEvent(api);
-      const contact = await createContact(api);
-      const { userId: adminId } = await createUser(ds, api);
-
-      const rsvpId = await insertLegacyPendingRegistration(
-        ds,
-        event.id,
-        submissionData,
-        badgerDetails,
-      );
-
-      await api.rsvps.matchToContact(rsvpId, contact.id, adminId);
-
-      const updated = await api.rsvps.findById(rsvpId);
-      expect(updated!.contactId).toBe(contact.id);
-      expect(updated!.status).toBe(AttendeeStatus.Yes);
-
-      // Submission should be deleted
-      const adminView = await api.rsvps.findByEventAdmin(event.id);
-      const matched = adminView.find((r) => r.id === rsvpId);
-      expect(matched!.submission).toBeNull();
-
-      // Log entry should exist
-      const logs = await api.rsvpLogs.listByRsvp(rsvpId);
-      const matchLog = logs.find((l) => l.messageCode === RsvpLogCode.MatchedToContact);
-      expect(matchLog).toBeDefined();
-    });
-  });
-
-  describe("confirmAsNewContact", () => {
-    test("creates a new contact from submission data", async () => {
-      const event = await createEvent(api);
-      const { userId: adminId } = await createUser(ds, api);
-
-      const rsvpId = await insertLegacyPendingRegistration(
-        ds,
-        event.id,
-        submissionData,
-        badgerDetails,
-      );
-
-      const contactId = await api.rsvps.confirmAsNewContact(rsvpId, adminId);
-      expect(contactId).toBeDefined();
-
-      // RSVP should be linked
-      const updated = await api.rsvps.findById(rsvpId);
-      expect(updated!.contactId).toBe(contactId);
-      expect(updated!.status).toBe(AttendeeStatus.Yes);
-
-      // Log entry
-      const logs = await api.rsvpLogs.listByRsvp(rsvpId);
-      const createLog = logs.find((l) => l.messageCode === RsvpLogCode.NewContactCreated);
-      expect(createLog).toBeDefined();
     });
   });
 

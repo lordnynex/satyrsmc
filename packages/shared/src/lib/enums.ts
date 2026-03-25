@@ -274,7 +274,6 @@ export const MEMBERSHIP_MESSAGE_CODES = Object.values(MembershipMessageCode);
 // --- Event RSVP ---
 
 export enum RegistrationMethod {
-  EventToken = "event_token",
   Invitation = "invitation",
   Auth = "auth",
 }
