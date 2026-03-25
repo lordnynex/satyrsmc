@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { InviteUserDialog } from "./InviteUserDialog";
-import { AlertTriangle, Plus, Search } from "lucide-react";
+import { BulkInviteDialog } from "./BulkInviteDialog";
+import { AlertTriangle, Plus, Search, Users } from "lucide-react";
 import { STATUS_LABELS, STATUS_COLORS, TYPE_LABELS } from "./userDisplay";
 
 export function UsersPanel() {
@@ -23,6 +24,7 @@ export function UsersPanel() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [bulkInviteOpen, setBulkInviteOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,10 +57,16 @@ export function UsersPanel() {
             )}
           </p>
         </div>
-        <Button onClick={() => setInviteOpen(true)}>
-          <Plus className="size-4" />
-          Invite User
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setBulkInviteOpen(true)}>
+            <Users className="size-4" />
+            Bulk Invite
+          </Button>
+          <Button onClick={() => setInviteOpen(true)}>
+            <Plus className="size-4" />
+            Invite User
+          </Button>
+        </div>
       </div>
 
       <PendingAccountsBanner />
@@ -148,6 +156,7 @@ export function UsersPanel() {
       <RegistrationsSection />
 
       <InviteUserDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <BulkInviteDialog open={bulkInviteOpen} onOpenChange={setBulkInviteOpen} />
     </div>
   );
 }

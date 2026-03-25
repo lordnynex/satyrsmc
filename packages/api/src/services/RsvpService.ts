@@ -1,6 +1,6 @@
 import type { DataSource } from "typeorm";
 import {
-  EventRsvpStatus,
+  AttendeeStatus,
   RegistrationMethod,
   PaymentStatus,
   RsvpLogCode,
@@ -14,8 +14,8 @@ import type { RsvpLogService } from "./RsvpLogService";
 interface SubmitBadgerInput {
   eventId: string;
   registrationMethod: RegistrationMethod;
-  contactId: string | null;
-  userId: string | null;
+  contactId: string;
+  userId: string;
   invitationId?: string | null;
   paymentMethod: PaymentMethod;
   paymentAmountCents: number | null;
@@ -23,16 +23,6 @@ interface SubmitBadgerInput {
   waiverIp: string;
   waiverUserAgent: string | null;
   badgerDetails: BadgerDetails;
-  submission?: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address?: string;
-    zip?: string;
-    emergencyContactName: string;
-    emergencyContactPhone: string;
-  };
 }
 
 function rsvpRowToOutput(row: Record<string, unknown>, displayName: string | null): RsvpOutput {
@@ -41,7 +31,7 @@ function rsvpRowToOutput(row: Record<string, unknown>, displayName: string | nul
     contactId: (row.contact_id as string) ?? null,
     userId: (row.user_id as string) ?? null,
     eventId: row.event_id as string,
-    status: row.status as EventRsvpStatus,
+    status: row.status as AttendeeStatus,
     registrationMethod: row.registration_method as RegistrationMethod,
     paymentMethod: (row.payment_method as PaymentMethod) ?? null,
     paymentStatus: row.payment_status as PaymentStatus,
@@ -101,62 +91,69 @@ export class RsvpService {
   ) {}
 
   async submitBadgerRegistration(input: SubmitBadgerInput): Promise<RsvpOutput> {
-    const rsvpId = uuid();
     const now = new Date();
-    const status =
-      input.registrationMethod === RegistrationMethod.Auth
-        ? EventRsvpStatus.Registered
-        : EventRsvpStatus.PendingReview;
     const paymentStatus =
       input.paymentAmountCents && input.paymentAmountCents > 0
         ? PaymentStatus.Pending
         : PaymentStatus.NotRequired;
 
-    await this.ds.query(
-      `INSERT INTO event_rsvps (
-        id, contact_id, user_id, event_id, registration_method, invitation_id,
-        status, waiver_content_hash, waiver_accepted_at, waiver_ip, waiver_user_agent,
-        payment_method, payment_status, payment_amount_cents, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
-      [
-        rsvpId,
-        input.contactId,
-        input.userId,
-        input.eventId,
-        input.registrationMethod,
-        input.invitationId ?? null,
-        status,
-        input.waiverContentHash,
-        now,
-        input.waiverIp,
-        input.waiverUserAgent,
-        input.paymentMethod,
-        paymentStatus,
-        input.paymentAmountCents,
-        now,
-        now,
-      ],
-    );
+    // Check for existing record (including cancelled) to avoid duplicates
+    const existingId = await this.findExistingAttendee(input.contactId, input.eventId);
 
-    // Create submission row for token-based registrations
-    if (input.submission) {
-      const submissionId = uuid();
+    let rsvpId: string;
+    if (existingId) {
+      // Reactivate existing record
+      rsvpId = existingId;
       await this.ds.query(
-        `INSERT INTO rsvp_submissions (
-          id, rsvp_id, first_name, last_name, email, phone, address, zip,
-          emergency_contact_name, emergency_contact_phone, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        `UPDATE event_attendees
+         SET status = $1, cancelled_at = NULL, registration_method = $2,
+             waiver_signed = true, waiver_content_hash = $3, waiver_accepted_at = $4,
+             waiver_ip = $5, waiver_user_agent = $6,
+             payment_method = $7, payment_status = $8, payment_amount_cents = $9,
+             updated_at = $10
+         WHERE id = $11`,
         [
-          submissionId,
+          AttendeeStatus.Yes,
+          input.registrationMethod,
+          input.waiverContentHash,
+          now,
+          input.waiverIp,
+          input.waiverUserAgent,
+          input.paymentMethod,
+          paymentStatus,
+          input.paymentAmountCents,
+          now,
+          existingId,
+        ],
+      );
+
+      // Update or insert badger registration details
+      await this.ds.query(`DELETE FROM badger_registrations WHERE rsvp_id = $1`, [existingId]);
+    } else {
+      rsvpId = uuid();
+      await this.ds.query(
+        `INSERT INTO event_attendees (
+          id, contact_id, user_id, event_id, registration_method, invitation_id,
+          status, sort_order, waiver_signed,
+          waiver_content_hash, waiver_accepted_at, waiver_ip, waiver_user_agent,
+          payment_method, payment_status, payment_amount_cents, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, 0, true, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+        [
           rsvpId,
-          input.submission.firstName,
-          input.submission.lastName,
-          input.submission.email,
-          input.submission.phone,
-          input.submission.address ?? null,
-          input.submission.zip ?? null,
-          input.submission.emergencyContactName,
-          input.submission.emergencyContactPhone,
+          input.contactId,
+          input.userId,
+          input.eventId,
+          input.registrationMethod,
+          input.invitationId ?? null,
+          AttendeeStatus.Yes,
+          input.waiverContentHash,
+          now,
+          input.waiverIp,
+          input.waiverUserAgent,
+          input.paymentMethod,
+          paymentStatus,
+          input.paymentAmountCents,
+          now,
           now,
         ],
       );
@@ -180,23 +177,19 @@ export class RsvpService {
     // Log the registration
     await this.rsvpLogService.create(rsvpId, RsvpLogCode.Registered, input.userId);
 
-    const displayName = input.submission
-      ? `${input.submission.firstName} ${input.submission.lastName}`
-      : null;
-
     return {
       id: rsvpId,
       contactId: input.contactId,
       userId: input.userId,
       eventId: input.eventId,
-      status,
+      status: AttendeeStatus.Yes,
       registrationMethod: input.registrationMethod,
       paymentMethod: input.paymentMethod,
       paymentStatus,
       paymentAmountCents: input.paymentAmountCents,
       waiverAcceptedAt: now.toISOString(),
       createdAt: now.toISOString(),
-      displayName,
+      displayName: null,
     };
   }
 
@@ -212,37 +205,66 @@ export class RsvpService {
       paymentAmountCents?: number | null;
     },
   ): Promise<RsvpOutput> {
-    const rsvpId = uuid();
     const now = new Date();
     const paymentStatus =
       input.paymentAmountCents && input.paymentAmountCents > 0
         ? PaymentStatus.Pending
         : PaymentStatus.NotRequired;
 
-    await this.ds.query(
-      `INSERT INTO event_rsvps (
-        id, contact_id, user_id, event_id, registration_method,
-        status, waiver_content_hash, waiver_accepted_at, waiver_ip, waiver_user_agent,
-        payment_method, payment_status, payment_amount_cents, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
-      [
-        rsvpId,
-        contactId,
-        userId,
-        input.eventId,
-        RegistrationMethod.Auth,
-        EventRsvpStatus.Registered,
-        input.waiverContentHash,
-        now,
-        input.waiverIp,
-        input.waiverUserAgent,
-        input.paymentMethod ?? null,
-        paymentStatus,
-        input.paymentAmountCents ?? null,
-        now,
-        now,
-      ],
-    );
+    // Check for existing record (including cancelled) to avoid duplicates
+    const existingId = await this.findExistingAttendee(contactId, input.eventId);
+
+    let rsvpId: string;
+    if (existingId) {
+      // Reactivate existing record
+      rsvpId = existingId;
+      await this.ds.query(
+        `UPDATE event_attendees
+         SET status = $1, cancelled_at = NULL, waiver_signed = true,
+             waiver_content_hash = $2, waiver_accepted_at = $3, waiver_ip = $4, waiver_user_agent = $5,
+             payment_method = $6, payment_status = $7, payment_amount_cents = $8, updated_at = $9
+         WHERE id = $10`,
+        [
+          AttendeeStatus.Yes,
+          input.waiverContentHash,
+          now,
+          input.waiverIp,
+          input.waiverUserAgent,
+          input.paymentMethod ?? null,
+          paymentStatus,
+          input.paymentAmountCents ?? null,
+          now,
+          existingId,
+        ],
+      );
+    } else {
+      rsvpId = uuid();
+      await this.ds.query(
+        `INSERT INTO event_attendees (
+          id, contact_id, user_id, event_id, registration_method,
+          status, sort_order, waiver_signed,
+          waiver_content_hash, waiver_accepted_at, waiver_ip, waiver_user_agent,
+          payment_method, payment_status, payment_amount_cents, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, 0, true, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+        [
+          rsvpId,
+          contactId,
+          userId,
+          input.eventId,
+          RegistrationMethod.Auth,
+          AttendeeStatus.Yes,
+          input.waiverContentHash,
+          now,
+          input.waiverIp,
+          input.waiverUserAgent,
+          input.paymentMethod ?? null,
+          paymentStatus,
+          input.paymentAmountCents ?? null,
+          now,
+          now,
+        ],
+      );
+    }
 
     await this.rsvpLogService.create(rsvpId, RsvpLogCode.Registered, userId);
 
@@ -251,7 +273,7 @@ export class RsvpService {
       contactId,
       userId,
       eventId: input.eventId,
-      status: EventRsvpStatus.Registered,
+      status: AttendeeStatus.Yes,
       registrationMethod: RegistrationMethod.Auth,
       paymentMethod: input.paymentMethod ?? null,
       paymentStatus,
@@ -265,7 +287,7 @@ export class RsvpService {
   async findById(id: string): Promise<RsvpOutput | null> {
     const rows = (await this.ds.query(
       `SELECT r.*, c.display_name AS contact_display_name
-       FROM event_rsvps r
+       FROM event_attendees r
        LEFT JOIN contacts c ON c.id = r.contact_id
        WHERE r.id = $1`,
       [id],
@@ -278,18 +300,57 @@ export class RsvpService {
 
   async hasActiveRsvp(contactId: string, eventId: string): Promise<boolean> {
     const rows = (await this.ds.query(
-      `SELECT 1 FROM event_rsvps WHERE contact_id = $1 AND event_id = $2 AND cancelled_at IS NULL LIMIT 1`,
-      [contactId, eventId],
+      `SELECT 1 FROM event_attendees WHERE contact_id = $1 AND event_id = $2 AND registration_method IS NOT NULL AND cancelled_at IS NULL AND status != $3 LIMIT 1`,
+      [contactId, eventId, AttendeeStatus.No],
     )) as Array<Record<string, unknown>>;
     return rows.length > 0;
+  }
+
+  /** Find any existing attendee record for a contact+event (including cancelled). */
+  private async findExistingAttendee(contactId: string, eventId: string): Promise<string | null> {
+    const rows = (await this.ds.query(
+      `SELECT id FROM event_attendees WHERE contact_id = $1 AND event_id = $2 AND registration_method IS NOT NULL ORDER BY created_at DESC LIMIT 1`,
+      [contactId, eventId],
+    )) as Array<{ id: string }>;
+    return rows[0]?.id ?? null;
+  }
+
+  async findByContact(contactId: string): Promise<RsvpOutput[]> {
+    const rows = (await this.ds.query(
+      `SELECT r.*, c.display_name AS contact_display_name,
+              e.name AS event_name
+       FROM event_attendees r
+       LEFT JOIN contacts c ON c.id = r.contact_id
+       LEFT JOIN events e ON e.id = r.event_id
+       WHERE r.contact_id = $1 AND r.registration_method IS NOT NULL
+       ORDER BY r.created_at DESC`,
+      [contactId],
+    )) as Array<Record<string, unknown>>;
+
+    return rows.map((row) => rsvpRowToOutput(row, (row.contact_display_name as string) ?? null));
+  }
+
+  async findByContactAndEvent(contactId: string, eventId: string): Promise<RsvpOutput | null> {
+    const rows = (await this.ds.query(
+      `SELECT r.*, c.display_name AS contact_display_name
+       FROM event_attendees r
+       LEFT JOIN contacts c ON c.id = r.contact_id
+       WHERE r.contact_id = $1 AND r.event_id = $2 AND r.registration_method IS NOT NULL AND r.cancelled_at IS NULL
+       LIMIT 1`,
+      [contactId, eventId],
+    )) as Array<Record<string, unknown>>;
+
+    const row = rows[0];
+    if (!row) return null;
+    return rsvpRowToOutput(row, (row.contact_display_name as string) ?? null);
   }
 
   async findByEvent(eventId: string): Promise<RsvpOutput[]> {
     const rows = (await this.ds.query(
       `SELECT r.*, c.display_name AS contact_display_name
-       FROM event_rsvps r
+       FROM event_attendees r
        LEFT JOIN contacts c ON c.id = r.contact_id
-       WHERE r.event_id = $1
+       WHERE r.event_id = $1 AND r.registration_method IS NOT NULL
        ORDER BY r.created_at DESC`,
       [eventId],
     )) as Array<Record<string, unknown>>;
@@ -300,11 +361,11 @@ export class RsvpService {
   async findPendingReview(eventId: string): Promise<RsvpAdminOutput[]> {
     const rows = (await this.ds.query(
       `SELECT r.*, c.display_name AS contact_display_name
-       FROM event_rsvps r
+       FROM event_attendees r
        LEFT JOIN contacts c ON c.id = r.contact_id
-       WHERE r.event_id = $1 AND r.status = $2
+       WHERE r.event_id = $1 AND r.status = $2 AND r.registration_method IS NOT NULL
        ORDER BY r.created_at ASC`,
-      [eventId, EventRsvpStatus.PendingReview],
+      [eventId, AttendeeStatus.Pending],
     )) as Array<Record<string, unknown>>;
 
     return Promise.all(
@@ -320,11 +381,44 @@ export class RsvpService {
   async findByEventAdmin(eventId: string): Promise<RsvpAdminOutput[]> {
     const rows = (await this.ds.query(
       `SELECT r.*, c.display_name AS contact_display_name
-       FROM event_rsvps r
+       FROM event_attendees r
        LEFT JOIN contacts c ON c.id = r.contact_id
-       WHERE r.event_id = $1
+       WHERE r.event_id = $1 AND r.registration_method IS NOT NULL
        ORDER BY r.created_at DESC`,
       [eventId],
+    )) as Array<Record<string, unknown>>;
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const rsvpId = row.id as string;
+        const submission = await this.getSubmission(rsvpId);
+        const badgerDetails = await this.getBadgerDetails(rsvpId);
+        return rsvpRowToAdminOutput(row, submission, badgerDetails);
+      }),
+    );
+  }
+
+  async findActionRequired(eventId: string): Promise<RsvpAdminOutput[]> {
+    const rows = (await this.ds.query(
+      `SELECT r.*, c.display_name AS contact_display_name
+       FROM event_attendees r
+       LEFT JOIN contacts c ON c.id = r.contact_id
+       WHERE r.event_id = $1
+         AND r.registration_method IS NOT NULL
+         AND r.status != $2
+         AND (
+           r.status = $3
+           OR r.payment_status = $4
+           OR r.payment_status = $5
+         )
+       ORDER BY r.created_at DESC`,
+      [
+        eventId,
+        AttendeeStatus.No,
+        AttendeeStatus.Pending,
+        PaymentStatus.Pending,
+        PaymentStatus.RefundRequested,
+      ],
     )) as Array<Record<string, unknown>>;
 
     return Promise.all(
@@ -340,10 +434,10 @@ export class RsvpService {
   async matchToContact(rsvpId: string, contactId: string, reviewedByUserId: string): Promise<void> {
     const now = new Date();
     await this.ds.query(
-      `UPDATE event_rsvps
+      `UPDATE event_attendees
        SET contact_id = $1, status = $2, reviewed_by_user_id = $3, reviewed_at = $4, updated_at = $5
        WHERE id = $6`,
-      [contactId, EventRsvpStatus.Registered, reviewedByUserId, now, now, rsvpId],
+      [contactId, AttendeeStatus.Yes, reviewedByUserId, now, now, rsvpId],
     );
 
     // Delete the temporary submission data
@@ -402,6 +496,18 @@ export class RsvpService {
       [phoneId, contactId, sub.phone as string],
     );
 
+    // Create contact address (if provided)
+    const address = sub.address as string | null;
+    const zip = sub.zip as string | null;
+    if (address || zip) {
+      const addrId = uuid();
+      await this.ds.query(
+        `INSERT INTO contact_addresses (id, contact_id, address_line1, postal_code, type, is_primary_mailing)
+         VALUES ($1, $2, $3, $4, 'home', true)`,
+        [addrId, contactId, address, zip],
+      );
+    }
+
     // Create emergency contact
     const ecId = uuid();
     await this.ds.query(
@@ -418,10 +524,10 @@ export class RsvpService {
     // Link RSVP to new contact
     const now = new Date();
     await this.ds.query(
-      `UPDATE event_rsvps
+      `UPDATE event_attendees
        SET contact_id = $1, status = $2, reviewed_by_user_id = $3, reviewed_at = $4, updated_at = $5
        WHERE id = $6`,
-      [contactId, EventRsvpStatus.Registered, reviewedByUserId, now, now, rsvpId],
+      [contactId, AttendeeStatus.Yes, reviewedByUserId, now, now, rsvpId],
     );
 
     // Delete submission
@@ -440,10 +546,14 @@ export class RsvpService {
   async cancel(rsvpId: string, cancelledByUserId?: string): Promise<void> {
     const now = new Date();
 
-    // Check if payment was confirmed — if so, trigger refund request
-    const rows = (await this.ds.query(`SELECT payment_status FROM event_rsvps WHERE id = $1`, [
+    // Check RSVP exists and get current payment status
+    const rows = (await this.ds.query(`SELECT payment_status FROM event_attendees WHERE id = $1`, [
       rsvpId,
     ])) as Array<{ payment_status: string }>;
+
+    if (rows.length === 0) {
+      throw new Error(`RSVP not found: ${rsvpId}`);
+    }
 
     const currentPaymentStatus = rows[0]?.payment_status;
     const newPaymentStatus =
@@ -452,10 +562,10 @@ export class RsvpService {
         : currentPaymentStatus;
 
     await this.ds.query(
-      `UPDATE event_rsvps
+      `UPDATE event_attendees
        SET status = $1, cancelled_at = $2, payment_status = $3, updated_at = $4
        WHERE id = $5`,
-      [EventRsvpStatus.Cancelled, now, newPaymentStatus, now, rsvpId],
+      [AttendeeStatus.No, now, newPaymentStatus, now, rsvpId],
     );
 
     await this.rsvpLogService.create(rsvpId, RsvpLogCode.Cancelled, cancelledByUserId ?? null);
@@ -464,9 +574,13 @@ export class RsvpService {
   async adminCancel(rsvpId: string, cancelledByUserId: string): Promise<void> {
     const now = new Date();
 
-    const rows = (await this.ds.query(`SELECT payment_status FROM event_rsvps WHERE id = $1`, [
+    const rows = (await this.ds.query(`SELECT payment_status FROM event_attendees WHERE id = $1`, [
       rsvpId,
     ])) as Array<{ payment_status: string }>;
+
+    if (rows.length === 0) {
+      throw new Error(`RSVP not found: ${rsvpId}`);
+    }
 
     const currentPaymentStatus = rows[0]?.payment_status;
     const newPaymentStatus =
@@ -475,10 +589,10 @@ export class RsvpService {
         : currentPaymentStatus;
 
     await this.ds.query(
-      `UPDATE event_rsvps
+      `UPDATE event_attendees
        SET status = $1, cancelled_at = $2, payment_status = $3, updated_at = $4
        WHERE id = $5`,
-      [EventRsvpStatus.Cancelled, now, newPaymentStatus, now, rsvpId],
+      [AttendeeStatus.No, now, newPaymentStatus, now, rsvpId],
     );
 
     await this.rsvpLogService.create(rsvpId, RsvpLogCode.AdminCancelled, cancelledByUserId);
@@ -487,11 +601,11 @@ export class RsvpService {
   async confirmPayment(rsvpId: string, confirmedByUserId: string, note?: string): Promise<void> {
     const now = new Date();
     await this.ds.query(
-      `UPDATE event_rsvps
+      `UPDATE event_attendees
        SET payment_status = $1, payment_confirmed_by_user_id = $2, payment_confirmed_at = $3,
-           status = $4, updated_at = $5
-       WHERE id = $6`,
-      [PaymentStatus.Confirmed, confirmedByUserId, now, EventRsvpStatus.Confirmed, now, rsvpId],
+           updated_at = $4
+       WHERE id = $5`,
+      [PaymentStatus.Confirmed, confirmedByUserId, now, now, rsvpId],
     );
 
     await this.rsvpLogService.create(rsvpId, RsvpLogCode.PaymentConfirmed, confirmedByUserId, note);
@@ -515,7 +629,7 @@ export class RsvpService {
   ): Promise<void> {
     const now = new Date();
     await this.ds.query(
-      `UPDATE event_rsvps
+      `UPDATE event_attendees
        SET payment_status = $1, external_refund_id = $2, updated_at = $3
        WHERE id = $4`,
       [PaymentStatus.Refunded, externalRefundId ?? null, now, rsvpId],
@@ -526,13 +640,79 @@ export class RsvpService {
 
   async linkUserAccount(rsvpId: string, userId: string): Promise<void> {
     const now = new Date();
-    await this.ds.query(`UPDATE event_rsvps SET user_id = $1, updated_at = $2 WHERE id = $3`, [
+    await this.ds.query(`UPDATE event_attendees SET user_id = $1, updated_at = $2 WHERE id = $3`, [
       userId,
       now,
       rsvpId,
     ]);
 
     await this.rsvpLogService.create(rsvpId, RsvpLogCode.AccountLinked, userId);
+  }
+
+  async getCurrentWaiver(): Promise<{ body: string; contentHash: string } | null> {
+    const rows = (await this.ds.query(
+      `SELECT body, content_hash FROM waiver_versions
+       WHERE retired_at IS NULL
+       ORDER BY effective_at DESC
+       LIMIT 1`,
+    )) as Array<Record<string, unknown>>;
+
+    const row = rows[0];
+    if (!row) return null;
+
+    return {
+      body: row.body as string,
+      contentHash: row.content_hash as string,
+    };
+  }
+
+  async getContactPrefill(contactId: string): Promise<{
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    zip: string | null;
+    emergencyContactName: string | null;
+    emergencyContactPhone: string | null;
+  }> {
+    const contactRows = (await this.ds.query(
+      `SELECT first_name, last_name FROM contacts WHERE id = $1`,
+      [contactId],
+    )) as Array<Record<string, unknown>>;
+
+    const contact = contactRows[0];
+
+    const emailRows = (await this.ds.query(
+      `SELECT email FROM contact_emails WHERE contact_id = $1 AND is_primary = true LIMIT 1`,
+      [contactId],
+    )) as Array<Record<string, unknown>>;
+
+    const phoneRows = (await this.ds.query(
+      `SELECT phone FROM contact_phones WHERE contact_id = $1 AND is_primary = true LIMIT 1`,
+      [contactId],
+    )) as Array<Record<string, unknown>>;
+
+    const addressRows = (await this.ds.query(
+      `SELECT address_line1, postal_code FROM contact_addresses WHERE contact_id = $1 AND is_primary_mailing = true LIMIT 1`,
+      [contactId],
+    )) as Array<Record<string, unknown>>;
+
+    const ecRows = (await this.ds.query(
+      `SELECT name, phone FROM contact_emergency_contacts WHERE contact_id = $1 LIMIT 1`,
+      [contactId],
+    )) as Array<Record<string, unknown>>;
+
+    return {
+      firstName: (contact?.first_name as string) ?? null,
+      lastName: (contact?.last_name as string) ?? null,
+      email: (emailRows[0]?.email as string) ?? null,
+      phone: (phoneRows[0]?.phone as string) ?? null,
+      address: (addressRows[0]?.address_line1 as string) ?? null,
+      zip: (addressRows[0]?.postal_code as string) ?? null,
+      emergencyContactName: (ecRows[0]?.name as string) ?? null,
+      emergencyContactPhone: (ecRows[0]?.phone as string) ?? null,
+    };
   }
 
   private async getSubmission(rsvpId: string): Promise<RsvpAdminOutput["submission"]> {

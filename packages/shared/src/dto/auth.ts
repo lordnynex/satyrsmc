@@ -57,6 +57,30 @@ export const SignupInputSchema = z
     path: ["password_confirm"],
   });
 
+export const InvitationSignupInputSchema = z
+  .object({
+    token: z.string().min(1, "Token is required"),
+    username: usernameSchema,
+    password: passwordSchema,
+    password_confirm: z.string(),
+    birthday: z.string().refine(
+      (val) => {
+        const birth = new Date(val);
+        const now = new Date();
+        const age = now.getFullYear() - birth.getFullYear();
+        const monthDiff = now.getMonth() - birth.getMonth();
+        const dayDiff = now.getDate() - birth.getDate();
+        const adjustedAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+        return adjustedAge >= 18;
+      },
+      { message: "You must be at least 18 years old" },
+    ),
+  })
+  .refine((data) => data.password === data.password_confirm, {
+    message: "Passwords do not match",
+    path: ["password_confirm"],
+  });
+
 export const LoginInputSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
@@ -111,6 +135,7 @@ export const ValidateTokenResultSchema = z.object({
 export type RegisterInput = z.infer<typeof RegisterInputSchema>;
 export type ValidateTokenInput = z.infer<typeof ValidateTokenInputSchema>;
 export type SignupInput = z.infer<typeof SignupInputSchema>;
+export type InvitationSignupInput = z.infer<typeof InvitationSignupInputSchema>;
 export type LoginInput = z.infer<typeof LoginInputSchema>;
 export type ForgotPasswordInput = z.infer<typeof ForgotPasswordInputSchema>;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordInputSchema>;

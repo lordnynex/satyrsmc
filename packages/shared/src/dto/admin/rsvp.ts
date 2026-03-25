@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-  EventRsvpStatus,
+  AttendeeStatus,
   RegistrationMethod,
   PaymentMethod,
   PaymentStatus,
@@ -130,7 +130,7 @@ export const RsvpOutputSchema = z.object({
   contactId: z.string().nullable(),
   userId: z.string().nullable(),
   eventId: z.string(),
-  status: z.nativeEnum(EventRsvpStatus),
+  status: z.nativeEnum(AttendeeStatus),
   registrationMethod: z.nativeEnum(RegistrationMethod),
   paymentMethod: z.nativeEnum(PaymentMethod).nullable(),
   paymentStatus: z.nativeEnum(PaymentStatus),

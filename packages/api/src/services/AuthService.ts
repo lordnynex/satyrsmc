@@ -10,6 +10,7 @@ import type {
 import { UserStatus, UserType } from "@satyrsmc/shared/lib/enums";
 import { User } from "../entities/User";
 import { Registration } from "../entities/Registration";
+import { Invitation } from "../entities/Invitation";
 import { Contact } from "../entities/Contact";
 import { ContactEmail } from "../entities/ContactEmail";
 import type { EmailService } from "./EmailService";
@@ -218,6 +219,79 @@ export class AuthService {
     await this.emailService.sendAdminNotification(
       "New user registration",
       `User "${input.username}" has registered and is pending approval.`,
+    );
+
+    return { user: entityToAuthUser(user) };
+  }
+
+  /**
+   * Create a user account using an invitation token.
+   * The invitation must be linked to a contact (contactId set).
+   * The contact already exists — no new contact creation needed.
+   */
+  async signupWithInvitation(input: {
+    token: string;
+    username: string;
+    password: string;
+    birthday: string;
+  }): Promise<AuthResult> {
+    const tokenHash = await hashToken(input.token);
+    const invitationRepo = this.ds.getRepository(Invitation);
+    const invitation = await invitationRepo.findOne({ where: { tokenHash } });
+
+    if (!invitation) {
+      throw new Error("Invalid or expired invitation");
+    }
+    if (invitation.expiresAt < new Date()) {
+      throw new Error("This invitation has expired");
+    }
+    if (invitation.claimedAt) {
+      throw new Error("This invitation has already been used");
+    }
+    if (!invitation.contactId) {
+      throw new Error("This invitation is not linked to a contact");
+    }
+
+    // Check if a user already exists for this contact
+    const existingUser = await this.ds
+      .getRepository(User)
+      .findOne({ where: { contactId: invitation.contactId } });
+    if (existingUser) {
+      throw new Error("An account already exists for this contact");
+    }
+
+    // Check username uniqueness
+    const usernameTaken = await this.ds
+      .getRepository(User)
+      .createQueryBuilder("u")
+      .where("LOWER(u.username) = LOWER(:username)", { username: input.username })
+      .getOne();
+    if (usernameTaken) {
+      throw new Error("Username is already taken");
+    }
+
+    // Create user linked to the invitation's contact
+    const passwordHash = await hash(input.password, BCRYPT_COST);
+    const userRepo = this.ds.getRepository(User);
+    const user = userRepo.create({
+      id: uuid(),
+      contactId: invitation.contactId,
+      username: input.username,
+      passwordHash,
+      userType: UserType.User,
+      userStatus: UserStatus.Locked,
+    });
+    await userRepo.save(user);
+
+    // Claim the invitation
+    invitation.claimedAt = new Date();
+    invitation.createdUserId = user.id;
+    await invitationRepo.save(invitation);
+
+    // Notify admin
+    await this.emailService.sendAdminNotification(
+      "New user registration (via invitation)",
+      `User "${input.username}" has registered via invitation and is pending approval.`,
     );
 
     return { user: entityToAuthUser(user) };

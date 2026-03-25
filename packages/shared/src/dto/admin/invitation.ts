@@ -29,6 +29,7 @@ export const InvitationOutputSchema = z.object({
   rsvpId: z.string().nullable(),
   createdUserId: z.string().nullable(),
   createdAt: z.string().nullable(),
+  rawToken: z.string().optional(),
 });
 export type InvitationOutput = z.infer<typeof InvitationOutputSchema>;
 

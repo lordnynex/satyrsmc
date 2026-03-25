@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { EventType, EventAssignmentCategory, RsvpStatus } from "../../lib/enums";
+import {
+  EventType,
+  EventAssignmentCategory,
+  AttendeeStatus,
+  RegistrationMethod,
+  PaymentStatus,
+  PaymentMethod,
+} from "../../lib/enums";
+import { BadgerDetailsSchema } from "./rsvp";
 
 const dateLike = z.union([z.string(), z.date().transform((d) => d.toISOString())]);
 
@@ -72,13 +80,13 @@ export const EventAddAttendeeInputSchema = z.object({
   eventId: z.string(),
   contact_id: z.string(),
   waiver_signed: z.boolean().optional(),
-  rsvp_status: z.nativeEnum(RsvpStatus).optional(),
+  status: z.nativeEnum(AttendeeStatus).optional(),
 });
 export const EventUpdateAttendeeInputSchema = z.object({
   eventId: z.string(),
   attendeeId: z.string(),
   waiver_signed: z.boolean().optional(),
-  rsvp_status: z.nativeEnum(RsvpStatus).optional(),
+  status: z.nativeEnum(AttendeeStatus).optional(),
 });
 export const EventDeleteAttendeeInputSchema = z.object({
   eventId: z.string(),
@@ -284,10 +292,10 @@ const EventAssetSchema = z.object({
 const EventAttendeeSchema = z.object({
   id: z.string(),
   event_id: z.string(),
-  contact_id: z.string(),
+  contact_id: z.string().nullable(),
   sort_order: z.number(),
   waiver_signed: z.boolean(),
-  rsvp_status: z.nativeEnum(RsvpStatus),
+  status: z.nativeEnum(AttendeeStatus),
   is_member: z.boolean(),
   contact: ContactRefSchema.optional(),
   member: z
@@ -298,6 +306,21 @@ const EventAttendeeSchema = z.object({
     })
     .optional(),
 });
+
+export const EventAttendeeAdminSchema = EventAttendeeSchema.extend({
+  registration_method: z.nativeEnum(RegistrationMethod).nullable(),
+  payment_status: z.nativeEnum(PaymentStatus).nullable(),
+  payment_method: z.nativeEnum(PaymentMethod).nullable(),
+  payment_amount_cents: z.number().nullable(),
+  waiver_accepted_at: z.string().nullable(),
+  badger_details: BadgerDetailsSchema.nullable(),
+  created_at: z.string().nullable(),
+});
+export type EventAttendeeAdmin = z.infer<typeof EventAttendeeAdminSchema>;
+
+export const EventGetAttendeesInputSchema = z.object({ eventId: z.string() });
+export const EventGetAttendeesOutputSchema = z.array(EventAttendeeAdminSchema);
+export type EventGetAttendeesOutput = z.infer<typeof EventGetAttendeesOutputSchema>;
 
 const IncidentSchema = z.object({
   id: z.string(),

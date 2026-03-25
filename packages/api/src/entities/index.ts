@@ -50,7 +50,6 @@ export { Registration } from "./Registration";
 export { ActivityLog } from "./ActivityLog";
 export { MembershipLog } from "./MembershipLog";
 export { Bike } from "./Bike";
-export { EventRsvp } from "./EventRsvp";
 export { RsvpSubmission } from "./RsvpSubmission";
 export { BadgerRegistration } from "./BadgerRegistration";
 export { Invitation } from "./Invitation";

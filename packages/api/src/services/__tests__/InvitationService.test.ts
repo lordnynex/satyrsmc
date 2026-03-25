@@ -26,7 +26,7 @@ describe("InvitationService", () => {
 
       expect(result.id).toBeDefined();
       expect(result.rawToken).toBeDefined();
-      expect(result.rawToken.length).toBe(64); // 32 bytes hex
+      expect(result.rawToken.length).toBe(36); // UUID v5 format
       expect(result.purpose).toBe(InvitationPurpose.EventOpenRegistration);
       expect(result.eventId).toBe(event.id);
       expect(result.contactId).toBeNull();

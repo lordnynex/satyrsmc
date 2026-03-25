@@ -70,6 +70,7 @@
     "dejavu-fonts-ttf": "^2.37.3",
     "jspdf": "^4.1.0",
     "lucide-react": "^0.545.0",
+    "pg": "^8.13.3",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
     "pst-extractor": "^1.12.0",
@@ -81,10 +82,10 @@
     "react-dom": "^19",
     "react-router-dom": "^7.13.0",
     "reflect-metadata": "^0.2.2",
-    "pg": "^8.13.3",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.3.1",
     "typeorm": "^0.3.28",
+    "uuid": "^13.0.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
@@ -100,6 +101,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/uuid": "^11.0.0",
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
     "husky": "^9.1.7",

@@ -12,8 +12,15 @@ import {
   ExternalLink,
   Pencil,
   Copy,
+  DollarSign,
 } from "lucide-react";
-import { RsvpStatus } from "@satyrsmc/shared/client";
+import {
+  AttendeeStatus,
+  EventType,
+  PaymentMethod,
+  TshirtSize,
+  TravelMode,
+} from "@satyrsmc/shared/client";
 import type { MemberEventDetail, MemberEventAttendee } from "@satyrsmc/shared/dto/member/event";
 import { formatDateLong, formatDateOnly } from "@/lib/date-utils";
 import { useMemberEventDetail, useMemberEventRsvp } from "@/queries/member-events";
@@ -96,6 +103,30 @@ function AttendeeCard({ attendee }: { attendee: MemberEventAttendee }) {
   );
 }
 
+// ─── Payment method labels ───────────────────────────────────────────────────
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  [PaymentMethod.Check]: "Check",
+  [PaymentMethod.Cash]: "Cash",
+  [PaymentMethod.Zelle]: "Zelle",
+  [PaymentMethod.Stripe]: "Credit/Debit Card",
+};
+
+const TSHIRT_SIZE_LABELS: Record<string, string> = {
+  [TshirtSize.S]: "S",
+  [TshirtSize.M]: "M",
+  [TshirtSize.L]: "L",
+  [TshirtSize.XL]: "XL",
+  [TshirtSize.XXL]: "2XL",
+  [TshirtSize.XXXL]: "3XL",
+};
+
+const TRAVEL_MODE_LABELS: Record<string, string> = {
+  [TravelMode.Motorcycle]: "Motorcycle",
+  [TravelMode.CarTruck]: "Car/Truck",
+  [TravelMode.RvCamper]: "RV/Camper",
+};
+
 // ─── RSVP Sheet ──────────────────────────────────────────────────────────────
 
 function RsvpSheet({
@@ -109,15 +140,41 @@ function RsvpSheet({
 }) {
   const rsvpMutation = useMemberEventRsvp();
   const [waiverAccepted, setWaiverAccepted] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
 
-  const hasExistingRsvp = event.my_rsvp !== null && event.my_rsvp !== RsvpStatus.NoResponse;
-  const alreadyGoing = event.my_rsvp === RsvpStatus.Yes;
-  const canRsvpYes = alreadyGoing || waiverAccepted;
+  // Badger-specific fields
+  const isBadgerEvent = event.event_type === EventType.Badger;
+  const [tshirtSize, setTshirtSize] = useState<TshirtSize | null>(null);
+  const [travelMode, setTravelMode] = useState<TravelMode | null>(null);
+  const [club, setClub] = useState("");
 
-  const handleRsvp = (status: RsvpStatus) => {
-    if (status === RsvpStatus.Yes && !canRsvpYes) return;
+  const isPaidEvent = event.ga_ticket_cost != null && event.ga_ticket_cost > 0;
+  const hasExistingRsvp = event.my_rsvp !== null && event.my_rsvp !== AttendeeStatus.NoResponse;
+  const alreadyGoing = event.my_rsvp === AttendeeStatus.Yes;
+  const badgerFieldsComplete = !isBadgerEvent || (tshirtSize !== null && travelMode !== null);
+  const canRsvpYes =
+    alreadyGoing ||
+    (waiverAccepted && (!isPaidEvent || selectedPaymentMethod !== null) && badgerFieldsComplete);
+
+  const isSubmitting = rsvpMutation.isPending;
+  const submitError = rsvpMutation.error;
+
+  const handleRsvp = (status: AttendeeStatus) => {
+    if (status === AttendeeStatus.Yes && !canRsvpYes) return;
+
+    const isYes = status === AttendeeStatus.Yes;
     rsvpMutation.mutate(
-      { eventId: event.id, status, waiver_signed: waiverAccepted || undefined },
+      {
+        eventId: event.id,
+        status,
+        waiver_signed: waiverAccepted || undefined,
+        paymentMethod:
+          isYes && isPaidEvent && selectedPaymentMethod ? selectedPaymentMethod : undefined,
+        badgerDetails:
+          isYes && isBadgerEvent && tshirtSize && travelMode
+            ? { tshirtSize, travelingBy: travelMode, club: club.trim() || null }
+            : undefined,
+      },
       { onSuccess: () => onOpenChange(false) },
     );
   };
@@ -135,16 +192,16 @@ function RsvpSheet({
               Current status:{" "}
               <Badge
                 variant={
-                  event.my_rsvp === RsvpStatus.Yes
+                  event.my_rsvp === AttendeeStatus.Yes
                     ? "success"
-                    : event.my_rsvp === RsvpStatus.Pending
+                    : event.my_rsvp === AttendeeStatus.Pending
                       ? "warning"
                       : "destructive"
                 }
               >
-                {event.my_rsvp === RsvpStatus.Yes
+                {event.my_rsvp === AttendeeStatus.Yes
                   ? "Going"
-                  : event.my_rsvp === RsvpStatus.Pending
+                  : event.my_rsvp === AttendeeStatus.Pending
                     ? "Pending"
                     : "Not Going"}
               </Badge>
@@ -171,24 +228,119 @@ function RsvpSheet({
             </div>
           )}
 
+          {/* Payment method selection for paid events */}
+          {isPaidEvent && !alreadyGoing && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <DollarSign className="size-4 text-muted-foreground" />
+                <p className="text-sm font-medium">
+                  Registration fee: ${event.ga_ticket_cost?.toLocaleString()}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Select how you will pay. Payment will be confirmed by the treasurer.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.values(PaymentMethod).map((method) => (
+                  <button
+                    key={method}
+                    type="button"
+                    className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${
+                      selectedPaymentMethod === method
+                        ? "border-primary bg-primary/10 font-medium"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    onClick={() => setSelectedPaymentMethod(method)}
+                  >
+                    {PAYMENT_METHOD_LABELS[method] ?? method}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Badger details for Badger events */}
+          {isBadgerEvent && !alreadyGoing && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">T-Shirt Size</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.values(TshirtSize).map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      className={`rounded-lg border p-2 text-sm transition-colors ${
+                        tshirtSize === size
+                          ? "border-primary bg-primary/10 font-medium"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      onClick={() => setTshirtSize(size)}
+                    >
+                      {TSHIRT_SIZE_LABELS[size] ?? size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">How are you traveling?</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {Object.values(TravelMode).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      className={`rounded-lg border p-3 text-sm text-left transition-colors ${
+                        travelMode === mode
+                          ? "border-primary bg-primary/10 font-medium"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      onClick={() => setTravelMode(mode)}
+                    >
+                      {TRAVEL_MODE_LABELS[mode] ?? mode}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  Club <span className="font-normal text-muted-foreground">(optional)</span>
+                </p>
+                <input
+                  type="text"
+                  value={club}
+                  onChange={(e) => setClub(e.target.value)}
+                  placeholder="Your motorcycle club"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+          )}
+
+          {submitError && (
+            <p className="text-sm text-destructive">
+              {submitError.message || "Something went wrong. Please try again."}
+            </p>
+          )}
+
           <div className="space-y-3">
             <p className="text-sm font-medium">Are you going?</p>
             <Button
               size="lg"
-              variant={event.my_rsvp === RsvpStatus.Yes ? "default" : "outline"}
-              className={`w-full gap-2 ${event.my_rsvp === RsvpStatus.Yes ? "bg-green-600 hover:bg-green-700 text-white" : ""}`}
-              disabled={!canRsvpYes || rsvpMutation.isPending}
-              onClick={() => handleRsvp(RsvpStatus.Yes)}
+              variant={event.my_rsvp === AttendeeStatus.Yes ? "default" : "outline"}
+              className={`w-full gap-2 ${event.my_rsvp === AttendeeStatus.Yes ? "bg-green-600 hover:bg-green-700 text-white" : ""}`}
+              disabled={!canRsvpYes || isSubmitting}
+              onClick={() => handleRsvp(AttendeeStatus.Yes)}
             >
               <Check className="size-5" />
-              Yes, I'm going
+              {isSubmitting ? "Submitting..." : "Yes, I'm going"}
             </Button>
             <Button
               size="lg"
-              variant={event.my_rsvp === RsvpStatus.No ? "default" : "outline"}
-              className={`w-full gap-2 ${event.my_rsvp === RsvpStatus.No ? "bg-red-600 hover:bg-red-700 text-white" : ""}`}
-              disabled={rsvpMutation.isPending}
-              onClick={() => handleRsvp(RsvpStatus.No)}
+              variant={event.my_rsvp === AttendeeStatus.No ? "default" : "outline"}
+              className={`w-full gap-2 ${event.my_rsvp === AttendeeStatus.No ? "bg-red-600 hover:bg-red-700 text-white" : ""}`}
+              disabled={isSubmitting}
+              onClick={() => handleRsvp(AttendeeStatus.No)}
             >
               <X className="size-5" />
               No, can't make it
@@ -211,7 +363,7 @@ function Sidebar({ event, onOpenRsvp }: { event: MemberEventDetail; onOpenRsvp: 
 
   const staticMapUrl = getStaticMapUrl(event.event_location, GOOGLE_MAPS_API_KEY ?? null);
 
-  const hasExistingRsvp = event.my_rsvp !== null && event.my_rsvp !== RsvpStatus.NoResponse;
+  const hasExistingRsvp = event.my_rsvp !== null && event.my_rsvp !== AttendeeStatus.NoResponse;
 
   return (
     <div className="space-y-4">
@@ -223,16 +375,16 @@ function Sidebar({ event, onOpenRsvp }: { event: MemberEventDetail; onOpenRsvp: 
             Status:{" "}
             <Badge
               variant={
-                event.my_rsvp === RsvpStatus.Yes
+                event.my_rsvp === AttendeeStatus.Yes
                   ? "success"
-                  : event.my_rsvp === RsvpStatus.Pending
+                  : event.my_rsvp === AttendeeStatus.Pending
                     ? "warning"
                     : "destructive"
               }
             >
-              {event.my_rsvp === RsvpStatus.Yes
+              {event.my_rsvp === AttendeeStatus.Yes
                 ? "Going"
-                : event.my_rsvp === RsvpStatus.Pending
+                : event.my_rsvp === AttendeeStatus.Pending
                   ? "Pending"
                   : "Not Going"}
             </Badge>

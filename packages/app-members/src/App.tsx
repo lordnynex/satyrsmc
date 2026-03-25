@@ -34,6 +34,7 @@ import {
   NotFoundPage,
   EventsPage,
   EventDetailPage,
+  EventAttendeesPage,
   IncidentsPanel,
   MembersPanel,
   MemberDetailPage,
@@ -223,6 +224,16 @@ function AdminContent() {
                   <IdParamGuard>
                     <Suspense fallback={<PageLoading />}>
                       <EventDetailPage />
+                    </Suspense>
+                  </IdParamGuard>
+                }
+              />
+              <Route
+                path=":id/attendees"
+                element={
+                  <IdParamGuard>
+                    <Suspense fallback={<PageLoading />}>
+                      <EventAttendeesPage />
                     </Suspense>
                   </IdParamGuard>
                 }

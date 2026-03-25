@@ -54,13 +54,13 @@ import {
   ActivityLog,
   MembershipLog,
   Bike,
-  EventRsvp,
   RsvpSubmission,
   BadgerRegistration,
   Invitation,
   WaiverVersion,
   RsvpLog,
 } from "../entities";
+import { MergeRsvpIntoAttendees1800000015000 } from "./migrations/1800000015000-MergeRsvpIntoAttendees.ts";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
 import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
 import { AddContactIdToMembers1800000002000 } from "./migrations/1800000002000-AddContactIdToMembers.ts";
@@ -134,7 +134,6 @@ const entities = [
   ActivityLog,
   MembershipLog,
   Bike,
-  EventRsvp,
   RsvpSubmission,
   BadgerRegistration,
   Invitation,
@@ -163,6 +162,7 @@ export const dataSourceOptions: DataSourceOptions = {
     CreateBikesAndMoveBirthday1800000012000,
     AddBikePhotos1800000013000,
     CreateEventRsvpSystem1800000014000,
+    MergeRsvpIntoAttendees1800000015000,
   ],
   migrationsRun: true,
   entities,

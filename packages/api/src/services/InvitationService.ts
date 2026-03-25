@@ -1,9 +1,13 @@
 import type { DataSource } from "typeorm";
 import type { InvitationPurpose } from "@satyrsmc/shared/lib/enums";
 import type { InvitationOutput } from "@satyrsmc/shared/dto/admin/invitation";
+import { v5 as uuidv5 } from "uuid";
 import { Invitation } from "../entities";
 import { uuid } from "./utils";
 import { toISOStringOrNull } from "../lib/date";
+
+/** Fixed namespace UUID for deterministic token generation via UUID v5. */
+const TOKEN_NAMESPACE = "7f3c8a2e-5d1b-4e9f-a6c0-3b8d7e2f1a4c";
 
 function entityToOutput(e: Invitation): InvitationOutput {
   return {
@@ -56,11 +60,14 @@ async function hashToken(raw: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function generateToken(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+/** Generate a deterministic token from an invitation ID using UUID v5. */
+function generateToken(invitationId: string): string {
+  return uuidv5(invitationId, TOKEN_NAMESPACE);
+}
+
+/** Reconstruct the raw token for an existing invitation by ID. */
+function reconstructToken(invitationId: string): string {
+  return generateToken(invitationId);
 }
 
 export class InvitationService {
@@ -74,7 +81,7 @@ export class InvitationService {
     expiresInDays?: number;
   }): Promise<InvitationOutput & { rawToken: string }> {
     const id = uuid();
-    const rawToken = generateToken();
+    const rawToken = generateToken(id);
     const tokenHash = await hashToken(rawToken);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + (data.expiresInDays ?? 30));
@@ -151,14 +158,17 @@ export class InvitationService {
     );
   }
 
-  async findByEvent(eventId: string): Promise<InvitationOutput[]> {
+  async findByEvent(eventId: string): Promise<(InvitationOutput & { rawToken: string })[]> {
     const rows = (await this.ds.query(
       `SELECT * FROM invitations WHERE event_id = $1 ORDER BY created_at DESC`,
       [eventId],
     )) as Array<Record<string, unknown>>;
 
     const repo = this.ds.getRepository(Invitation);
-    return rows.map((row) => entityToOutput(rowToEntity(repo, row)));
+    return rows.map((row) => {
+      const output = entityToOutput(rowToEntity(repo, row));
+      return { ...output, rawToken: reconstructToken(output.id) };
+    });
   }
 
   async findUnclaimedByContact(contactId: string): Promise<InvitationOutput[]> {
@@ -171,5 +181,10 @@ export class InvitationService {
     return rows.map((row) => entityToOutput(rowToEntity(repo, row)));
   }
 
+  async delete(id: string): Promise<void> {
+    await this.ds.query(`DELETE FROM invitations WHERE id = $1`, [id]);
+  }
+
   static hashToken = hashToken;
+  static reconstructToken = reconstructToken;
 }

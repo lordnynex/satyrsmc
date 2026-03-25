@@ -18,6 +18,19 @@ export function useMemberEventRsvp() {
     onSuccess: () => {
       utils.members.events.list.invalidate();
       utils.members.events.get.invalidate();
+      utils.members.rsvps.getMyRsvps.invalidate();
+    },
+  });
+}
+
+/** Cancel an RSVP via the registration system. */
+export function useMemberRsvpCancel() {
+  const utils = trpc.useUtils();
+  return trpc.members.rsvps.cancel.useMutation({
+    onSuccess: () => {
+      utils.members.events.list.invalidate();
+      utils.members.events.get.invalidate();
+      utils.members.rsvps.getMyRsvps.invalidate();
     },
   });
 }

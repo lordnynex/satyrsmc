@@ -11,7 +11,7 @@ import {
   X,
   Lock,
 } from "lucide-react";
-import { EventType, RsvpStatus } from "@satyrsmc/shared/client";
+import { EventType, AttendeeStatus } from "@satyrsmc/shared/client";
 import { formatDateOnly } from "@/lib/date-utils";
 import type { MemberEventCard } from "@satyrsmc/shared/dto/member/event";
 import { useMemberEventsList } from "@/queries/member-events";
@@ -44,9 +44,9 @@ const RSVP_BADGE_CONFIG: Record<
   string,
   { label: string; variant: "success" | "destructive" | "warning" }
 > = {
-  [RsvpStatus.Yes]: { label: "Going", variant: "success" },
-  [RsvpStatus.No]: { label: "Not Going", variant: "destructive" },
-  [RsvpStatus.Pending]: { label: "Pending", variant: "warning" },
+  [AttendeeStatus.Yes]: { label: "Going", variant: "success" },
+  [AttendeeStatus.No]: { label: "Not Going", variant: "destructive" },
+  [AttendeeStatus.Pending]: { label: "Pending", variant: "warning" },
 };
 
 function useDebounce(value: string, delay: number): string {
@@ -78,7 +78,7 @@ function EventCard({ event }: { event: MemberEventCard }) {
   const formattedDate = event.start_date ? formatDateOnly(event.start_date) : null;
 
   const rsvpConfig =
-    event.my_rsvp && event.my_rsvp !== RsvpStatus.NoResponse
+    event.my_rsvp && event.my_rsvp !== AttendeeStatus.NoResponse
       ? RSVP_BADGE_CONFIG[event.my_rsvp]
       : null;
 

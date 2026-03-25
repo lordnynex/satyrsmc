@@ -70,7 +70,7 @@ export function createApi(db: DbLike, ds: DataSource, emailService?: EmailServic
     contactSubmissions: new ContactSubmissionsService(ds),
     auth: new AuthService(ds, email),
     users: new UsersService(ds, email),
-    memberEvents: new MemberEventsService(ds),
+    memberEvents: new MemberEventsService(ds, rsvpLogService),
     recaptcha: new RecaptchaService(),
     activityLogs: activityLogsService,
     membershipLogs: new MembershipLogsService(ds),

@@ -213,15 +213,15 @@ export enum UserStatus {
 }
 export const USER_STATUSES = Object.values(UserStatus);
 
-// --- RSVP ---
+// --- Attendee Status ---
 
-export enum RsvpStatus {
+export enum AttendeeStatus {
   NoResponse = "no_response",
+  Pending = "pending",
   Yes = "yes",
   No = "no",
-  Pending = "pending",
 }
-export const RSVP_STATUSES = Object.values(RsvpStatus);
+export const ATTENDEE_STATUSES = Object.values(AttendeeStatus);
 
 // --- QR Code ---
 
@@ -274,14 +274,6 @@ export const MEMBERSHIP_MESSAGE_CODES = Object.values(MembershipMessageCode);
 
 // --- Event RSVP ---
 
-export enum EventRsvpStatus {
-  PendingReview = "pending_review",
-  Registered = "registered",
-  Confirmed = "confirmed",
-  Cancelled = "cancelled",
-}
-export const EVENT_RSVP_STATUSES = Object.values(EventRsvpStatus);
-
 export enum RegistrationMethod {
   EventToken = "event_token",
   Invitation = "invitation",
@@ -293,7 +285,6 @@ export enum PaymentMethod {
   Check = "check",
   Cash = "cash",
   Zelle = "zelle",
-  MoneyOrder = "money_order",
   Stripe = "stripe",
 }
 export const PAYMENT_METHODS = Object.values(PaymentMethod);

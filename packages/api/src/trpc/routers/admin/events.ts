@@ -77,6 +77,8 @@ import {
   EventUpdateScheduleItemOutputSchema,
   EventUpdateVolunteerInputSchema,
   EventUpdateVolunteerOutputSchema,
+  EventGetAttendeesInputSchema,
+  EventGetAttendeesOutputSchema,
 } from "@satyrsmc/shared/dto/admin/event";
 
 export const eventsRouter = t.router({
@@ -95,6 +97,12 @@ export const eventsRouter = t.router({
       if (!event) throw new TRPCError({ code: "NOT_FOUND" });
       return event;
     }),
+
+  getAttendees: t.procedure
+    .input(EventGetAttendeesInputSchema)
+    .output(EventGetAttendeesOutputSchema)
+    .meta({ description: "Get enriched attendee list for an event (admin view)." })
+    .query(async ({ ctx, input }) => ctx.api.events.getAttendeesAdmin(input.eventId)),
 
   create: t.procedure
     .input(EventCreateInputSchema)
@@ -169,7 +177,7 @@ export const eventsRouter = t.router({
       const out = await ctx.api.events.attendees.add(input.eventId, {
         contact_id: input.contact_id,
         waiver_signed: input.waiver_signed,
-        rsvp_status: input.rsvp_status,
+        status: input.status,
       });
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;
@@ -181,7 +189,7 @@ export const eventsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       const out = await ctx.api.events.attendees.update(input.eventId, input.attendeeId, {
         waiver_signed: input.waiver_signed,
-        rsvp_status: input.rsvp_status,
+        status: input.status,
       });
       if (!out) throw new TRPCError({ code: "NOT_FOUND" });
       return out;

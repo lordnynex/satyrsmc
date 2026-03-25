@@ -5,6 +5,7 @@ export { HomePage } from "@/components/layout/HomePage";
 export { NotFoundPage } from "@/components/layout/NotFoundPage";
 export { EventsPage } from "./EventsPage";
 export { EventDetailPage } from "@/components/events/EventDetailPage";
+export { EventAttendeesPage } from "@/components/events/EventAttendeesPage";
 export { IncidentsPanel } from "@/components/events/IncidentsPanel";
 export { MembersPanel } from "@/components/members/MembersPanel";
 export { MemberDetailPage } from "@/components/members/MemberDetailPage";

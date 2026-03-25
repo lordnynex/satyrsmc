@@ -1,5 +1,12 @@
 import type { DataSource } from "typeorm";
-import type { RsvpStatus } from "@satyrsmc/shared/lib/enums";
+import {
+  AttendeeStatus,
+  RegistrationMethod,
+  PaymentStatus,
+  RsvpLogCode,
+} from "@satyrsmc/shared/lib/enums";
+import type { PaymentMethod } from "@satyrsmc/shared/lib/enums";
+import type { BadgerDetails } from "@satyrsmc/shared/dto/admin/rsvp";
 import type {
   MemberEventListInput,
   MemberEventListOutput,
@@ -13,6 +20,21 @@ import type {
 import { Event } from "../entities";
 import { toISOStringOrNull } from "../lib/date";
 import { uuid } from "./utils";
+import type { RsvpLogService } from "./RsvpLogService";
+
+export interface MemberRsvpParams {
+  contactId: string;
+  userId: string;
+  eventId: string;
+  status: AttendeeStatus;
+  waiverSigned?: boolean;
+  waiverContentHash?: string;
+  waiverIp?: string;
+  waiverUserAgent?: string | null;
+  paymentMethod?: PaymentMethod;
+  paymentAmountCents?: number | null;
+  badgerDetails?: BadgerDetails;
+}
 
 interface FilterResult {
   conditions: string[];
@@ -56,7 +78,10 @@ function buildFilters(input: MemberEventListInput, startIdx: number): FilterResu
 }
 
 export class MemberEventsService {
-  constructor(private ds: DataSource) {}
+  constructor(
+    private ds: DataSource,
+    private rsvpLogService: RsvpLogService,
+  ) {}
 
   async list(contactId: string, input: MemberEventListInput): Promise<MemberEventListOutput> {
     const { page, per_page, upcoming } = input;
@@ -101,13 +126,19 @@ export class MemberEventsService {
           LIMIT 1
         ) AS photo_url,
         COALESCE((
-          SELECT COUNT(*)::int
+          SELECT COUNT(DISTINCT a2.contact_id)::int
           FROM event_attendees a2
-          WHERE a2.event_id = e.id AND a2.rsvp_status = 'yes'
+          WHERE a2.event_id = e.id AND a2.status = 'yes'
         ), 0) AS rsvp_yes_count,
-        a.rsvp_status AS my_rsvp
+        (
+          SELECT a3.status FROM event_attendees a3
+          WHERE a3.event_id = e.id AND a3.contact_id = $1
+          ORDER BY
+            CASE WHEN a3.registration_method IS NOT NULL THEN 0 ELSE 1 END,
+            a3.updated_at DESC
+          LIMIT 1
+        ) AS my_rsvp
       FROM events e
-      LEFT JOIN event_attendees a ON a.event_id = e.id AND a.contact_id = $1
       ${mainWhere}
       ORDER BY e.start_date ${orderDirection}
       LIMIT $${limitIdx} OFFSET $${offsetIdx}
@@ -142,23 +173,28 @@ export class MemberEventsService {
     const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
     if (!event) return null;
 
-    // Current user's RSVP
+    // Current user's RSVP (check all records, prefer registration over simple, then latest)
     const rsvpRows = (await this.ds.query(
-      `SELECT rsvp_status FROM event_attendees WHERE event_id = $1 AND contact_id = $2`,
+      `SELECT status, registration_method, updated_at FROM event_attendees
+       WHERE event_id = $1 AND contact_id = $2
+       ORDER BY
+         CASE WHEN registration_method IS NOT NULL THEN 0 ELSE 1 END,
+         updated_at DESC
+       LIMIT 1`,
       [eventId, contactId],
-    )) as Array<{ rsvp_status: string }>;
-    const myRsvp = (rsvpRows[0]?.rsvp_status as MemberEventCard["my_rsvp"]) ?? null;
+    )) as Array<{ status: string }>;
+    const myRsvp = (rsvpRows[0]?.status as MemberEventCard["my_rsvp"]) ?? null;
 
-    // Count of yes RSVPs
+    // Count of yes RSVPs (deduplicated by contact)
     const countRows = (await this.ds.query(
-      `SELECT COUNT(*)::int AS cnt FROM event_attendees WHERE event_id = $1 AND rsvp_status = 'yes'`,
+      `SELECT COUNT(DISTINCT contact_id)::int AS cnt FROM event_attendees WHERE event_id = $1 AND status = 'yes'`,
       [eventId],
     )) as Array<{ cnt: number }>;
     const rsvpYesCount = countRows[0]?.cnt ?? 0;
 
-    // Attendees with rsvp_status = 'yes'
+    // Attendees with status = 'yes' (deduplicated by contact)
     const attendeeRows = (await this.ds.query(
-      `SELECT
+      `SELECT DISTINCT ON (a.contact_id)
         a.contact_id,
         c.display_name,
         a.sort_order,
@@ -171,8 +207,8 @@ export class MemberEventsService {
       JOIN contacts c ON c.id = a.contact_id
       LEFT JOIN members m ON m.contact_id = a.contact_id
       LEFT JOIN contact_photos cph ON cph.contact_id = a.contact_id AND cph.type = 'profile'
-      WHERE a.event_id = $1 AND a.rsvp_status = 'yes'
-      ORDER BY a.sort_order ASC`,
+      WHERE a.event_id = $1 AND a.status = 'yes'
+      ORDER BY a.contact_id, a.updated_at DESC`,
       [eventId],
     )) as Array<Record<string, unknown>>;
 
@@ -244,20 +280,191 @@ export class MemberEventsService {
     };
   }
 
-  async rsvp(
-    contactId: string,
-    eventId: string,
-    status: RsvpStatus,
-    waiverSigned?: boolean,
-  ): Promise<MemberEventRsvpOutput> {
-    const id = uuid();
+  async rsvp(params: MemberRsvpParams): Promise<MemberEventRsvpOutput> {
+    const {
+      contactId,
+      userId,
+      eventId,
+      status,
+      waiverSigned,
+      waiverContentHash,
+      waiverIp,
+      waiverUserAgent,
+      paymentMethod,
+      paymentAmountCents,
+      badgerDetails,
+    } = params;
     const waiver = waiverSigned === true;
-    await this.ds.query(
-      `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, rsvp_status, created_at, updated_at)
-       VALUES ($1, $2, $3, 0, $5, $4, now(), now())
-       ON CONFLICT (event_id, contact_id) DO UPDATE SET rsvp_status = $4, waiver_signed = GREATEST(event_attendees.waiver_signed, $5), updated_at = now()`,
-      [id, eventId, contactId, status, waiver],
-    );
+    const isRegistration = !!paymentMethod || !!badgerDetails;
+    const now = new Date();
+
+    // Find existing attendee record (prefer registration records, then latest)
+    const existing = (await this.ds.query(
+      `SELECT id, registration_method, payment_status FROM event_attendees
+       WHERE event_id = $1 AND contact_id = $2
+       ORDER BY
+         CASE WHEN registration_method IS NOT NULL THEN 0 ELSE 1 END,
+         updated_at DESC
+       LIMIT 1`,
+      [eventId, contactId],
+    )) as Array<{ id: string; registration_method: string | null; payment_status: string | null }>;
+
+    let rsvpId: string;
+
+    if (status === AttendeeStatus.No) {
+      // ── Cancel / RSVP No ──
+      if (existing.length > 0) {
+        const row = existing[0]!;
+        if (row.registration_method != null) {
+          // Cancel a registration: set cancelled_at, handle refund status
+          const newPaymentStatus =
+            row.payment_status === PaymentStatus.Confirmed
+              ? PaymentStatus.RefundRequested
+              : row.payment_status;
+          await this.ds.query(
+            `UPDATE event_attendees
+             SET status = $1::attendee_status_enum, cancelled_at = $2,
+                 payment_status = COALESCE($3, payment_status), updated_at = $4
+             WHERE id = $5`,
+            [status, now, newPaymentStatus, now, row.id],
+          );
+          await this.rsvpLogService.create(row.id, RsvpLogCode.Cancelled, userId);
+        } else {
+          // Simple record — just set status
+          await this.ds.query(
+            `UPDATE event_attendees SET status = $1::attendee_status_enum, updated_at = $2
+             WHERE id = $3`,
+            [status, now, row.id],
+          );
+        }
+      } else {
+        // No existing record — insert a simple "no"
+        rsvpId = uuid();
+        await this.ds.query(
+          `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, status, created_at, updated_at)
+           VALUES ($1, $2, $3, 0, false, $4::attendee_status_enum, $5, $6)`,
+          [rsvpId, eventId, contactId, status, now, now],
+        );
+      }
+    } else {
+      // ── RSVP Yes (or other non-No status) ──
+      const regMethod = isRegistration ? RegistrationMethod.Auth : null;
+      const paymentStatus =
+        paymentAmountCents && paymentAmountCents > 0
+          ? PaymentStatus.Pending
+          : isRegistration
+            ? PaymentStatus.NotRequired
+            : null;
+
+      if (existing.length > 0) {
+        const row = existing[0]!;
+        rsvpId = row.id;
+        if (isRegistration) {
+          // Reactivate / update as registration
+          await this.ds.query(
+            `UPDATE event_attendees
+             SET status = $1::attendee_status_enum, cancelled_at = NULL,
+                 registration_method = COALESCE($2, registration_method),
+                 user_id = COALESCE($3, user_id),
+                 waiver_signed = GREATEST(waiver_signed, $4),
+                 waiver_content_hash = COALESCE($5, waiver_content_hash),
+                 waiver_accepted_at = COALESCE($6, waiver_accepted_at),
+                 waiver_ip = COALESCE($7, waiver_ip),
+                 waiver_user_agent = COALESCE($8, waiver_user_agent),
+                 payment_method = COALESCE($9, payment_method),
+                 payment_status = COALESCE($10, payment_status),
+                 payment_amount_cents = COALESCE($11, payment_amount_cents),
+                 updated_at = $12
+             WHERE id = $13`,
+            [
+              status,
+              regMethod,
+              userId,
+              waiver,
+              waiverContentHash ?? null,
+              waiver ? now : null,
+              waiverIp ?? null,
+              waiverUserAgent ?? null,
+              paymentMethod ?? null,
+              paymentStatus,
+              paymentAmountCents ?? null,
+              now,
+              row.id,
+            ],
+          );
+        } else {
+          // Simple RSVP update
+          await this.ds.query(
+            `UPDATE event_attendees
+             SET status = $1::attendee_status_enum, waiver_signed = GREATEST(waiver_signed, $2),
+                 cancelled_at = NULL, updated_at = $3
+             WHERE id = $4`,
+            [status, waiver, now, row.id],
+          );
+        }
+      } else {
+        // Insert new record
+        rsvpId = uuid();
+        if (isRegistration) {
+          await this.ds.query(
+            `INSERT INTO event_attendees (
+              id, event_id, contact_id, user_id, registration_method,
+              sort_order, waiver_signed, status,
+              waiver_content_hash, waiver_accepted_at, waiver_ip, waiver_user_agent,
+              payment_method, payment_status, payment_amount_cents,
+              created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, 0, $6, $7::attendee_status_enum, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+            [
+              rsvpId,
+              eventId,
+              contactId,
+              userId,
+              regMethod,
+              waiver,
+              status,
+              waiverContentHash ?? null,
+              waiver ? now : null,
+              waiverIp ?? null,
+              waiverUserAgent ?? null,
+              paymentMethod ?? null,
+              paymentStatus,
+              paymentAmountCents ?? null,
+              now,
+              now,
+            ],
+          );
+        } else {
+          await this.ds.query(
+            `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, status, created_at, updated_at)
+             VALUES ($1, $2, $3, 0, $4, $5::attendee_status_enum, $6, $7)`,
+            [rsvpId, eventId, contactId, waiver, status, now, now],
+          );
+        }
+      }
+
+      // Log registration
+      if (isRegistration) {
+        await this.rsvpLogService.create(rsvpId, RsvpLogCode.Registered, userId);
+      }
+
+      // Upsert badger details
+      if (badgerDetails) {
+        await this.ds.query(`DELETE FROM badger_registrations WHERE rsvp_id = $1`, [rsvpId]);
+        await this.ds.query(
+          `INSERT INTO badger_registrations (id, rsvp_id, tshirt_size, traveling_by, club, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            uuid(),
+            rsvpId,
+            badgerDetails.tshirtSize,
+            badgerDetails.travelingBy,
+            badgerDetails.club ?? null,
+            now,
+          ],
+        );
+      }
+    }
+
     return { ok: true as const, status };
   }
 }

@@ -56,7 +56,7 @@ Payment is handled **outside the website**. When you register, you select how yo
 | **Zelle**       | Send via Zelle to the club's Zelle contact (listed on the mailer) |
 | **Money Order** | Mail to the club                                                  |
 
-The treasurer will confirm your payment once it's received. Your registration status will update from "Pending" to "Confirmed."
+The treasurer will confirm your payment once it's received. Your payment status will update from "Pending" to "Confirmed."
 
 ---
 
@@ -77,16 +77,16 @@ The same token/URL is used by all recipients — it's reusable and not single-us
 
 ### Reviewing Registrations
 
-When someone registers via the QR code (without logging in), their registration is marked **"Pending Review."** An admin must match the submission to an existing contact or create a new one.
+When someone registers via the QR code (without logging in), their registration is marked **"Pending."** An admin must match the submission to an existing contact or create a new one.
 
 1. Navigate to the **Badger event** in the admin panel.
 2. Open the **"Review Registrations"** tab.
 3. You'll see a list of pending submissions:
 
-   | Name (submitted) | Email             | Status         |
-   | ---------------- | ----------------- | -------------- |
-   | Craig Thompson   | craig@example.com | Pending Review |
-   | Joe Smith        | joe@email.com     | Pending Review |
+   | Name (submitted) | Email             | Status  |
+   | ---------------- | ----------------- | ------- |
+   | Craig Thompson   | craig@example.com | Pending |
+   | Joe Smith        | joe@email.com     | Pending |
 
 4. **Click a row** to see the full submitted info: name, email, phone, address, emergency contact, t-shirt size, travel mode, club, and payment method.
 5. **Search existing contacts** to see if this person is already in the system.
@@ -107,15 +107,14 @@ Registrations from **logged-in users** skip this step entirely — they're autom
    | Joe Smith      | Check          | $200.00 | Pending   |
    | Maria Garcia   | Cash           | $200.00 | Confirmed |
 
-4. **Confirm a payment:** Click the checkmark next to a registration, optionally add a note (e.g., "Zelle received 3/15 from @craig"). The status changes to "Confirmed."
+4. **Confirm a payment:** Click the checkmark next to a registration, optionally add a note (e.g., "Zelle received 3/15 from @craig"). The payment status changes to "Confirmed."
 5. **Bulk confirm:** Select multiple registrations and confirm them all at once. Useful when processing a batch of checks or Zelle payments.
-6. Once payment is confirmed, the registration status updates from "Registered" to "Confirmed."
 
 ### Handling Cancellations and Refunds
 
 When a registrant (or admin) cancels a registration:
 
-- The registration status changes to **"Cancelled."**
+- The registration status changes to **"No."**
 - If payment was already confirmed, the payment status changes to **"Refund Requested."**
 
 To process a refund:
@@ -136,12 +135,12 @@ To process a refund:
 
 ### Registration Statuses
 
-| Status             | Meaning                                                              |
-| ------------------ | -------------------------------------------------------------------- |
-| **Pending Review** | Submitted via QR code, awaiting admin to match to a contact          |
-| **Registered**     | Contact matched (or logged-in user), payment pending or not required |
-| **Confirmed**      | Payment confirmed by treasurer                                       |
-| **Cancelled**      | Registration cancelled by user or admin                              |
+| Status          | Meaning                                                     |
+| --------------- | ----------------------------------------------------------- |
+| **No Response** | Default — admin-added attendee who hasn't responded yet     |
+| **Pending**     | Submitted via QR code, awaiting admin to match to a contact |
+| **Yes**         | Contact matched (or logged-in user), confirmed attending    |
+| **No**          | Registration cancelled by user or admin                     |
 
 ### Payment Statuses
 
