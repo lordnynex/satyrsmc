@@ -65,15 +65,13 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
         className="card w-full max-w-md"
-        style={{ backgroundColor: "var(--color-surface)", opacity: 1 }}
         role="dialog"
         aria-modal="true"
         aria-label={`Contact ${memberName}`}
@@ -98,9 +96,9 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
           </div>
 
           {submitted ? (
-            <div className="text-center py-6" style={{ color: "var(--color-accent)" }}>
+            <div className="text-center py-6 text-satyrs-gold">
               <p className="text-lg font-semibold m-0 mb-2">Message sent!</p>
-              <p className="m-0" style={{ color: "var(--color-muted)" }}>
+              <p className="m-0 text-[var(--color-muted)]">
                 Your message has been forwarded to {memberName}.
               </p>
               <button onClick={onClose} className="btn btn-primary mt-4">
@@ -120,9 +118,7 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                   {...register("sender_name")}
                 />
                 {errors.sender_name && (
-                  <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                    {errors.sender_name.message}
-                  </p>
+                  <p className="text-sm mt-1 text-red-500">{errors.sender_name.message}</p>
                 )}
               </div>
               <div>
@@ -136,9 +132,7 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                   {...register("sender_email")}
                 />
                 {errors.sender_email && (
-                  <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                    {errors.sender_email.message}
-                  </p>
+                  <p className="text-sm mt-1 text-red-500">{errors.sender_email.message}</p>
                 )}
               </div>
               <div>
@@ -152,9 +146,7 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                   {...register("message")}
                 />
                 {errors.message && (
-                  <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                    {errors.message.message}
-                  </p>
+                  <p className="text-sm mt-1 text-red-500">{errors.message.message}</p>
                 )}
               </div>
 
@@ -168,17 +160,13 @@ export const ContactMemberModal: React.FC<ContactMemberModalProps> = ({
                     onExpired={() => setValue("recaptcha_token", "")}
                   />
                   {errors.recaptcha_token && (
-                    <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                      {errors.recaptcha_token.message}
-                    </p>
+                    <p className="text-sm mt-1 text-red-500">{errors.recaptcha_token.message}</p>
                   )}
                 </div>
               )}
 
               {mutation.error && (
-                <p className="text-sm" style={{ color: "#ef4444" }}>
-                  Something went wrong. Please try again.
-                </p>
+                <p className="text-sm text-red-500">Something went wrong. Please try again.</p>
               )}
 
               <button

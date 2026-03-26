@@ -16,39 +16,25 @@ export const HeroCarousel: React.FC<Props> = ({ slides, intervalMs = 5000 }) => 
   if (!slides.length) return null;
 
   return (
-    <div
-      className="relative"
-      style={{ position: "relative", overflow: "hidden", borderRadius: "var(--radius-lg)" }}
-    >
+    <div className="carousel-frame">
       {slides.map((s, i) => (
         <img
           // eslint-disable-next-line @eslint-react/no-array-index-key
           key={`${s.src}-${i}`}
           src={s.src}
           alt={s.alt || ""}
-          style={{
-            width: "100%",
-            height: "min(48vh, 520px)",
-            objectFit: "cover",
-            position: "absolute",
-            inset: 0,
-            opacity: i === idx ? 1 : 0,
-            transition: "opacity 800ms ease-in-out",
-          }}
+          className="carousel-img"
+          style={{ opacity: i === idx ? 1 : 0 }}
         />
       ))}
-      <div style={{ position: "relative", paddingTop: "min(48vh, 520px)" }} />
-      <div style={{ position: "absolute", bottom: 8, right: 12, display: "flex", gap: 6 }}>
+      <div className="carousel-spacer" />
+      <div className="absolute bottom-2 right-3 flex gap-1.5">
         {slides.map((s, i) => (
           <span
             // eslint-disable-next-line @eslint-react/no-array-index-key
             key={`${s.src}-${i}`}
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: i === idx ? "var(--color-accent)" : "rgba(255,255,255,0.5)",
-            }}
+            className="w-2 h-2 rounded-full"
+            style={{ background: i === idx ? "var(--color-accent)" : "rgba(255,255,255,0.5)" }}
           />
         ))}
       </div>

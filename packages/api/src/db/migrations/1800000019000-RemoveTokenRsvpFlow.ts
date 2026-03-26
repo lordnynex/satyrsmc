@@ -8,9 +8,10 @@ export class RemoveTokenRsvpFlow1800000019000 implements MigrationInterface {
     // are no longer supported; all RSVPs now require an authenticated account.
     await queryRunner.query(`DROP TABLE IF EXISTS rsvp_submissions`);
 
+    // Delete any legacy attendee rows with no contact_id (from old token registrations).
+    await queryRunner.query(`DELETE FROM event_attendees WHERE contact_id IS NULL`);
+
     // Enforce that every attendee row has a contact_id.
-    // Any legacy rows with null contact_id (from old token registrations)
-    // should have been cleaned up by migration 16000; assert none remain.
     await queryRunner.query(`ALTER TABLE event_attendees ALTER COLUMN contact_id SET NOT NULL`);
 
     // Remove event_token from registration_method_enum.
@@ -25,6 +26,11 @@ export class RemoveTokenRsvpFlow1800000019000 implements MigrationInterface {
     `);
     await queryRunner.query(`DROP TYPE IF EXISTS registration_method_enum`);
     await queryRunner.query(`CREATE TYPE registration_method_enum AS ENUM ('invitation', 'auth')`);
+    // Delete any remaining rows with the legacy event_token registration method
+    // before casting — the new enum doesn't include it.
+    await queryRunner.query(
+      `DELETE FROM event_attendees WHERE registration_method = 'event_token'`,
+    );
     await queryRunner.query(`
       ALTER TABLE event_attendees
         ALTER COLUMN registration_method TYPE registration_method_enum

@@ -16,12 +16,11 @@ export function EventLocationCard({ mapEmbedUrl }: EventLocationCardProps) {
           src={mapEmbedUrl}
           width="100%"
           height="200"
-          style={{ border: 0 }}
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           title="Event location"
-          className="w-full"
+          className="w-full border-0"
         />
       </CardContent>
     </Card>

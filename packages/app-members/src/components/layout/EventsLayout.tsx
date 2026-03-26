@@ -1,19 +1,10 @@
 import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { cn, navLinkClass } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { EVENT_TYPE_LABELS, EVENT_TYPE_SLUGS, EVENT_TYPES } from "@/lib/event-constants";
 import { PanelLeftClose, PanelLeftOpen, Menu, Calendar, Bike, AlertTriangle } from "lucide-react";
-
-const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) =>
-  cn(
-    "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-    collapsed ? "justify-center" : "gap-2",
-    isActive
-      ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-  );
 
 const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   badger: Calendar,

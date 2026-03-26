@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet, useNavigate, NavLink } from "react-router-dom";
 import { useMailingListsOptional } from "@/queries/hooks";
-import { cn } from "@/lib/utils";
+import { cn, navLinkClass } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -21,15 +21,6 @@ import {
   Menu,
 } from "lucide-react";
 
-const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) =>
-  cn(
-    "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-    collapsed ? "justify-center" : "gap-2",
-    isActive
-      ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-  );
-
 export function ContactsLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -40,13 +31,7 @@ export function ContactsLayout() {
   const bothLists = lists.filter((l) => (l.delivery_type ?? "both") === "both");
 
   const listLinkClass = ({ isActive }: { isActive: boolean }, isCollapsed?: boolean) =>
-    cn(
-      "flex items-center rounded-md px-3 py-2 text-sm transition-colors",
-      (isCollapsed ?? collapsed) ? "justify-center" : "gap-2",
-      isActive
-        ? "bg-muted font-medium text-foreground"
-        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-    );
+    navLinkClass({ isActive }, isCollapsed ?? collapsed);
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 

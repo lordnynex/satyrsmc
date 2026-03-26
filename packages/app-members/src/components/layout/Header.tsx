@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { navLinkClass } from "@/lib/utils";
+import { BrandLogo } from "@satyrsmc/shared/components";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,27 +18,11 @@ export function Header() {
   });
   const pendingTotal = (pendingData?.locked_count ?? 0) + (pendingData?.registration_count ?? 0);
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      "inline-flex h-10 items-center justify-center border-b-2 px-4 text-sm font-medium transition-colors",
-      isActive
-        ? "border-primary text-foreground"
-        : "border-transparent text-muted-foreground hover:border-muted-foreground/30 hover:text-foreground",
-    );
-
-  const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      "flex h-12 items-center rounded-md px-4 text-base font-medium transition-colors",
-      isActive
-        ? "bg-muted text-foreground"
-        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-    );
-
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-6">
-        <NavLink to="/admin" className="text-xl font-bold hover:opacity-90 shrink-0">
-          Satyrs M/C
+        <NavLink to="/admin" className="hover:opacity-90 shrink-0">
+          <BrandLogo />
         </NavLink>
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
           <NavLink to="/admin" end className={navLinkClass}>
@@ -103,7 +88,7 @@ export function Header() {
               <NavLink
                 to="/admin"
                 end
-                className={({ isActive }) => mobileNavLinkClass({ isActive })}
+                className={({ isActive }) => navLinkClass({ isActive })}
                 onClick={() => setMobileNavOpen(false)}
               >
                 Home
@@ -111,7 +96,7 @@ export function Header() {
               <NavLink
                 to="/admin/budgeting/projections"
                 className={({ isActive }) =>
-                  mobileNavLinkClass({ isActive: isActive || isBudgetingActive })
+                  navLinkClass({ isActive: isActive || isBudgetingActive })
                 }
                 onClick={() => setMobileNavOpen(false)}
               >
@@ -119,7 +104,7 @@ export function Header() {
               </NavLink>
               <NavLink
                 to="/admin/events"
-                className={({ isActive }) => mobileNavLinkClass({ isActive })}
+                className={({ isActive }) => navLinkClass({ isActive })}
                 onClick={() => setMobileNavOpen(false)}
               >
                 Events
@@ -127,7 +112,7 @@ export function Header() {
               <NavLink
                 to="/admin/meetings"
                 className={({ isActive }) =>
-                  mobileNavLinkClass({ isActive: isActive || isMeetingsActive })
+                  navLinkClass({ isActive: isActive || isMeetingsActive })
                 }
                 onClick={() => setMobileNavOpen(false)}
               >
@@ -135,7 +120,7 @@ export function Header() {
               </NavLink>
               <NavLink
                 to="/admin/contacts"
-                className={({ isActive }) => mobileNavLinkClass({ isActive })}
+                className={({ isActive }) => navLinkClass({ isActive })}
                 onClick={() => setMobileNavOpen(false)}
               >
                 Contacts
@@ -143,7 +128,7 @@ export function Header() {
               <NavLink
                 to="/admin/website"
                 className={({ isActive }) =>
-                  mobileNavLinkClass({ isActive: isActive || isWebsiteActive })
+                  navLinkClass({ isActive: isActive || isWebsiteActive })
                 }
                 onClick={() => setMobileNavOpen(false)}
               >
@@ -151,14 +136,14 @@ export function Header() {
               </NavLink>
               <NavLink
                 to="/admin/members"
-                className={({ isActive }) => mobileNavLinkClass({ isActive })}
+                className={({ isActive }) => navLinkClass({ isActive })}
                 onClick={() => setMobileNavOpen(false)}
               >
                 Members
               </NavLink>
               <NavLink
                 to="/admin/users"
-                className={({ isActive }) => mobileNavLinkClass({ isActive })}
+                className={({ isActive }) => navLinkClass({ isActive })}
                 onClick={() => setMobileNavOpen(false)}
               >
                 <span className="flex items-center gap-2">

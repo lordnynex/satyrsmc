@@ -6,3 +6,4 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export { isValidUuid } from "@satyrsmc/shared/lib/uuid";
+export { navLinkClass } from "@satyrsmc/shared/lib/nav";
