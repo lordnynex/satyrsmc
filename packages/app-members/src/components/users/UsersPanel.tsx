@@ -55,10 +55,12 @@ export function UsersPanel() {
             )}
           </p>
         </div>
-        <Button onClick={() => setInviteOpen(true)}>
-          <Plus className="size-4" />
-          Invite User
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setInviteOpen(true)}>
+            <Plus className="size-4" />
+            Invite User
+          </Button>
+        </div>
       </div>
 
       <PendingAccountsBanner />

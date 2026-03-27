@@ -3,8 +3,8 @@
  * Seed script — creates sample users, mailing lists, and events for manual testing.
  *
  * Usage:
- *   bun run seed                           # Requires DATABASE_URL
- *   USE_PGLITE=1 bun run seed              # In-memory PGlite (lost on restart)
+ *   bun run seed                           # Uses DATABASE_URL from packages/api/.env
+ *                                          # Set USE_PGLITE=1 in .env for in-memory PGlite
  *
  * Creates these accounts (all passwords: "Password1!"):
  *
@@ -24,7 +24,7 @@
  * The script is idempotent — it skips records that already exist.
  */
 import "reflect-metadata";
-import { DataSource } from "typeorm";
+import { DataSource, type DataSourceOptions } from "typeorm";
 import { hash } from "bcryptjs";
 import { dataSourceOptions } from "../src/db/dataSource";
 import { User } from "../src/entities/User";
@@ -36,6 +36,9 @@ import { Member } from "../src/entities/Member";
 import { Event } from "../src/entities/Event";
 import { MailingList } from "../src/entities/MailingList";
 import { MailingListMember } from "../src/entities/MailingListMember";
+import { WaiverVersion } from "../src/entities/WaiverVersion";
+import { BadgerRegistration } from "../src/entities/BadgerRegistration";
+import { EventAttendee } from "../src/entities/EventAttendee";
 import {
   UserType,
   UserStatus,
@@ -48,11 +51,44 @@ import {
   MailingListType,
   MailingDeliveryType,
   MailingMemberSource,
+  AttendeeStatus,
+  RegistrationMethod,
+  PaymentStatus,
+  PaymentMethod,
+  TshirtSize,
+  TravelMode,
 } from "@satyrsmc/shared/lib/enums";
 import { logger } from "../src/logger";
 
 const SEED_PASSWORD = "Password1!";
 const BCRYPT_COST = 12;
+const BADGER_GA_TICKET_COST = 75;
+
+const WAIVER_BODY = `RELEASE AND WAIVER OF LIABILITY
+
+In consideration of being permitted to participate in any and all activities of Satyrs Motorcycle Club ("the Club"), I, the undersigned, acknowledge, appreciate, and agree that:
+
+1. The risk of injury from the activities involved in this program is significant, including the potential for permanent paralysis and death, and while particular rules, equipment, and personal discipline may reduce this risk, the risk of serious injury does exist.
+
+2. I KNOWINGLY AND FREELY ASSUME ALL SUCH RISKS, both known and unknown, EVEN IF ARISING FROM THE NEGLIGENCE OF THE RELEASEES or others, and assume full responsibility for my participation.
+
+3. I willingly agree to comply with the stated and customary terms and conditions for participation. If, however, I observe any unusual significant hazard during my presence or participation, I will remove myself from participation and bring such to the attention of the nearest official immediately.
+
+4. I, for myself and on behalf of my heirs, assigns, personal representatives and next of kin, HEREBY RELEASE AND HOLD HARMLESS Satyrs Motorcycle Club, its officers, officials, agents, and/or employees, other participants, sponsoring agencies, sponsors, advertisers, and, if applicable, owners and lessors of premises used to conduct the event ("RELEASEES"), WITH RESPECT TO ANY AND ALL INJURY, DISABILITY, DEATH, or loss or damage to person or property, WHETHER ARISING FROM THE NEGLIGENCE OF THE RELEASEES OR OTHERWISE, to the fullest extent permitted by law.
+
+I HAVE READ THIS RELEASE OF LIABILITY AND ASSUMPTION OF RISK AGREEMENT, FULLY UNDERSTAND ITS TERMS, UNDERSTAND THAT I HAVE GIVEN UP SUBSTANTIAL RIGHTS BY SIGNING IT, AND SIGN IT FREELY AND VOLUNTARILY WITHOUT ANY INDUCEMENT.`;
+
+async function hashToken(raw: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(raw);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function contentHash(text: string): Promise<string> {
+  return hashToken(text);
+}
 
 interface SeedUser {
   username: string;
@@ -217,13 +253,26 @@ function makeSeedEvents(): SeedEvent[] {
   ];
 }
 
+async function getSeederDataSource(): Promise<DataSource> {
+  const opts = { ...dataSourceOptions, migrationsRun: true };
+
+  if (process.env.USE_PGLITE === "1") {
+    const { PGliteDriver } = await import("typeorm-pglite");
+    const ds = new DataSource({
+      ...opts,
+      url: undefined,
+      driver: new PGliteDriver().driver,
+    } as DataSourceOptions);
+    return ds;
+  }
+
+  return new DataSource(opts);
+}
+
 async function main() {
   logger.info("Seeding sample data...");
 
-  const ds = new DataSource({
-    ...dataSourceOptions,
-    migrationsRun: true,
-  });
+  const ds = await getSeederDataSource();
   await ds.initialize();
 
   const passwordHash = await hash(SEED_PASSWORD, BCRYPT_COST);
@@ -440,6 +489,231 @@ async function main() {
   }
 
   logger.info(`Events: ${eventsCreated} created, ${eventsSkipped} skipped`);
+
+  // ── Waiver Version ──────────────────────────────────────────────────────
+
+  const waiverRepo = ds.getRepository(WaiverVersion);
+  const existingWaiver = await waiverRepo
+    .createQueryBuilder("w")
+    .where("w.retired_at IS NULL")
+    .getOne();
+
+  if (existingWaiver) {
+    logger.info(`  skip waiver: active waiver already exists (v${existingWaiver.version})`);
+  } else {
+    const hash = await contentHash(WAIVER_BODY);
+    const waiver = waiverRepo.create({
+      id: crypto.randomUUID(),
+      title: "General Liability Waiver",
+      body: WAIVER_BODY,
+      version: 1,
+      contentHash: hash,
+      effectiveAt: new Date(),
+      retiredAt: null,
+      createdAt: new Date(),
+    });
+    await waiverRepo.save(waiver);
+    logger.info("  created waiver: General Liability Waiver (v1)");
+  }
+
+  // ── Badger Event: set gaTicketCost ─────────────────────────────────────
+
+  const currentYear = new Date().getFullYear();
+  const badgerEvent = await eventRepo
+    .createQueryBuilder("e")
+    .where("LOWER(e.name) LIKE :name", { name: `%badger%${currentYear}%` })
+    .getOne();
+
+  if (badgerEvent) {
+    if (badgerEvent.gaTicketCost != null && badgerEvent.gaTicketCost > 0) {
+      logger.info(`  skip badger ticket cost: already set ($${badgerEvent.gaTicketCost})`);
+    } else {
+      await eventRepo.update(badgerEvent.id, {
+        gaTicketCost: BADGER_GA_TICKET_COST,
+      });
+      logger.info(`  updated badger ticket cost: $${BADGER_GA_TICKET_COST}`);
+    }
+  } else {
+    logger.info("  skip badger ticket cost: no Badger event found for current year");
+  }
+
+  // ── Sample RSVPs & Attendees for Badger ─────────────────────────────────
+
+  if (badgerEvent) {
+    const attendeeRepo = ds.getRepository(EventAttendee);
+    const badgerRegRepo = ds.getRepository(BadgerRegistration);
+
+    const existingAttendees = await attendeeRepo
+      .createQueryBuilder("a")
+      .where("a.event_id = :eventId", { eventId: badgerEvent.id })
+      .getCount();
+
+    if (existingAttendees > 0) {
+      logger.info(`  skip badger registrations: ${existingAttendees} already exist`);
+    } else {
+      const waiverHash = await contentHash(WAIVER_BODY);
+      const now = new Date();
+
+      const sampleRegistrants = [
+        {
+          firstName: "Jake",
+          lastName: "Rider",
+          email: "jake.rider@example.com",
+          phone: "5559871234",
+          address: "456 Oak Ave",
+          zip: "90210",
+          emergencyName: "Sarah Rider",
+          emergencyPhone: "5559871235",
+          tshirtSize: TshirtSize.L,
+          travelMode: TravelMode.Motorcycle,
+          club: "Desert Eagles MC",
+          paymentMethod: PaymentMethod.Zelle,
+          status: AttendeeStatus.Pending,
+          paymentStatus: PaymentStatus.Pending,
+        },
+        {
+          firstName: "Sam",
+          lastName: "Wheeler",
+          email: "sam.wheeler@example.com",
+          phone: "5551112222",
+          address: "789 Pine St",
+          zip: "90028",
+          emergencyName: "Pat Wheeler",
+          emergencyPhone: "5551112223",
+          tshirtSize: TshirtSize.XL,
+          travelMode: TravelMode.CarTruck,
+          club: null,
+          paymentMethod: PaymentMethod.Check,
+          status: AttendeeStatus.Yes,
+          paymentStatus: PaymentStatus.Pending,
+        },
+        {
+          firstName: "Alex",
+          lastName: "Gears",
+          email: "alex.gears@example.com",
+          phone: "5553334444",
+          address: "321 Elm Blvd",
+          zip: "91001",
+          emergencyName: "Morgan Gears",
+          emergencyPhone: "5553334445",
+          tshirtSize: TshirtSize.M,
+          travelMode: TravelMode.Motorcycle,
+          club: "Canyon Cruisers",
+          paymentMethod: PaymentMethod.Cash,
+          status: AttendeeStatus.Yes,
+          paymentStatus: PaymentStatus.Confirmed,
+        },
+      ];
+
+      const contactRepo = ds.getRepository(Contact);
+      const contactEmailRepo = ds.getRepository(ContactEmail);
+      const contactPhoneRepo = ds.getRepository(ContactPhone);
+
+      for (const reg of sampleRegistrants) {
+        const contactId = crypto.randomUUID();
+        const attendeeId = crypto.randomUUID();
+        const badgerRegId = crypto.randomUUID();
+        const displayName = `${reg.firstName} ${reg.lastName}`;
+
+        // Create a contact for this registrant
+        await contactRepo.save(
+          contactRepo.create({
+            id: contactId,
+            type: ContactType.Person,
+            status: ContactStatus.Active,
+            displayName,
+            firstName: reg.firstName,
+            lastName: reg.lastName,
+            uid: `seed-${contactId}@satyrsmc`,
+          }),
+        );
+        await contactEmailRepo.save(
+          contactEmailRepo.create({
+            id: crypto.randomUUID(),
+            contactId,
+            email: reg.email,
+            type: ContactEmailType.Other,
+            isPrimary: true,
+          }),
+        );
+        await contactPhoneRepo.save(
+          contactPhoneRepo.create({
+            id: crypto.randomUUID(),
+            contactId,
+            phone: reg.phone,
+            type: ContactPhoneType.Cell,
+            isPrimary: true,
+          }),
+        );
+
+        await attendeeRepo.save(
+          attendeeRepo.create({
+            id: attendeeId,
+            contactId,
+            userId: null,
+            eventId: badgerEvent.id,
+            registrationMethod: RegistrationMethod.Auth,
+            invitationId: null,
+            status: reg.status,
+            sortOrder: 0,
+            waiverSigned: true,
+            waiverContentHash: waiverHash,
+            waiverAcceptedAt: now,
+            waiverIp: "127.0.0.1",
+            waiverUserAgent: "SeedScript/1.0",
+            paymentMethod: reg.paymentMethod,
+            paymentStatus: reg.paymentStatus,
+            paymentAmountCents: BADGER_GA_TICKET_COST * 100,
+            paymentConfirmedByUserId: null,
+            paymentConfirmedAt: reg.paymentStatus === PaymentStatus.Confirmed ? now : null,
+            externalPaymentId: null,
+            externalRefundId: null,
+            cancelledAt: null,
+            reviewedByUserId: null,
+            reviewedAt: null,
+            createdAt: now,
+            updatedAt: now,
+          }),
+        );
+
+        await badgerRegRepo.save(
+          badgerRegRepo.create({
+            id: badgerRegId,
+            rsvpId: attendeeId,
+            tshirtSize: reg.tshirtSize,
+            travelingBy: reg.travelMode,
+            club: reg.club,
+            createdAt: now,
+          }),
+        );
+
+        logger.info(
+          `  created registration: ${reg.firstName} ${reg.lastName} (${reg.status}, payment: ${reg.paymentStatus})`,
+        );
+      }
+
+      // Add member attendees for the Badger event (simple RSVP, no registration)
+      if (memberContactIds.length > 0) {
+        const attendeesToAdd = memberContactIds.slice(0, 3);
+        for (let i = 0; i < attendeesToAdd.length; i++) {
+          const contactId = attendeesToAdd[i]!;
+          await attendeeRepo.save(
+            attendeeRepo.create({
+              id: crypto.randomUUID(),
+              eventId: badgerEvent.id,
+              contactId,
+              sortOrder: i,
+              waiverSigned: i < 2,
+              status: i < 2 ? AttendeeStatus.Yes : AttendeeStatus.Pending,
+              createdAt: now,
+              updatedAt: now,
+            }),
+          );
+        }
+        logger.info(`  created ${attendeesToAdd.length} Badger attendees from seed members`);
+      }
+    }
+  }
 
   // ── Done ──────────────────────────────────────────────────────────────────
 

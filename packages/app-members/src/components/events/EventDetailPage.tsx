@@ -9,10 +9,6 @@ import {
   useScenariosOptional,
   useUpdateEvent,
   useDeleteEvent,
-  useEventAttendeeAdd,
-  useEventAttendeeUpdate,
-  useEventAttendeeDelete,
-  useEventMemberAttendeeAdd,
   useEventScheduleItemCreate,
   useEventScheduleItemUpdate,
   useEventScheduleItemDelete,
@@ -55,9 +51,11 @@ import { RideAttendeesCard } from "./RideAttendeesCard";
 import { RideAssetsCard } from "./RideAssetsCard";
 import { EventIncidentsCard } from "./EventIncidentsCard";
 import { EditEventDialog } from "./EditEventDialog";
+import { EventRegistrationsCard } from "./EventRegistrationsCard";
 import { EventDetailSubNav } from "@/components/layout/EventDetailSubNav";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
-import type { EventAssignmentCategory, EventType } from "@satyrsmc/shared/client";
+import { EventType } from "@satyrsmc/shared/lib/enums";
+import type { EventAssignmentCategory } from "@satyrsmc/shared/client";
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -73,10 +71,6 @@ function EventDetailContent({ id }: { id: string }) {
   const { data: scenarios = [] } = useScenariosOptional();
   const updateEventMutation = useUpdateEvent();
   const deleteEventMutation = useDeleteEvent();
-  const addAttendeeMutation = useEventAttendeeAdd();
-  const updateAttendeeMutation = useEventAttendeeUpdate();
-  const deleteAttendeeMutation = useEventAttendeeDelete();
-  const addMemberAttendeeMutation = useEventMemberAttendeeAdd();
   const addScheduleItemMutation = useEventScheduleItemCreate();
   const updateScheduleItemMutation = useEventScheduleItemUpdate();
   const deleteScheduleItemMutation = useEventScheduleItemDelete();
@@ -188,36 +182,6 @@ function EventDetailContent({ id }: { id: string }) {
       },
     });
     setEditOpen(false);
-    refresh();
-  };
-
-  const handleAddAttendee = async (contactId: string, waiverSigned?: boolean) => {
-    await addAttendeeMutation.mutateAsync({
-      eventId: id,
-      body: { contact_id: contactId, waiver_signed: waiverSigned },
-    });
-    refresh();
-  };
-
-  const handleUpdateAttendeeWaiver = async (attendeeId: string, waiverSigned: boolean) => {
-    await updateAttendeeMutation.mutateAsync({
-      eventId: id,
-      attendeeId,
-      body: { waiver_signed: waiverSigned },
-    });
-    refresh();
-  };
-
-  const handleRemoveAttendee = async (attendeeId: string) => {
-    await deleteAttendeeMutation.mutateAsync({ eventId: id, attendeeId });
-    refresh();
-  };
-
-  const handleAddMemberAttendee = async (memberId: string, waiverSigned?: boolean) => {
-    await addMemberAttendeeMutation.mutateAsync({
-      eventId: id,
-      body: { member_id: memberId, waiver_signed: waiverSigned },
-    });
     refresh();
   };
 
@@ -433,7 +397,7 @@ function EventDetailContent({ id }: { id: string }) {
   const handleDeleteEvent = async () => {
     if (!confirm(`Delete "${event.name}"? This cannot be undone.`)) return;
     await deleteEventMutation.mutateAsync(id);
-    navigate(event.event_type === "rides" ? "/admin/events/rides" : "/admin/events");
+    navigate(event.event_type === EventType.Rides ? "/admin/events/rides" : "/admin/events");
   };
 
   const mapEmbedUrl = event.event_location_embed ?? getMapEmbedUrl(event.event_location);
@@ -469,45 +433,36 @@ function EventDetailContent({ id }: { id: string }) {
 
       <div className="grid gap-6 md:grid-cols-2">
         <EventDetailsCard event={event} budgetName={budgetName} scenarioName={scenarioName} />
-        {event.event_type === "rides" && <RideInfoCard event={event} />}
+        {event.event_type === EventType.Rides && <RideInfoCard event={event} />}
         {mapEmbedUrl && <EventLocationCard mapEmbedUrl={mapEmbedUrl} />}
       </div>
 
-      {event.event_type === "rides" && (
-        <>
-          <RideScheduleCard
-            eventId={id}
-            eventStartDate={event.start_date}
-            items={event.ride_schedule_items ?? []}
-            onAdd={handleAddScheduleItem}
-            onUpdate={handleUpdateScheduleItem}
-            onDelete={handleDeleteScheduleItem}
-          />
-          <RideAttendeesCard
-            eventId={id}
-            attendees={event.event_attendees ?? []}
-            onAdd={handleAddAttendee}
-            onUpdateWaiver={handleUpdateAttendeeWaiver}
-            onRemove={handleRemoveAttendee}
-            onAddMember={handleAddMemberAttendee}
-          />
-          <RideAssetsCard
-            eventId={id}
-            eventName={event.name}
-            assets={event.event_assets ?? []}
-            onAdd={handleAddAsset}
-            onDelete={handleDeleteAsset}
-          />
-          <EventIncidentsCard
-            incidents={event.incidents ?? []}
-            onAddIncident={handleAddIncident}
-            onUpdateIncident={handleUpdateIncident}
-            onDeleteIncident={handleDeleteIncident}
-          />
-        </>
-      )}
+      <RideScheduleCard
+        eventId={id}
+        eventStartDate={event.start_date}
+        items={event.ride_schedule_items ?? []}
+        onAdd={handleAddScheduleItem}
+        onUpdate={handleUpdateScheduleItem}
+        onDelete={handleDeleteScheduleItem}
+      />
+      <RideAttendeesCard eventId={id} attendees={event.event_attendees ?? []} />
+      <RideAssetsCard
+        eventId={id}
+        eventName={event.name}
+        assets={event.event_assets ?? []}
+        onAdd={handleAddAsset}
+        onDelete={handleDeleteAsset}
+      />
+      <EventIncidentsCard
+        incidents={event.incidents ?? []}
+        onAddIncident={handleAddIncident}
+        onUpdateIncident={handleUpdateIncident}
+        onDeleteIncident={handleDeleteIncident}
+      />
 
-      {event.event_type !== "rides" && (
+      <EventRegistrationsCard eventId={id} onRefresh={refresh} />
+
+      {event.event_type !== EventType.Rides && (
         <>
           <EventMilestonesCard
             event={event}

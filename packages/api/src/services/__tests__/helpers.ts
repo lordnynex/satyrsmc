@@ -1,3 +1,4 @@
+import type { DataSource } from "typeorm";
 import type { Contact } from "@satyrsmc/shared/dto/admin/contact";
 import type { Event } from "@satyrsmc/shared/dto/admin/event";
 import type { MailingList } from "@satyrsmc/shared/dto/admin/mailingList";
@@ -158,4 +159,28 @@ export async function createQrCode(
   const name = (overrides.name as string | null) ?? unique("QR");
   const qr = await api.qrCodes.create({ ...overrides, url, name });
   return qr;
+}
+
+/**
+ * Creates a minimal user row directly in the database.
+ * Returns { userId, contactId } for FK references.
+ * Requires a DataSource (from setupTestDb) for raw inserts.
+ */
+export async function createUser(
+  ds: DataSource,
+  api: Api,
+  overrides: { username?: string; contactId?: string } = {},
+): Promise<{ userId: string; contactId: string }> {
+  const contact = await createContact(api);
+  const contactId = overrides.contactId ?? contact.id;
+  const userId = crypto.randomUUID();
+  const username = overrides.username ?? unique("user");
+
+  await ds.query(
+    `INSERT INTO users (id, contact_id, username, password_hash, user_type, user_status, created_at)
+     VALUES ($1, $2, $3, $4, 'user', 'active', now())`,
+    [userId, contactId, username, "$2b$10$fakehashfakehashfakehashfakehashfakehashfakehash12"],
+  );
+
+  return { userId, contactId };
 }

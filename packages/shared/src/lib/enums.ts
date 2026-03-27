@@ -213,15 +213,14 @@ export enum UserStatus {
 }
 export const USER_STATUSES = Object.values(UserStatus);
 
-// --- RSVP ---
+// --- Attendee Status ---
 
-export enum RsvpStatus {
-  NoResponse = "no_response",
+export enum AttendeeStatus {
+  Pending = "pending",
   Yes = "yes",
   No = "no",
-  Pending = "pending",
 }
-export const RSVP_STATUSES = Object.values(RsvpStatus);
+export const ATTENDEE_STATUSES = Object.values(AttendeeStatus);
 
 // --- QR Code ---
 
@@ -271,3 +270,63 @@ export enum MembershipMessageCode {
   GuestRestricted = "guest_restricted",
 }
 export const MEMBERSHIP_MESSAGE_CODES = Object.values(MembershipMessageCode);
+
+// --- Event RSVP ---
+
+export enum RegistrationMethod {
+  Invitation = "invitation",
+  Auth = "auth",
+}
+export const REGISTRATION_METHODS = Object.values(RegistrationMethod);
+
+export enum PaymentMethod {
+  Check = "check",
+  Cash = "cash",
+  Zelle = "zelle",
+  CreditCard = "credit_card",
+}
+export const PAYMENT_METHODS = Object.values(PaymentMethod);
+
+export enum PaymentStatus {
+  NotRequired = "not_required",
+  Pending = "pending",
+  Confirmed = "confirmed",
+  RefundRequested = "refund_requested",
+  Refunded = "refunded",
+}
+export const PAYMENT_STATUSES = Object.values(PaymentStatus);
+
+// --- Badger Registration ---
+
+export enum TshirtSize {
+  S = "S",
+  M = "M",
+  L = "L",
+  XL = "XL",
+  XXL = "XXL",
+  XXXL = "XXXL",
+}
+export const TSHIRT_SIZES = Object.values(TshirtSize);
+
+export enum TravelMode {
+  Motorcycle = "motorcycle",
+  CarTruck = "car_truck",
+  RvCamper = "rv_camper",
+}
+export const TRAVEL_MODES = Object.values(TravelMode);
+
+// --- RSVP Log ---
+
+export enum RsvpLogCode {
+  Registered = "registered",
+  MatchedToContact = "matched_to_contact",
+  NewContactCreated = "new_contact_created",
+  PaymentConfirmed = "payment_confirmed",
+  RefundRequested = "refund_requested",
+  RefundProcessed = "refund_processed",
+  Cancelled = "cancelled",
+  AdminCancelled = "admin_cancelled",
+  AccountLinked = "account_linked",
+  StatusChanged = "status_changed",
+}
+export const RSVP_LOG_CODES = Object.values(RsvpLogCode);

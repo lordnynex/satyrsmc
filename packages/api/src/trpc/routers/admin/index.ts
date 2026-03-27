@@ -16,6 +16,7 @@ import { websiteAdminRouter } from "./websiteAdmin";
 import { usersRouter } from "./users";
 import { activityLogsRouter } from "./activityLogs";
 import { membershipLogsRouter } from "./membershipLogs";
+import { adminRsvpRouter } from "./rsvps";
 
 export const adminRouter = t.router({
   events: eventsRouter,
@@ -35,4 +36,5 @@ export const adminRouter = t.router({
   users: usersRouter,
   activityLogs: activityLogsRouter,
   membershipLogs: membershipLogsRouter,
+  rsvps: adminRsvpRouter,
 });

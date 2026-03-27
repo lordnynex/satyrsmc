@@ -9,8 +9,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {},
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["bun"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "scripts/**/*"]
 }

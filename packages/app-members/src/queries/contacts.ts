@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/data/api";
 import { trpc } from "@/trpc";
@@ -87,7 +88,7 @@ export function useContactsBulkUpdate() {
 
 export function useContactsListFetcher() {
   const api = useApi();
-  return (params?: ContactSearchParams) => api.contacts.list(params);
+  return useCallback((params?: ContactSearchParams) => api.contacts.list(params), [api]);
 }
 
 /** Data: MailingList[] (lists that include this contact) */

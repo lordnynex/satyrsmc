@@ -1,6 +1,14 @@
-import { In } from "typeorm";
+import { In, Not, IsNull } from "typeorm";
 import type { DataSource } from "typeorm";
-import type { EventType, EventAssignmentCategory } from "@satyrsmc/shared/lib/enums";
+import type {
+  EventType,
+  EventAssignmentCategory,
+  RegistrationMethod,
+  PaymentStatus,
+  PaymentMethod,
+  TshirtSize,
+  TravelMode,
+} from "@satyrsmc/shared/lib/enums";
 import { normalizeEventDate } from "@satyrsmc/shared/lib/date-utils";
 import type { DbLike } from "../db/dbAdapter";
 import {
@@ -316,27 +324,58 @@ export class EventsService {
   }
 
   private async getAttendees(eventId: string) {
-    const attendees = await this.ds.getRepository(EventAttendee).find({
-      where: { eventId },
+    const allAttendees = await this.ds.getRepository(EventAttendee).find({
+      where: { eventId, contactId: Not(IsNull()) },
       order: { sortOrder: "ASC" },
     });
+
+    // Deduplicate by contact_id: prefer registration records over simple ones, then latest
+    const byContact = new Map<string, (typeof allAttendees)[number]>();
+    for (const a of allAttendees) {
+      if (!a.contactId) continue;
+      const existing = byContact.get(a.contactId);
+      if (!existing) {
+        byContact.set(a.contactId, a);
+      } else {
+        // Prefer registration record (has more data) over simple RSVP
+        const aHasReg = a.registrationMethod != null;
+        const existingHasReg = existing.registrationMethod != null;
+        if (aHasReg && !existingHasReg) {
+          byContact.set(a.contactId, a);
+        } else if (!aHasReg && existingHasReg) {
+          // keep existing
+        } else if (
+          (a.updatedAt ?? a.createdAt ?? new Date(0)) >
+          (existing.updatedAt ?? existing.createdAt ?? new Date(0))
+        ) {
+          byContact.set(a.contactId, a);
+        }
+      }
+    }
+    const attendees = [...byContact.values()];
     if (attendees.length === 0) return [];
 
-    const contactIds = [...new Set(attendees.map((a) => a.contactId))];
+    const contactIds = [...new Set(attendees.map((a) => a.contactId).filter(Boolean))] as string[];
     const contactRepo = this.ds.getRepository(Contact);
-    const contacts = await contactRepo.find({
-      where: { id: In(contactIds) },
-      select: ["id", "displayName", "status"],
-    });
+    const contacts =
+      contactIds.length > 0
+        ? await contactRepo.find({
+            where: { id: In(contactIds) },
+            select: ["id", "displayName", "status"],
+          })
+        : [];
     const contactsMap = new Map(contacts.map((c) => [c.id, c]));
 
     // Find which contact_ids are active members
-    const memberRows = (await this.ds.query(
-      `SELECT m.id, m.contact_id FROM members m
-       JOIN contacts c ON c.id = m.contact_id
-       WHERE m.contact_id = ANY($1) AND c.status = 'active'`,
-      [contactIds],
-    )) as Array<{ id: string; contact_id: string }>;
+    const memberRows =
+      contactIds.length > 0
+        ? ((await this.ds.query(
+            `SELECT m.id, m.contact_id FROM members m
+           JOIN contacts c ON c.id = m.contact_id
+           WHERE m.contact_id = ANY($1) AND c.status = 'active'`,
+            [contactIds],
+          )) as Array<{ id: string; contact_id: string }>)
+        : [];
     const memberByContactId = new Map(memberRows.map((r) => [r.contact_id, r.id]));
 
     // Load member display info for those that are members
@@ -344,8 +383,8 @@ export class EventsService {
     const memberDisplayMap = await loadMemberDisplayMap(this.ds, activeMemberIds);
 
     return attendees.map((a) => {
-      const c = contactsMap.get(a.contactId);
-      const memberId = memberByContactId.get(a.contactId);
+      const c = a.contactId ? contactsMap.get(a.contactId) : undefined;
+      const memberId = a.contactId ? memberByContactId.get(a.contactId) : undefined;
       const isMember = !!memberId;
       const memberInfo = memberId ? memberDisplayMap.get(memberId) : undefined;
       return {
@@ -354,7 +393,7 @@ export class EventsService {
         contact_id: a.contactId,
         sort_order: a.sortOrder ?? 0,
         waiver_signed: a.waiverSigned,
-        rsvp_status: a.rsvpStatus,
+        status: a.status,
         is_member: isMember,
         contact: c ? { id: c.id, display_name: c.displayName } : undefined,
         member: memberInfo
@@ -364,6 +403,115 @@ export class EventsService {
               photo_thumbnail_url: memberInfo.photo_thumbnail_url,
             }
           : undefined,
+      };
+    });
+  }
+
+  async getAttendeesAdmin(eventId: string) {
+    const allAttendees = await this.ds.getRepository(EventAttendee).find({
+      where: { eventId, contactId: Not(IsNull()) },
+      order: { sortOrder: "ASC" },
+    });
+    if (allAttendees.length === 0) return [];
+
+    // Deduplicate by contact_id: prefer registration records, then latest
+    const byContact = new Map<string, (typeof allAttendees)[number]>();
+    for (const a of allAttendees) {
+      if (!a.contactId) continue;
+      const existing = byContact.get(a.contactId);
+      if (!existing) {
+        byContact.set(a.contactId, a);
+      } else {
+        const aHasReg = a.registrationMethod != null;
+        const existingHasReg = existing.registrationMethod != null;
+        if (aHasReg && !existingHasReg) {
+          byContact.set(a.contactId, a);
+        } else if (!aHasReg && existingHasReg) {
+          // keep existing
+        } else if (
+          (a.updatedAt ?? a.createdAt ?? new Date(0)) >
+          (existing.updatedAt ?? existing.createdAt ?? new Date(0))
+        ) {
+          byContact.set(a.contactId, a);
+        }
+      }
+    }
+    const attendees = [...byContact.values()];
+
+    const contactIds = [...new Set(attendees.map((a) => a.contactId).filter(Boolean))] as string[];
+    const contactRepo = this.ds.getRepository(Contact);
+    const contacts =
+      contactIds.length > 0
+        ? await contactRepo.find({
+            where: { id: In(contactIds) },
+            select: ["id", "displayName", "status"],
+          })
+        : [];
+    const contactsMap = new Map(contacts.map((c) => [c.id, c]));
+
+    // Find which contact_ids are active members
+    const memberRows =
+      contactIds.length > 0
+        ? ((await this.ds.query(
+            `SELECT m.id, m.contact_id FROM members m
+           JOIN contacts c ON c.id = m.contact_id
+           WHERE m.contact_id = ANY($1) AND c.status = 'active'`,
+            [contactIds],
+          )) as Array<{ id: string; contact_id: string }>)
+        : [];
+    const memberByContactId = new Map(memberRows.map((r) => [r.contact_id, r.id]));
+
+    // Load member display info
+    const activeMemberIds = [...new Set(memberRows.map((r) => r.id))];
+    const memberDisplayMap = await loadMemberDisplayMap(this.ds, activeMemberIds);
+
+    // Load badger registration details
+    const attendeeIds = attendees.map((a) => a.id);
+    const badgerRows =
+      attendeeIds.length > 0
+        ? ((await this.ds.query(
+            `SELECT rsvp_id, tshirt_size, traveling_by, club FROM badger_registrations WHERE rsvp_id = ANY($1)`,
+            [attendeeIds],
+          )) as Array<Record<string, unknown>>)
+        : [];
+    const badgerByRsvpId = new Map(badgerRows.map((r) => [r.rsvp_id as string, r]));
+
+    return attendees.map((a) => {
+      const c = a.contactId ? contactsMap.get(a.contactId) : undefined;
+      const memberId = a.contactId ? memberByContactId.get(a.contactId) : undefined;
+      const isMember = !!memberId;
+      const memberInfo = memberId ? memberDisplayMap.get(memberId) : undefined;
+      const badgerInfo = badgerByRsvpId.get(a.id);
+
+      return {
+        id: a.id,
+        event_id: a.eventId,
+        contact_id: a.contactId,
+        sort_order: a.sortOrder ?? 0,
+        waiver_signed: a.waiverSigned,
+        status: a.status,
+        is_member: isMember,
+        contact: c ? { id: c.id, display_name: c.displayName } : undefined,
+        member: memberInfo
+          ? {
+              id: memberInfo.id,
+              name: memberInfo.name,
+              photo_thumbnail_url: memberInfo.photo_thumbnail_url,
+            }
+          : undefined,
+        registration_method: (a.registrationMethod as RegistrationMethod) ?? null,
+        payment_status: (a.paymentStatus as PaymentStatus) ?? null,
+        payment_method: (a.paymentMethod as PaymentMethod) ?? null,
+        payment_amount_cents: a.paymentAmountCents ?? null,
+        waiver_accepted_at: a.waiverAcceptedAt ? a.waiverAcceptedAt.toISOString() : null,
+        badger_details: badgerInfo
+          ? {
+              tshirtSize: badgerInfo.tshirt_size as TshirtSize,
+              travelingBy: badgerInfo.traveling_by as TravelMode,
+              club: (badgerInfo.club as string) ?? null,
+            }
+          : null,
+        created_at: a.createdAt ? a.createdAt.toISOString() : null,
       };
     });
   }
@@ -840,7 +988,7 @@ export class EventsService {
   attendees = {
     add: async (
       eventId: string,
-      body: { contact_id: string; waiver_signed?: boolean; rsvp_status?: string },
+      body: { contact_id: string; waiver_signed?: boolean; status?: string },
     ) => {
       const event = await this.ds.getRepository(Event).findOne({ where: { id: eventId } });
       if (!event) return null;
@@ -848,36 +996,40 @@ export class EventsService {
         .getRepository(Contact)
         .findOne({ where: { id: body.contact_id } });
       if (!contact) return null;
-      const id = uuid();
-      const maxResult = await this.ds
-        .getRepository(EventAttendee)
-        .createQueryBuilder("a")
-        .select("COALESCE(MAX(a.sortOrder), 0)", "m")
-        .where("a.eventId = :eventId", { eventId })
-        .getRawOne<{ m: number }>();
-      const sortOrder = (maxResult?.m ?? 0) + 1;
+
+      // Check for existing active attendee
+      const existing = await this.ds.getRepository(EventAttendee).findOne({
+        where: { eventId, contactId: body.contact_id },
+      });
+
       const waiverSigned = body.waiver_signed ?? false;
-      const rsvpStatus = body.rsvp_status ?? "no_response";
-      const hasExplicitRsvp = body.rsvp_status !== undefined;
-      await this.db.run(
-        `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, rsvp_status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, now(), now())
-         ON CONFLICT (event_id, contact_id) DO UPDATE SET
-           rsvp_status = CASE WHEN ? THEN ? ELSE event_attendees.rsvp_status END,
-           waiver_signed = (event_attendees.waiver_signed OR ?),
-           updated_at = now()`,
-        [
-          id,
-          eventId,
-          body.contact_id,
-          sortOrder,
-          waiverSigned,
-          rsvpStatus,
-          hasExplicitRsvp,
-          rsvpStatus,
-          waiverSigned,
-        ],
-      );
+      const status = body.status ?? "pending";
+
+      if (existing) {
+        // Update existing
+        const newStatus = body.status !== undefined ? status : existing.status;
+        const newWaiver = existing.waiverSigned || waiverSigned;
+        await this.db.run(
+          `UPDATE event_attendees SET status = ?::attendee_status_enum, waiver_signed = ?, updated_at = now()
+           WHERE id = ? AND event_id = ?`,
+          [newStatus, newWaiver, existing.id, eventId],
+        );
+      } else {
+        // Insert new
+        const id = uuid();
+        const maxResult = await this.ds
+          .getRepository(EventAttendee)
+          .createQueryBuilder("a")
+          .select("COALESCE(MAX(a.sortOrder), 0)", "m")
+          .where("a.eventId = :eventId", { eventId })
+          .getRawOne<{ m: number }>();
+        const sortOrder = (maxResult?.m ?? 0) + 1;
+        await this.db.run(
+          `INSERT INTO event_attendees (id, event_id, contact_id, sort_order, waiver_signed, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?::attendee_status_enum, now(), now())`,
+          [id, eventId, body.contact_id, sortOrder, waiverSigned, status],
+        );
+      }
       // Re-fetch to get the actual row (may be upserted)
       const attendees = await this.getAttendees(eventId);
       return attendees.find((a) => a.contact_id === body.contact_id) ?? null;
@@ -889,14 +1041,14 @@ export class EventsService {
       if (!member) return null;
       return this.attendees.add(eventId, {
         contact_id: member.contactId,
-        rsvp_status: "yes",
+        status: "yes",
         waiver_signed: body.waiver_signed,
       });
     },
     update: async (
       eventId: string,
       attendeeId: string,
-      body: { waiver_signed?: boolean; rsvp_status?: string },
+      body: { waiver_signed?: boolean; status?: string },
     ) => {
       const existing = await this.ds
         .getRepository(EventAttendee)
@@ -904,10 +1056,10 @@ export class EventsService {
       if (!existing) return null;
       const waiverSigned =
         body.waiver_signed !== undefined ? body.waiver_signed : existing.waiverSigned;
-      const rsvpStatus = body.rsvp_status !== undefined ? body.rsvp_status : existing.rsvpStatus;
+      const status = body.status !== undefined ? body.status : existing.status;
       await this.db.run(
-        "UPDATE event_attendees SET waiver_signed = ?, rsvp_status = ?, updated_at = now() WHERE id = ? AND event_id = ?",
-        [waiverSigned, rsvpStatus, attendeeId, eventId],
+        "UPDATE event_attendees SET waiver_signed = ?, status = ?::attendee_status_enum, updated_at = now() WHERE id = ? AND event_id = ?",
+        [waiverSigned, status, attendeeId, eventId],
       );
       const attendees = await this.getAttendees(eventId);
       return attendees.find((a) => a.id === attendeeId) ?? null;

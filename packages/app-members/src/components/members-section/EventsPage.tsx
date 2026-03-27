@@ -11,7 +11,8 @@ import {
   X,
   Lock,
 } from "lucide-react";
-import { EventType, RsvpStatus } from "@satyrsmc/shared/client";
+import { EventType, AttendeeStatus } from "@satyrsmc/shared/client";
+import type { BadgeVariant } from "@/lib/types";
 import { formatDateOnly } from "@/lib/date-utils";
 import type { MemberEventCard } from "@satyrsmc/shared/dto/member/event";
 import { useMemberEventsList } from "@/queries/member-events";
@@ -40,13 +41,10 @@ const EVENT_TYPE_BADGE_COLORS: Record<EventType, string> = {
   [EventType.Rides]: "bg-purple-600",
 };
 
-const RSVP_BADGE_CONFIG: Record<
-  string,
-  { label: string; variant: "success" | "destructive" | "warning" }
-> = {
-  [RsvpStatus.Yes]: { label: "Going", variant: "success" },
-  [RsvpStatus.No]: { label: "Not Going", variant: "destructive" },
-  [RsvpStatus.Pending]: { label: "Pending", variant: "warning" },
+const RSVP_BADGE_CONFIG: Record<AttendeeStatus, { label: string; variant: BadgeVariant }> = {
+  [AttendeeStatus.Yes]: { label: "Going", variant: "success" },
+  [AttendeeStatus.No]: { label: "Not Going", variant: "destructive" },
+  [AttendeeStatus.Pending]: { label: "Pending", variant: "warning" },
 };
 
 function useDebounce(value: string, delay: number): string {
@@ -77,10 +75,7 @@ function EventCardSkeleton() {
 function EventCard({ event }: { event: MemberEventCard }) {
   const formattedDate = event.start_date ? formatDateOnly(event.start_date) : null;
 
-  const rsvpConfig =
-    event.my_rsvp && event.my_rsvp !== RsvpStatus.NoResponse
-      ? RSVP_BADGE_CONFIG[event.my_rsvp]
-      : null;
+  const rsvpConfig = event.my_rsvp ? RSVP_BADGE_CONFIG[event.my_rsvp] : null;
 
   return (
     <div className="group relative overflow-hidden rounded-lg border border-border bg-card aspect-[4/3]">

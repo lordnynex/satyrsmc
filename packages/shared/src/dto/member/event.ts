@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { EventType, RsvpStatus } from "../../lib/enums";
+import { EventType, AttendeeStatus, PaymentMethod } from "../../lib/enums";
+import { BadgerDetailsSchema } from "../admin/rsvp";
+
+export { BadgerDetailsSchema };
 
 // ----- Input schemas -----
 
@@ -13,11 +16,18 @@ export const MemberEventListInputSchema = z.object({
   per_page: z.number().int().min(1).max(100).default(18),
 });
 
-export const MemberEventRsvpInputSchema = z.object({
-  eventId: z.string(),
-  status: z.nativeEnum(RsvpStatus),
-  waiver_signed: z.boolean().optional(),
-});
+export const MemberEventRsvpInputSchema = z
+  .object({
+    eventId: z.string(),
+    status: z.nativeEnum(AttendeeStatus),
+    waiver_signed: z.boolean().optional(),
+    paymentMethod: z.nativeEnum(PaymentMethod).optional(),
+    badgerDetails: BadgerDetailsSchema.optional(),
+  })
+  .refine((data) => data.status !== AttendeeStatus.Yes || data.waiver_signed === true, {
+    message: "Waiver must be accepted to RSVP Yes",
+    path: ["waiver_signed"],
+  });
 
 export const MemberEventGetInputSchema = z.object({
   id: z.string(),
@@ -33,7 +43,7 @@ export const MemberEventCardSchema = z.object({
   event_location: z.string().nullable(),
   photo_url: z.string().nullable(),
   rsvp_yes_count: z.number(),
-  my_rsvp: z.nativeEnum(RsvpStatus).nullable(),
+  my_rsvp: z.nativeEnum(AttendeeStatus).nullable(),
   members_only: z.boolean(),
 });
 
@@ -46,7 +56,7 @@ export const MemberEventListOutputSchema = z.object({
 
 export const MemberEventRsvpOutputSchema = z.object({
   ok: z.literal(true),
-  status: z.nativeEnum(RsvpStatus),
+  status: z.nativeEnum(AttendeeStatus),
 });
 
 // ----- Detail schemas -----
@@ -89,7 +99,7 @@ export const MemberEventDetailSchema = z.object({
   start_location: z.string().nullable(),
   end_location: z.string().nullable(),
   host_ids: z.array(z.string()),
-  my_rsvp: z.nativeEnum(RsvpStatus).nullable(),
+  my_rsvp: z.nativeEnum(AttendeeStatus).nullable(),
   rsvp_yes_count: z.number(),
   photos: z.array(MemberEventPhotoSchema),
   attendees: z.array(MemberEventAttendeeSchema),

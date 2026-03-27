@@ -4,7 +4,14 @@ import { createTrpcTestHarness } from "../../test/trpcHarness";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { resetTestDb } from "../../test/setup";
 import type { Api } from "../../services/api";
-import { RsvpStatus, EventType, UserType } from "@satyrsmc/shared/lib/enums";
+import {
+  AttendeeStatus,
+  EventType,
+  UserType,
+  PaymentMethod,
+  TshirtSize,
+  TravelMode,
+} from "@satyrsmc/shared/lib/enums";
 import { createEvent } from "../../services/__tests__/helpers";
 
 async function createTestUserDirect(
@@ -145,11 +152,12 @@ describe("members.events tRPC router", () => {
 
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
-        status: RsvpStatus.Yes,
+        status: AttendeeStatus.Yes,
+        waiver_signed: true,
       });
 
       const result = await authedHarness.caller.members.events.get({ id: ev.id });
-      expect(result.my_rsvp).toBe(RsvpStatus.Yes);
+      expect(result.my_rsvp).toBe(AttendeeStatus.Yes);
       expect(result.rsvp_yes_count).toBe(1);
     });
   });
@@ -157,7 +165,7 @@ describe("members.events tRPC router", () => {
   describe("rsvp", () => {
     test("requires authentication", async () => {
       await expect(
-        harness.caller.members.events.rsvp({ eventId: "fake", status: RsvpStatus.Yes }),
+        harness.caller.members.events.rsvp({ eventId: "fake", status: AttendeeStatus.Yes }),
       ).rejects.toThrow("Authentication required");
     });
 
@@ -167,11 +175,12 @@ describe("members.events tRPC router", () => {
 
       const result = await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
-        status: RsvpStatus.Yes,
+        status: AttendeeStatus.Yes,
+        waiver_signed: true,
       });
 
       expect(result.ok).toBe(true);
-      expect(result.status).toBe(RsvpStatus.Yes);
+      expect(result.status).toBe(AttendeeStatus.Yes);
     });
 
     test("waiver_signed persisted when RSVPing yes", async () => {
@@ -180,7 +189,7 @@ describe("members.events tRPC router", () => {
 
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
-        status: RsvpStatus.Yes,
+        status: AttendeeStatus.Yes,
         waiver_signed: true,
       });
 
@@ -198,21 +207,21 @@ describe("members.events tRPC router", () => {
       // First RSVP yes with waiver
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
-        status: RsvpStatus.Yes,
+        status: AttendeeStatus.Yes,
         waiver_signed: true,
       });
 
       // Change to No without waiver
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
-        status: RsvpStatus.No,
+        status: AttendeeStatus.No,
       });
 
       const rows = (await ds.query(
-        `SELECT waiver_signed, rsvp_status FROM event_attendees WHERE event_id = $1 AND contact_id = $2`,
+        `SELECT waiver_signed, status FROM event_attendees WHERE event_id = $1 AND contact_id = $2`,
         [ev.id, contactId],
-      )) as Array<{ waiver_signed: boolean; rsvp_status: string }>;
-      expect(rows[0]!.rsvp_status).toBe(RsvpStatus.No);
+      )) as Array<{ waiver_signed: boolean; status: string }>;
+      expect(rows[0]!.status).toBe(AttendeeStatus.No);
       expect(rows[0]!.waiver_signed).toBe(true);
     });
 
@@ -222,7 +231,8 @@ describe("members.events tRPC router", () => {
 
       await authedHarness.caller.members.events.rsvp({
         eventId: ev.id,
-        status: RsvpStatus.Yes,
+        status: AttendeeStatus.Yes,
+        waiver_signed: true,
       });
 
       const list = await authedHarness.caller.members.events.list({
@@ -233,8 +243,55 @@ describe("members.events tRPC router", () => {
 
       const item = list.items.find((e) => e.id === ev.id);
       expect(item).toBeDefined();
-      expect(item!.my_rsvp).toBe(RsvpStatus.Yes);
+      expect(item!.my_rsvp).toBe(AttendeeStatus.Yes);
       expect(item!.rsvp_yes_count).toBe(1);
+    });
+
+    test("cancel and re-register badger event succeeds", async () => {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString();
+      const ev = await createEvent(api, {
+        name: "Badger Re-register",
+        start_date: tomorrow,
+        event_type: EventType.Badger,
+        ga_ticket_cost: 100,
+      });
+
+      // Register
+      await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: AttendeeStatus.Yes,
+        waiver_signed: true,
+        paymentMethod: PaymentMethod.Check,
+        badgerDetails: {
+          tshirtSize: TshirtSize.M,
+          travelingBy: TravelMode.Motorcycle,
+        },
+      });
+
+      // Cancel
+      await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: AttendeeStatus.No,
+      });
+
+      // Re-register — should NOT throw "already registered"
+      const result = await authedHarness.caller.members.events.rsvp({
+        eventId: ev.id,
+        status: AttendeeStatus.Yes,
+        waiver_signed: true,
+        paymentMethod: PaymentMethod.Zelle,
+        badgerDetails: {
+          tshirtSize: TshirtSize.XL,
+          travelingBy: TravelMode.CarTruck,
+          club: "New Club",
+        },
+      });
+      expect(result.ok).toBe(true);
+      expect(result.status).toBe(AttendeeStatus.Yes);
+
+      // Verify status is reflected
+      const detail = await authedHarness.caller.members.events.get({ id: ev.id });
+      expect(detail.my_rsvp).toBe(AttendeeStatus.Yes);
     });
   });
 });

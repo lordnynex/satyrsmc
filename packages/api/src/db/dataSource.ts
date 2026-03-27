@@ -54,7 +54,15 @@ import {
   ActivityLog,
   MembershipLog,
   Bike,
+  BadgerRegistration,
+  WaiverVersion,
+  RsvpLog,
 } from "../entities";
+import { MergeRsvpIntoAttendees1800000015000 } from "./migrations/1800000015000-MergeRsvpIntoAttendees.ts";
+import { RemoveOrphanedPendingRegistrations1800000016000 } from "./migrations/1800000016000-RemoveOrphanedPendingRegistrations.ts";
+import { CleanPaymentMethodEnum1800000017000 } from "./migrations/1800000017000-CleanPaymentMethodEnum.ts";
+import { RemoveNoResponseStatus1800000018000 } from "./migrations/1800000018000-RemoveNoResponseStatus.ts";
+import { RemoveTokenRsvpFlow1800000019000 } from "./migrations/1800000019000-RemoveTokenRsvpFlow.ts";
 import { PostgresBaseline1800000000000 } from "./migrations/1800000000000-PostgresBaseline.ts";
 import { ConvertTextToEnumTypes1800000001000 } from "./migrations/1800000001000-ConvertTextToEnumTypes.ts";
 import { AddContactIdToMembers1800000002000 } from "./migrations/1800000002000-AddContactIdToMembers.ts";
@@ -69,6 +77,7 @@ import { EventDateAndHostChanges1800000010000 } from "./migrations/1800000010000
 import { CreateLogTables1800000011000 } from "./migrations/1800000011000-CreateLogTables.ts";
 import { CreateBikesAndMoveBirthday1800000012000 } from "./migrations/1800000012000-CreateBikesAndMoveBirthday.ts";
 import { AddBikePhotos1800000013000 } from "./migrations/1800000013000-AddBikePhotos.ts";
+import { CreateEventRsvpSystem1800000014000 } from "./migrations/1800000014000-CreateEventRsvpSystem.ts";
 
 export function getProjectRoot(): string {
   return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
@@ -127,6 +136,9 @@ const entities = [
   ActivityLog,
   MembershipLog,
   Bike,
+  BadgerRegistration,
+  WaiverVersion,
+  RsvpLog,
 ];
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -149,6 +161,12 @@ export const dataSourceOptions: DataSourceOptions = {
     CreateLogTables1800000011000,
     CreateBikesAndMoveBirthday1800000012000,
     AddBikePhotos1800000013000,
+    CreateEventRsvpSystem1800000014000,
+    MergeRsvpIntoAttendees1800000015000,
+    RemoveOrphanedPendingRegistrations1800000016000,
+    CleanPaymentMethodEnum1800000017000,
+    RemoveNoResponseStatus1800000018000,
+    RemoveTokenRsvpFlow1800000019000,
   ],
   migrationsRun: true,
   entities,

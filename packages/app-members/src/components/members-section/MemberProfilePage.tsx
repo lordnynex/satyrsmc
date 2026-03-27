@@ -174,8 +174,8 @@ export function MemberProfilePage() {
                             .join(", "),
                         ]
                           .filter(Boolean)
-                          .map((line, i) => (
-                            <span key={i}>
+                          .map((line) => (
+                            <span key={line}>
                               {line}
                               <br />
                             </span>
@@ -209,8 +209,8 @@ export function MemberProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {profile.emergency_contacts.map((ec, i) => (
-                      <li key={i} className="text-sm">
+                    {profile.emergency_contacts.map((ec) => (
+                      <li key={ec.name} className="text-sm">
                         <p className="font-medium">{ec.name}</p>
                         <p className="text-muted-foreground">
                           <a
@@ -366,9 +366,9 @@ function BikeHeroCarousel({
 
           {/* Dot indicators */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {bikes.map((_, i) => (
+            {bikes.map((bike, i) => (
               <button
-                key={i}
+                key={bike.id}
                 onClick={() => setCurrentIndex(i)}
                 className={`size-2 rounded-full transition-colors ${
                   i === currentIndex ? "bg-white" : "bg-white/40"
