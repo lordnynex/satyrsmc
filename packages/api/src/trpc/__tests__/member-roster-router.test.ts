@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
+import { resetTestDb } from "../../test/setup";
 import { UserType, MemberPosition } from "@satyrsmc/shared/lib/enums";
 
 describe("members.roster tRPC router", () => {
@@ -29,6 +30,7 @@ describe("members.roster tRPC router", () => {
         contactId,
       },
     });
+    await resetTestDb(memberHarness.ds);
     unauthHarness = memberHarness.fork(null);
     nonMemberHarness = memberHarness.fork({
       userId: "roster-nonmember-user",
