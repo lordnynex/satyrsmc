@@ -1,20 +1,20 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { navLinkClass } from "@satyrsmc/shared/lib/nav";
 
 declare const __BUILD_MEMBERS_URL__: string;
 const LOGIN_URL = (__BUILD_MEMBERS_URL__ || "") + "/login";
 
+const linkClass = ({ isActive }: { isActive: boolean }) => navLinkClass({ isActive });
+
 export const NavLinks: React.FC = () => {
   const [open, setOpen] = React.useState(false);
-
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `px-2.5 py-1.5 rounded text-sm text-white ${isActive ? "bg-satyrs-blue" : "hover:bg-white/10"}`;
 
   return (
     <>
       {/* Desktop navigation */}
       <div className="hidden md:flex items-center gap-1">
-        <NavLink to="/" className={linkClass}>
+        <NavLink to="/" end className={linkClass}>
           Home
         </NavLink>
         <NavLink to="/about" className={linkClass}>
@@ -30,11 +30,8 @@ export const NavLinks: React.FC = () => {
           Contact Us
         </NavLink>
 
-        <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-600/40">
-          <a
-            href={LOGIN_URL}
-            className="px-2.5 py-1.5 rounded text-sm text-white hover:bg-white/10"
-          >
+        <div className="flex items-center gap-1 ml-2 pl-2 border-l border-white/20">
+          <a href={LOGIN_URL} className={linkClass({ isActive: false })}>
             Login
           </a>
         </div>
@@ -45,15 +42,15 @@ export const NavLinks: React.FC = () => {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="mobile-nav"
-        className="md:hidden inline-flex items-center gap-2 px-2.5 py-1.5 rounded border border-slate-600/60 hover:bg-slate-700/50 text-sm"
+        className="md:hidden flex items-center gap-2 px-3 py-2 rounded-md border border-white/20 text-white/70 hover:bg-white/10 hover:text-white text-sm font-medium transition-colors"
       >
         Menu
       </button>
 
       {/* Mobile navigation */}
       {open && (
-        <div id="mobile-nav" className="md:hidden basis-full flex flex-col gap-1 mt-2 pb-2">
-          <NavLink to="/" onClick={() => setOpen(false)} className={linkClass}>
+        <div id="mobile-nav" className="md:hidden basis-full flex flex-col gap-0.5 mt-2 pb-2">
+          <NavLink to="/" end onClick={() => setOpen(false)} className={linkClass}>
             Home
           </NavLink>
           <NavLink to="/about" onClick={() => setOpen(false)} className={linkClass}>
@@ -62,27 +59,27 @@ export const NavLinks: React.FC = () => {
           <NavLink to="/members" onClick={() => setOpen(false)} className={linkClass}>
             Members
           </NavLink>
-          <a
-            href={LOGIN_URL}
-            onClick={() => setOpen(false)}
-            className="px-2.5 py-1.5 rounded text-sm text-white hover:bg-white/10"
-          >
-            Login
-          </a>
           <NavLink to="/badger" onClick={() => setOpen(false)} className={linkClass}>
             Badger
           </NavLink>
           <NavLink to="/contact" onClick={() => setOpen(false)} className={linkClass}>
             Contact Us
           </NavLink>
+          <a
+            href={LOGIN_URL}
+            onClick={() => setOpen(false)}
+            className={linkClass({ isActive: false })}
+          >
+            Login
+          </a>
 
           {/* Mobile social links */}
-          <div className="flex gap-3 mt-2 pt-2 border-t border-slate-600/40 px-2.5">
+          <div className="flex gap-3 mt-2 pt-2 border-t border-white/10 px-3">
             <a
               href="https://www.facebook.com/groups/169741820510/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-white"
+              className="text-white/50 hover:text-white transition-colors"
               aria-label="Facebook"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -93,7 +90,7 @@ export const NavLinks: React.FC = () => {
               href="https://twitter.com/satyrsmc"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-white"
+              className="text-white/50 hover:text-white transition-colors"
               aria-label="Twitter"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -104,7 +101,7 @@ export const NavLinks: React.FC = () => {
               href="https://www.youtube.com/user/SatyrsMC"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-white"
+              className="text-white/50 hover:text-white transition-colors"
               aria-label="YouTube"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -115,7 +112,7 @@ export const NavLinks: React.FC = () => {
               href="https://satyrsmc.wordpress.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-white"
+              className="text-white/50 hover:text-white transition-colors"
               aria-label="WordPress"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

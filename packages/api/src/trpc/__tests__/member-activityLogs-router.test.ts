@@ -12,8 +12,6 @@ describe("members.activityLogs tRPC router", () => {
   const user2Id = "member-al-user-2";
 
   beforeAll(async () => {
-    unauthHarness = await createTrpcTestHarness();
-
     user1Harness = await createTrpcTestHarness({
       session: {
         userId: user1Id,
@@ -22,14 +20,12 @@ describe("members.activityLogs tRPC router", () => {
         contactId: "contact-al-1",
       },
     });
-
-    user2Harness = await createTrpcTestHarness({
-      session: {
-        userId: user2Id,
-        userType: UserType.User,
-        memberId: "member-2",
-        contactId: "contact-al-2",
-      },
+    unauthHarness = user1Harness.fork(null);
+    user2Harness = user1Harness.fork({
+      userId: user2Id,
+      userType: UserType.User,
+      memberId: "member-2",
+      contactId: "contact-al-2",
     });
 
     // Seed activity logs for both users via the service directly

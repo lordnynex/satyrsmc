@@ -62,7 +62,22 @@ describe("auth tRPC router", () => {
       api,
       session: null,
     };
-    harness = { caller: createCaller(context), api, ds, context };
+    const caller = createCaller(context);
+    harness = {
+      caller,
+      api,
+      ds,
+      context,
+      fork: (session = null) => ({
+        caller: createCaller({ ...context, session }),
+        api,
+        ds,
+        context: { ...context, session },
+        fork: () => {
+          throw new Error("fork chaining not supported in auth-router test");
+        },
+      }),
+    };
   });
 
   afterAll(async () => {

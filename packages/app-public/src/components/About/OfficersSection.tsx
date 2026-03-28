@@ -12,16 +12,10 @@ export const OfficersSection: React.FC = () => {
       {/* Officers */}
       <div>
         <h3 className="text-lg font-semibold mb-4">Officers</h3>
-        <div
-          className="grid gap-6"
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-        >
+        <div className="grid-auto-cards">
           {officers.map((o) => (
             <article key={o.name} className="flex flex-col items-center text-center gap-2">
-              <div
-                className="rounded-full overflow-hidden border-2"
-                style={{ borderColor: "var(--color-accent)", width: 160, height: 160 }}
-              >
+              <div className="rounded-full overflow-hidden border-2 border-satyrs-gold w-40 h-40">
                 {o.image ? (
                   <img src={o.image} alt={o.name} className="w-full h-full object-cover" />
                 ) : null}
@@ -37,16 +31,10 @@ export const OfficersSection: React.FC = () => {
       {members.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold mb-4">Members</h3>
-          <div
-            className="grid gap-6"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-          >
+          <div className="grid-auto-cards">
             {members.map((m) => (
               <article key={m.name} className="flex flex-col items-center text-center gap-2">
-                <div
-                  className="rounded-full overflow-hidden border-2"
-                  style={{ borderColor: "var(--color-accent)", width: 160, height: 160 }}
-                >
+                <div className="rounded-full overflow-hidden border-2 border-satyrs-gold w-40 h-40">
                   {m.image ? (
                     <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
                   ) : null}

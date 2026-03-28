@@ -13,8 +13,6 @@ describe("members.notifications tRPC router", () => {
   let listId: string;
 
   beforeAll(async () => {
-    unauthHarness = await createTrpcTestHarness();
-
     userHarness = await createTrpcTestHarness({
       session: {
         userId,
@@ -23,6 +21,7 @@ describe("members.notifications tRPC router", () => {
         contactId,
       },
     });
+    unauthHarness = userHarness.fork(null);
 
     // Seed contact, member, user
     await userHarness.ds.query(

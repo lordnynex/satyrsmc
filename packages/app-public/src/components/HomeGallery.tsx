@@ -9,14 +9,7 @@ export const HomeGallery: React.FC = () => {
 
   return (
     <section className="py-8">
-      <h2
-        className="text-center text-satyrs-gold mb-8"
-        style={{
-          fontFamily: "Brush Script MT, Brush Script, cursive",
-          fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
-          fontWeight: 400,
-        }}
-      >
+      <h2 className="font-script text-section-heading text-center text-satyrs-gold mb-8">
         Gallery
       </h2>
       <GalleryGrid photos={photos} onClick={(i) => setIndex(i)} />

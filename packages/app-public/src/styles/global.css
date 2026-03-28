@@ -29,7 +29,7 @@
     color: var(--color-primary);
     text-decoration: none;
   }
-  a:hover {
+  a:hover:not([class]) {
     text-decoration: underline;
   }
 
@@ -40,22 +40,6 @@
     top: 0;
     z-index: 50;
   }
-  nav a {
-    color: #fff;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-sm);
-    transition:
-      background var(--transition-fast),
-      color var(--transition-fast);
-  }
-  nav a:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-  nav a.active {
-    background: var(--color-primary);
-    color: #fff;
-  }
-
   footer {
     margin-top: auto;
     padding: var(--space-4);
@@ -128,6 +112,59 @@
     width: 100%;
     height: auto;
     display: block;
+  }
+
+  /* Fluid type scale */
+  .text-hero-title {
+    font-size: clamp(2rem, 6vw, 2.6rem);
+  }
+  .text-hero-sub {
+    font-size: clamp(1rem, 2.4vw, 1.2rem);
+  }
+  .text-section-heading {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 400;
+  }
+
+  /* Auto-fit grid for member/officer cards */
+  .grid-auto-cards {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  /* Gold accent divider */
+  .divider-accent {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  }
+
+  /* Carousel */
+  .carousel-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+  .carousel-spacer {
+    position: relative;
+    padding-top: min(48vh, 520px);
+  }
+  .carousel-img {
+    width: 100%;
+    height: min(48vh, 520px);
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    transition: opacity 800ms ease-in-out;
+  }
+}
+
+@layer utilities {
+  /* Explicit utility — Tailwind @theme font tokens in imported files are not reliably
+     picked up by bun-plugin-tailwind's scanner, so we define font-script directly here. */
+  .font-script {
+    font-family: var(--font-family-script, "Brush Script MT", "Brush Script", cursive);
   }
 }
 

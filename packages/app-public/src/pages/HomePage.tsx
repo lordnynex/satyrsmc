@@ -4,7 +4,7 @@ import { MissionStatement } from "../components/MissionStatement";
 import { UpcomingEvents } from "../components/UpcomingEvents";
 
 const HomePage: React.FC = () => (
-  <div className="stack max-w-5xl mx-auto" style={{ gap: "var(--space-6)" }}>
+  <div className="stack gap-6 max-w-5xl mx-auto">
     <HeroCarousel
       slides={[
         {

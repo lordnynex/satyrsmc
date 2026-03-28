@@ -1,6 +1,14 @@
 @import "../styles/globals.css";
 @import "react-day-picker/style.css";
 
+@layer utilities {
+  /* Explicit utility — Tailwind @theme font tokens in imported files are not reliably
+     picked up by bun-plugin-tailwind's scanner, so we define font-script directly here. */
+  .font-script {
+    font-family: var(--font-family-script, "Brush Script MT", "Brush Script", cursive);
+  }
+}
+
 @layer base {
   :root {
     @apply font-sans;

@@ -51,24 +51,24 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="stack max-w-5xl mx-auto" style={{ gap: "var(--space-6)" }}>
+    <div className="stack gap-6 max-w-5xl mx-auto">
       <Hero title="Contact Us" subtitle="We'd love to hear from you." />
 
-      <div className="grid gap-8" style={{ gridTemplateColumns: "1fr" }}>
+      <div className="grid gap-8">
         <div className="max-w-2xl mx-auto w-full">
           <div className="card">
             <div className="card-body flex flex-col gap-4">
-              <div className="mb-4" style={{ color: "var(--color-muted)" }}>
-                <p className="m-0 mb-2">
-                  <strong style={{ color: "var(--color-text)" }}>Mailing Address:</strong> P.O. Box
+              <div className="mb-4">
+                <p className="m-0 mb-2 text-[var(--color-muted)]">
+                  <strong className="text-[var(--color-text)]">Mailing Address:</strong> P.O. Box
                   1137, Los Angeles, CA
                 </p>
               </div>
 
               {submitted ? (
-                <div className="text-center py-8" style={{ color: "var(--color-accent)" }}>
+                <div className="text-center py-8 text-satyrs-gold">
                   <p className="text-lg font-semibold m-0 mb-2">Thank you for your message!</p>
-                  <p className="m-0" style={{ color: "var(--color-muted)" }}>
+                  <p className="m-0 text-[var(--color-muted)]">
                     We&rsquo;ll get back to you as soon as we can.
                   </p>
                 </div>
@@ -85,9 +85,7 @@ const ContactPage: React.FC = () => {
                       {...register("name")}
                     />
                     {errors.name && (
-                      <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                        {errors.name.message}
-                      </p>
+                      <p className="text-sm mt-1 text-red-500">{errors.name.message}</p>
                     )}
                   </div>
                   <div>
@@ -101,9 +99,7 @@ const ContactPage: React.FC = () => {
                       {...register("email")}
                     />
                     {errors.email && (
-                      <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                        {errors.email.message}
-                      </p>
+                      <p className="text-sm mt-1 text-red-500">{errors.email.message}</p>
                     )}
                   </div>
                   <div>
@@ -130,9 +126,7 @@ const ContactPage: React.FC = () => {
                       {...register("message")}
                     />
                     {errors.message && (
-                      <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
-                        {errors.message.message}
-                      </p>
+                      <p className="text-sm mt-1 text-red-500">{errors.message.message}</p>
                     )}
                   </div>
 
@@ -146,7 +140,7 @@ const ContactPage: React.FC = () => {
                         onExpired={() => setValue("recaptcha_token", "")}
                       />
                       {errors.recaptcha_token && (
-                        <p className="text-sm mt-1" style={{ color: "#ef4444" }}>
+                        <p className="text-sm mt-1 text-red-500">
                           {errors.recaptcha_token.message}
                         </p>
                       )}
@@ -154,9 +148,7 @@ const ContactPage: React.FC = () => {
                   )}
 
                   {mutation.error && (
-                    <p className="text-sm" style={{ color: "#ef4444" }}>
-                      Something went wrong. Please try again.
-                    </p>
+                    <p className="text-sm text-red-500">Something went wrong. Please try again.</p>
                   )}
 
                   <button

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { cn, navLinkClass } from "@/lib/utils";
 import {
   Wallet,
   GitBranch,
@@ -32,15 +32,6 @@ import {
   useCreateScenario,
 } from "@/queries/hooks";
 import { useAppState } from "@/state/AppState";
-
-const navLinkClass = ({ isActive }: { isActive: boolean }, collapsed?: boolean) =>
-  cn(
-    "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-    collapsed ? "justify-center" : "gap-2",
-    isActive
-      ? "bg-muted text-foreground"
-      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-  );
 
 interface BudgetingLayoutProps {
   onPrint?: () => void;

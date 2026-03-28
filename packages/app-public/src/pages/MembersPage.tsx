@@ -23,10 +23,7 @@ const MembersPage: React.FC = () => {
       onClick={() => setContactMember(person)}
       className="flex flex-col items-center text-center gap-2 p-4 rounded-lg border border-slate-700/60 bg-slate-800/30 hover:bg-slate-800/60 hover:border-satyrs-blue/50 transition-all cursor-pointer"
     >
-      <div
-        className="rounded-full overflow-hidden border-2 border-satyrs-gold"
-        style={{ width: 160, height: 160 }}
-      >
+      <div className="rounded-full overflow-hidden border-2 border-satyrs-gold w-40 h-40">
         {person.image ? (
           <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
         ) : null}
@@ -44,28 +41,14 @@ const MembersPage: React.FC = () => {
       {/* Officers */}
       <section className="flex flex-col gap-4">
         <h2 className="text-2xl font-semibold">Officers</h2>
-        <div
-          className="grid gap-6"
-          style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          }}
-        >
-          {officers.map(renderCard)}
-        </div>
+        <div className="grid-auto-cards">{officers.map(renderCard)}</div>
       </section>
 
       {/* Members */}
       {members.length > 0 && (
         <section className="flex flex-col gap-4">
           <h2 className="text-2xl font-semibold">Members</h2>
-          <div
-            className="grid gap-6"
-            style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            }}
-          >
-            {members.map(renderCard)}
-          </div>
+          <div className="grid-auto-cards">{members.map(renderCard)}</div>
         </section>
       )}
 

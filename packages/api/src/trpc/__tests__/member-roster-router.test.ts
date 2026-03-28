@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
+import { resetTestDb } from "../../test/setup";
 import { UserType, MemberPosition } from "@satyrsmc/shared/lib/enums";
 
 describe("members.roster tRPC router", () => {
@@ -21,7 +22,6 @@ describe("members.roster tRPC router", () => {
   const user3Id = "roster-user-3";
 
   beforeAll(async () => {
-    unauthHarness = await createTrpcTestHarness();
     memberHarness = await createTrpcTestHarness({
       session: {
         userId,
@@ -30,13 +30,13 @@ describe("members.roster tRPC router", () => {
         contactId,
       },
     });
-    nonMemberHarness = await createTrpcTestHarness({
-      session: {
-        userId: "roster-nonmember-user",
-        userType: UserType.User,
-        memberId: null,
-        contactId: "roster-nonmember-contact",
-      },
+    await resetTestDb(memberHarness.ds);
+    unauthHarness = memberHarness.fork(null);
+    nonMemberHarness = memberHarness.fork({
+      userId: "roster-nonmember-user",
+      userType: UserType.User,
+      memberId: null,
+      contactId: "roster-nonmember-contact",
     });
 
     // Seed member 1 — President
