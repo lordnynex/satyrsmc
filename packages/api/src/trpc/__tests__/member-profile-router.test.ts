@@ -87,8 +87,6 @@ describe("members.profile tRPC router", () => {
   let viewer2Harness: TrpcTestHarness;
 
   beforeAll(async () => {
-    unauthHarness = await createTrpcTestHarness();
-
     userHarness = await createTrpcTestHarness({
       session: {
         userId,
@@ -97,16 +95,14 @@ describe("members.profile tRPC router", () => {
         contactId,
       },
     });
-    await seedProfileUser(userHarness);
-
-    viewer2Harness = await createTrpcTestHarness({
-      session: {
-        userId: viewer2UserId,
-        userType: UserType.User,
-        memberId: viewer2MemberId,
-        contactId: viewer2ContactId,
-      },
+    unauthHarness = userHarness.fork(null);
+    viewer2Harness = userHarness.fork({
+      userId: viewer2UserId,
+      userType: UserType.User,
+      memberId: viewer2MemberId,
+      contactId: viewer2ContactId,
     });
+    await seedProfileUser(userHarness);
   });
 
   describe("get", () => {

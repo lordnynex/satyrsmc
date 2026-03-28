@@ -10,7 +10,6 @@ describe("members.bikes tRPC router", () => {
   const userId = "bikes-test-user-1";
 
   beforeAll(async () => {
-    unauthHarness = await createTrpcTestHarness();
     userHarness = await createTrpcTestHarness({
       session: {
         userId,
@@ -19,6 +18,7 @@ describe("members.bikes tRPC router", () => {
         contactId: "bikes-contact-1",
       },
     });
+    unauthHarness = userHarness.fork(null);
 
     // Seed a user row so bikes FK constraint is satisfied
     await userHarness.ds.query(

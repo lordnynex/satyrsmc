@@ -11,6 +11,9 @@
  *   - Call procedures via harness.caller (e.g. harness.caller.website.getEventsFeed()).
  *   - Seed data via harness.api or via the caller; prefer caller for the flow under test.
  *   - Tests do not reset or teardown the database; each test file gets a fresh DB from setupTestDb().
+ *   - To create multiple harnesses with different sessions sharing the same DB, use harness.fork():
+ *       const base = await createTrpcTestHarness();
+ *       const authed = base.fork({ userId: '...', userType: 'user', ... });
  *
  * Auth:
  *   - Context has session: null by default. To simulate an authenticated user, pass
@@ -33,7 +36,7 @@ export type CreateTrpcTestHarnessOptions = {
 
 /**
  * Harness return type inferred from createTrpcTestHarnessInner so caller stays correctly typed.
- * Properties: caller (typed app router caller), api, ds, context.
+ * Properties: caller (typed app router caller), api, ds, context, fork.
  */
 export type TrpcTestHarness = Awaited<ReturnType<typeof createTrpcTestHarnessInner>>;
 
@@ -43,27 +46,43 @@ export type TrpcTestHarness = Awaited<ReturnType<typeof createTrpcTestHarnessInn
  */
 async function createTrpcTestHarnessInner(options?: CreateTrpcTestHarnessOptions) {
   const { ds, api } = await setupTestDb();
-
-  const session = options?.session ?? null;
-  const context: Context = {
-    req: new Request("http://test"),
-    resHeaders: new Headers(),
-    api,
-    session,
-  };
-
   const createCaller = t.createCallerFactory(appRouter);
-  const caller = createCaller(context);
 
-  return { caller, api, ds, context };
+  /**
+   * Builds a harness object sharing this DB/api with the given session.
+   * Used internally by the outer factory and by fork().
+   */
+  function buildHarness(session: Session | null) {
+    const context: Context = {
+      req: new Request("http://test"),
+      resHeaders: new Headers(),
+      api,
+      session,
+    };
+    const caller = createCaller(context);
+
+    /**
+     * Creates a new caller with a different session, sharing this harness's database and api.
+     * Use this instead of calling createTrpcTestHarness() again — multiple calls to
+     * createTrpcTestHarness() create separate PGlite instances that appear isolated but
+     * are backed by the same singleton, causing data to bleed across harnesses.
+     */
+    function fork(newSession: Session | null = null) {
+      return buildHarness(newSession);
+    }
+
+    return { caller, api, ds, context, fork };
+  }
+
+  return buildHarness(options?.session ?? null);
 }
 
 /**
  * Creates a tRPC test harness: PGlite + Api + context + caller.
- * Each call creates a fresh DB instance (safe for parallel test files).
+ * One call per test file — use harness.fork(session) for additional session contexts.
  *
  * @param options - Optional session stub for auth; defaults to session: null.
- * @returns Harness with caller, api, ds, and context.
+ * @returns Harness with caller, api, ds, context, and fork().
  */
 export async function createTrpcTestHarness(
   options?: CreateTrpcTestHarnessOptions,

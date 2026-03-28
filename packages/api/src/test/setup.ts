@@ -16,12 +16,10 @@ import type { Api } from "../services/api";
  * Each call returns a fully isolated database instance — safe for
  * parallel test files.
  */
-let _testDbCounter = 0;
-
 export async function setupTestDb(): Promise<{ ds: DataSource; db: DbLike; api: Api }> {
   const ds = new DataSource({
     ...dataSourceOptions,
-    name: `test-${++_testDbCounter}`,
+    name: `test-${Date.now()}`,
     url: undefined,
     driver: new PGliteDriver().driver,
     migrationsRun: true,

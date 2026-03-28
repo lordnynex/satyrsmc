@@ -37,7 +37,6 @@ describe("members.settings tRPC router", () => {
   const userId = "settings-test-user-1";
 
   beforeAll(async () => {
-    unauthHarness = await createTrpcTestHarness();
     userHarness = await createTrpcTestHarness({
       session: {
         userId,
@@ -46,6 +45,7 @@ describe("members.settings tRPC router", () => {
         contactId: `contact-${userId}`,
       },
     });
+    unauthHarness = userHarness.fork(null);
     await seedUser(userHarness, userId);
   });
 
