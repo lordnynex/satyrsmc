@@ -58,9 +58,10 @@ const ContactPage: React.FC = () => {
         <div className="max-w-2xl mx-auto w-full">
           <div className="card">
             <div className="card-body flex flex-col gap-4">
-              <div className="mb-4 text-[var(--color-muted)]">
-                <p className="m-0 mb-2">
-                  <strong>Mailing Address:</strong> P.O. Box 1137, Los Angeles, CA
+              <div className="mb-4">
+                <p className="m-0 mb-2 text-[var(--color-muted)]">
+                  <strong className="text-[var(--color-text)]">Mailing Address:</strong> P.O. Box
+                  1137, Los Angeles, CA
                 </p>
               </div>
 
