@@ -99,7 +99,8 @@ jobs:
         run: pnpm --filter @satyrsmc/app-public build
 
       - name: Deploy public UI to Netlify
-        run: netlify deploy --site 39a6c996-6feb-469a-a932-06422fea42ad --dir packages/app-public/dist --prod
+        run: netlify deploy --site 39a6c996-6feb-469a-a932-06422fea42ad --dir dist --prod
+        working-directory: packages/app-public
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
@@ -107,7 +108,8 @@ jobs:
         run: pnpm --filter @satyrsmc/app-members build
 
       - name: Deploy members UI to Netlify
-        run: netlify deploy --site c9d20c1d-f0a4-4ea6-9dde-5df19445dfae --dir packages/app-members/dist --prod
+        run: netlify deploy --site c9d20c1d-f0a4-4ea6-9dde-5df19445dfae --dir dist --prod
+        working-directory: packages/app-members
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
@@ -115,6 +117,7 @@ jobs:
         run: pnpm --filter @satyrsmc/api build:function
 
       - name: Deploy API to Netlify
-        run: netlify deploy --site 599fbf0e-306d-49e0-bbcc-4f382ae23337 --dir packages/api/netlify/publish --functions packages/api/netlify/functions --prod
+        run: netlify deploy --site 599fbf0e-306d-49e0-bbcc-4f382ae23337 --dir netlify/publish --functions netlify/functions --prod
+        working-directory: packages/api
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
