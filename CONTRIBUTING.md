@@ -228,7 +228,7 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 GitHub Actions runs lint, typecheck, and tests on every pull request (`.github/workflows/test.yml`).
 
-Staging deploys automatically on merge to `main` via `.github/workflows/deploy-staging.yml`. It can also be triggered manually via workflow dispatch with a branch name or SHA. The three staging Netlify sites are **CLI-deploy only** — they are not connected to the git repo in Netlify's dashboard.
+Staging deploys automatically on every branch push via `.github/workflows/deploy-staging.yml`. It can also be triggered manually via workflow dispatch with a branch name or SHA. The three staging Netlify sites are **CLI-deploy only** — they are not connected to the git repo in Netlify's dashboard.
 
 - API deploys as a Netlify Function to `https://staging-satyrsmc-api.netlify.app`
 - app-public deploys as a static site to `https://staging-satyrsmc-public.netlify.app`
