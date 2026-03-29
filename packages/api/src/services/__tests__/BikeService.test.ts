@@ -176,7 +176,9 @@ describe("BikeService", () => {
       const stranger = await createTestUser(ds, { username: "photo-stranger" });
       const bike = await api.bikes.create(owner, bikeInput());
 
-      expect(api.bikes.uploadPhoto(stranger, bike.id, "abc")).rejects.toThrow("Bike not found");
+      await expect(api.bikes.uploadPhoto(stranger, bike.id, "abc")).rejects.toThrow(
+        "Bike not found",
+      );
     });
   });
 
@@ -231,7 +233,7 @@ describe("BikeService", () => {
       const stranger = await createTestUser(ds, { username: "bike-stranger" });
       const bike = await api.bikes.create(owner, bikeInput());
 
-      expect(api.bikes.setPrimary(stranger, bike.id)).rejects.toThrow("Bike not found");
+      await expect(api.bikes.setPrimary(stranger, bike.id)).rejects.toThrow("Bike not found");
     });
   });
 });

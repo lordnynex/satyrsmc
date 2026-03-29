@@ -108,7 +108,7 @@ describe("MailingListsService — member subscriptions", () => {
       const contact = await createContact(api, { display_name: "No Membership" });
       const list = await createMailingList(api, { name: "No Membership List" });
 
-      expect(api.mailingLists.setUnsubscribed(contact.id, list.id, true)).rejects.toThrow(
+      await expect(api.mailingLists.setUnsubscribed(contact.id, list.id, true)).rejects.toThrow(
         "Mailing list membership not found",
       );
     });
@@ -123,7 +123,7 @@ describe("MailingListsService — member subscriptions", () => {
         [list.id, contact.id],
       );
 
-      expect(api.mailingLists.setUnsubscribed(contact.id, list.id, true)).rejects.toThrow(
+      await expect(api.mailingLists.setUnsubscribed(contact.id, list.id, true)).rejects.toThrow(
         "Mailing list membership not found",
       );
     });
