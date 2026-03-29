@@ -103,8 +103,7 @@ jobs:
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
 
       - name: Deploy public UI to Netlify
-        run: netlify deploy --dir dist --prod --no-build --filter @satyrsmc/app-public
-        working-directory: packages/app-public
+        run: netlify deploy --dir packages/app-public/dist --prod --no-build --filter @satyrsmc/app-public
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 4b0befb9-2474-4e81-8e67-8cf407f29e44
@@ -117,8 +116,7 @@ jobs:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
       - name: Deploy members UI to Netlify
-        run: netlify deploy --dir dist --prod --no-build --filter @satyrsmc/app-members
-        working-directory: packages/app-members
+        run: netlify deploy --dir packages/app-members/dist --prod --no-build --filter @satyrsmc/app-members
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 9821c2ad-3032-40c0-9b5e-90791ff296f7
