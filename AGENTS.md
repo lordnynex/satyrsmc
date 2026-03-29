@@ -227,11 +227,11 @@ This is generated in CI by the "Prepare API publish dir" step. The `netlify.toml
 
 Everything else is **bundled into `api.mjs`**. Do not add packages to the external list unless they either have native `.node` bindings or use dynamic `import()` that would force esbuild to create chunk files.
 
-`noExternal: [/.*/]` forces tsup to bundle **everything** by default. Without this, esbuild silently leaves packages with complex `exports` maps (e.g. `typeorm`, `reflect-metadata`) unbundled, causing `Cannot find package` errors at runtime in the Netlify Function environment where `node_modules` does not exist. The `external` list still takes precedence for packages that must remain external.
+`noExternal` is a negative-lookahead regex that matches everything **except** the packages that must stay external. This forces tsup to bundle all other packages, preventing `Cannot find package` errors at runtime (the Netlify Function environment has no `node_modules`). **Do not use `noExternal: [/.*/]`** — it overrides `external` and causes `sharp` and `pg` to get bundled, which breaks them.
 
-`@vendia/serverless-express` wraps the Express app for Lambda/Netlify Function invocation. It replaced `serverless-http`.
+`@vendia/serverless-express` wraps the Express app for Lambda/Netlify Function invocation. It replaced `serverless-http`. Both are CJS packages that call `require("util")`, `require("http")`, etc. internally. When bundled into ESM, these fail with "Dynamic require of X is not supported". The `banner` injects `const require = createRequire(import.meta.url)` to restore CJS `require` inside the ESM bundle. **Do not remove the banner or shims.**
 
-Both are CJS packages that call `require("util")`, `require("http")`, etc. internally. When bundled into ESM output, these calls fail with "Dynamic require of X is not supported". The `banner` in the tsup config injects `const require = createRequire(import.meta.url)` at the top of `api.mjs`, which restores `require` for all bundled CJS code. **Do not remove the banner.**
+`shims: true` injects ESM equivalents of `__dirname` and `__filename`, required by CJS packages (e.g. TypeORM's `app-root-path` dependency) that reference these globals. TypeORM also needs `require.main.filename` — the banner stubs this via `Object.assign` on the `createRequire` result.
 
 ### UI deploys
 
