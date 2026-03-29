@@ -225,7 +225,12 @@ This is generated in CI by the "Prepare API publish dir" step. The `netlify.toml
 - `pino-pretty` — dev-only pretty printer; loaded via dynamic `import()` in `logger.ts` and gracefully skipped in production (falls back to JSON stdout). Must be external to prevent esbuild from splitting the bundle into multiple chunks.
 - `typeorm-pglite` — test-only PGlite driver; loaded via dynamic `import()` in `dataSource.ts` only when `USE_PGLITE=1`. Must be external for the same reason.
 
-Everything else — `typeorm`, `reflect-metadata`, `bcryptjs`, `pino`, `jose`, `express`, `serverless-http`, etc. — is **bundled into `api.mjs`**. Do not add packages to the external list unless they either have native `.node` bindings or use dynamic `import()` that would force esbuild to create chunk files.
+Everything else is **bundled into `api.mjs`**. Do not add packages to the external list unless they either have native `.node` bindings or use dynamic `import()` that would force esbuild to create chunk files.
+
+`noExternal` is used to force packages into the bundle that tsup/esbuild would otherwise skip:
+
+- `@satyrsmc/shared` — workspace package; must be inlined since it's not installed in the Netlify Function environment.
+- `reflect-metadata` — side-effect-only import required by TypeORM decorators. Despite not being in the `external` list, esbuild can fail to inline it due to its `exports` map. Explicitly listed in `noExternal` to guarantee it's bundled.
 
 ### UI deploys
 
