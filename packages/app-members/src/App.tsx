@@ -61,9 +61,7 @@ const NotificationSettingsPage = lazy(() =>
 const HomePage = lazy(() =>
   import("@/components/layout/HomePage").then((m) => ({ default: m.HomePage })),
 );
-const NotFoundPage = lazy(() =>
-  import("@/components/layout/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
-);
+import { NotFoundPage } from "@/components/layout/NotFoundPage";
 const EventsPage = lazy(() =>
   import("@/pages/EventsPage").then((m) => ({ default: m.EventsPage })),
 );

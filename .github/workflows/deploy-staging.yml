@@ -103,9 +103,10 @@ jobs:
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
 
       - name: Deploy public UI to Netlify
-        run: netlify deploy --site 4b0befb9-2474-4e81-8e67-8cf407f29e44 --dir packages/app-public/dist --prod --no-build --filter @satyrsmc/app-public
+        run: netlify deploy --dir packages/app-public/dist --prod --no-build
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 4b0befb9-2474-4e81-8e67-8cf407f29e44
 
       - name: Build members UI
         run: pnpm --filter @satyrsmc/app-members build
@@ -115,14 +116,16 @@ jobs:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
       - name: Deploy members UI to Netlify
-        run: netlify deploy --site 9821c2ad-3032-40c0-9b5e-90791ff296f7 --dir packages/app-members/dist --prod --no-build --filter @satyrsmc/app-members
+        run: netlify deploy --dir packages/app-members/dist --prod --no-build
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 9821c2ad-3032-40c0-9b5e-90791ff296f7
 
       - name: Build API
         run: pnpm --filter @satyrsmc/api build:function
 
       - name: Deploy API to Netlify
-        run: netlify deploy --site 6f89cce9-a3d1-4618-a361-c69752d5b69e --dir packages/api/netlify/publish --functions packages/api/netlify/functions --prod --no-build --filter @satyrsmc/api
+        run: netlify deploy --dir packages/api/netlify/functions --functions packages/api/netlify/functions --prod --no-build
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 6f89cce9-a3d1-4618-a361-c69752d5b69e
