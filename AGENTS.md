@@ -227,11 +227,7 @@ This is generated in CI by the "Prepare API publish dir" step. The `netlify.toml
 
 Everything else is **bundled into `api.mjs`**. Do not add packages to the external list unless they either have native `.node` bindings or use dynamic `import()` that would force esbuild to create chunk files.
 
-`noExternal` is used to force packages into the bundle that tsup/esbuild would otherwise skip:
-
-- `@satyrsmc/shared` — workspace package; must be inlined since it's not installed in the Netlify Function environment.
-- `reflect-metadata` — side-effect-only import required by TypeORM decorators. Despite not being in the `external` list, esbuild can fail to inline it due to its `exports` map. Explicitly listed in `noExternal` to guarantee it's bundled.
-- `serverless-http` — same `exports` map issue; esbuild leaves it unbundled without explicit `noExternal`.
+`noExternal: [/.*/]` forces tsup to bundle **everything** by default. Without this, esbuild silently leaves packages with complex `exports` maps (e.g. `typeorm`, `reflect-metadata`, `serverless-http`) unbundled, causing `Cannot find package` errors at runtime in the Netlify Function environment where `node_modules` does not exist. The `external` list still takes precedence for packages that must remain external.
 
 ### UI deploys
 
