@@ -13,4 +13,7 @@ export default defineConfig({
   clean: true,
   noExternal: [/.*/],
   external: [/^@electric-sql/, "pg", "sharp", "pino-pretty", "typeorm-pglite"],
+  banner: {
+    js: `import { createRequire } from "node:module"; const require = createRequire(import.meta.url);`,
+  },
 });

@@ -229,7 +229,9 @@ Everything else is **bundled into `api.mjs`**. Do not add packages to the extern
 
 `noExternal: [/.*/]` forces tsup to bundle **everything** by default. Without this, esbuild silently leaves packages with complex `exports` maps (e.g. `typeorm`, `reflect-metadata`) unbundled, causing `Cannot find package` errors at runtime in the Netlify Function environment where `node_modules` does not exist. The `external` list still takes precedence for packages that must remain external.
 
-`@vendia/serverless-express` is the ESM-native adapter wrapping the Express app for Lambda/Netlify Function invocation. It replaced `serverless-http` which is CJS-only and cannot be bundled into an ESM output without a `createRequire` shim.
+`@vendia/serverless-express` wraps the Express app for Lambda/Netlify Function invocation. It replaced `serverless-http`.
+
+Both are CJS packages that call `require("util")`, `require("http")`, etc. internally. When bundled into ESM output, these calls fail with "Dynamic require of X is not supported". The `banner` in the tsup config injects `const require = createRequire(import.meta.url)` at the top of `api.mjs`, which restores `require` for all bundled CJS code. **Do not remove the banner.**
 
 ### UI deploys
 
