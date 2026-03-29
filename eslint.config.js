@@ -13,6 +13,7 @@ export default tseslint.config(
       "out/**",
       "coverage/**",
       "storybook-static/**",
+      "packages/api/netlify/**",
       "*.config.js",
     ],
   },
