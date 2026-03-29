@@ -187,3 +187,40 @@ pnpm --filter @satyrsmc/app-members dev      # app-members Vite dev server (port
 Run each in its own terminal. Vite dev servers proxy `/trpc` and `/api` requests to the API at `localhost:4000`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.
 
 **Note:** The API does not serve the frontend SPAs. Each app is deployed independently to Netlify: the API as a Netlify Function, app-public and app-members as separate static sites.
+
+## Netlify Deployment (GitHub Actions)
+
+Deployments are done via `.github/workflows/deploy-staging.yml` using the Netlify CLI. The monorepo requires specific flags — **do not simplify or remove them**.
+
+### API deploy command (critical)
+
+```bash
+netlify deploy \
+  --dir $GITHUB_WORKSPACE/packages/api/netlify/publish \
+  --functions $GITHUB_WORKSPACE/packages/api/netlify/functions \
+  --prod --no-build \
+  --cwd packages/api
+```
+
+- `--dir` and `--functions` must be **absolute paths** (`$GITHUB_WORKSPACE/...`) — relative paths get doubled by the Netlify CLI in a monorepo context
+- `--cwd packages/api` is required so the CLI detects the correct Netlify site context from `packages/api/netlify.toml`; without it the CLI errors on multiple detected projects
+- Do **not** use `--filter @satyrsmc/api` on the deploy step — it shifts the working directory and breaks the functions path resolution
+
+### API publish dir
+
+`packages/api/netlify/publish` must be created before deploy and must contain a `_redirects` file:
+
+```
+/trpc/*  /.netlify/functions/api/trpc/:splat  200
+/api/*   /.netlify/functions/api/api/:splat   200
+```
+
+This is generated in CI by the "Prepare API publish dir" step. The `netlify.toml` redirects are **not** used for CLI deploys — only `_redirects` is.
+
+### tsup externals
+
+`packages/api/tsup.config.ts` only externalizes `pg` and `sharp` (native addons). Everything else — including `typeorm`, `reflect-metadata`, `bcryptjs`, `pino`, `jose`, etc. — is **bundled into `api.mjs`**. Do not add packages back to the external list unless they have native `.node` bindings that cannot be bundled.
+
+### UI deploys
+
+The UI packages (`app-public`, `app-members`) deploy with relative `--dir` paths and `--filter` — this is fine because they have no `--functions` flag. Only the API deploy requires absolute paths.
