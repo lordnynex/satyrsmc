@@ -24,10 +24,14 @@ jobs:
         with:
           version: latest
 
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
-          path: ~/.pnpm-store
+          path: ${{ steps.pnpm-cache.outputs.path }}
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             pnpm-${{ runner.os }}-
@@ -41,15 +45,5 @@ jobs:
       - name: Lint
         run: pnpm exec eslint .
 
-      - name: Run tests with coverage
-        run: pnpm -r test:coverage
-
-      - name: Setup LCOV
-        uses: hrishikesh-kadam/setup-lcov@v1
-
-      - name: Report code coverage
-        uses: zgosalvez/github-actions-report-lcov@v4
-        with:
-          coverage-files: "**/coverage/lcov.info"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          update-comment: true
+      - name: Run tests
+        run: pnpm -r test

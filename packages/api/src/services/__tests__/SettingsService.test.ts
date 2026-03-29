@@ -74,7 +74,7 @@ describe("SettingsService", () => {
     test("fails with incorrect current password", async () => {
       const { userId } = await createTestUser(ds);
 
-      expect(api.settings.changePassword(userId, "wrong", "NewPass1!")).rejects.toThrow(
+      await expect(api.settings.changePassword(userId, "wrong", "NewPass1!")).rejects.toThrow(
         "Current password is incorrect",
       );
     });
@@ -114,7 +114,7 @@ describe("SettingsService", () => {
       await createTestUser(ds, { username: "user2" });
 
       // Try to change user1's email to user2's email
-      expect(
+      await expect(
         api.settings.changeEmail(user1.userId, "user2@test.com", user1.password),
       ).rejects.toThrow("Email is already in use");
     });
@@ -122,7 +122,7 @@ describe("SettingsService", () => {
     test("verifies password before changing email", async () => {
       const { userId } = await createTestUser(ds);
 
-      expect(
+      await expect(
         api.settings.changeEmail(userId, "newemail@test.com", "wrongpassword"),
       ).rejects.toThrow("Password is incorrect");
     });

@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 set -e
 pnpm -r typecheck
-pnpm test
+pnpm -r --parallel exec vitest run --changed origin/$(git rev-parse --abbrev-ref HEAD)
