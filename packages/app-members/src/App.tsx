@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AppStateProvider, useAppState } from "@/state/AppState";
 import { EventType } from "@satyrsmc/shared/client";
@@ -15,74 +15,194 @@ import { MembersLayout } from "@/components/layout/MembersLayout";
 import { SettingsLayout } from "@/components/layout/SettingsLayout";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { ProtectedRoute, AdminRoute, MemberRoute } from "@/components/auth";
+
+// Auth pages — small, needed immediately on cold load
 import {
-  MembersDashboard,
-  RosterPage,
-  ProfilePage,
-  MemberProfilePage,
-  MemberEventsPage,
-  MemberEventDetailPage,
-} from "@/components/members-section";
-import {
-  ProfileSettingsPage,
-  GarageSettingsPage,
-  AccountSettingsPage,
-  NotificationSettingsPage,
-} from "@/components/settings";
-import {
-  HomePage,
-  NotFoundPage,
-  EventsPage,
-  EventDetailPage,
-  EventAttendeesPage,
-  IncidentsPanel,
-  MembersPanel,
-  MemberDetailPage,
-  ContactsPanel,
-  ContactDetailPage,
-  MailingListsPanel,
-  QrCodesPanel,
-  QrCodeDetailPage,
-  MailingPanel,
-  EmailPanel,
-  AssetsPanel,
-  HellenicsPanel,
-  VendorsPanel,
-  ActualSpendPanel,
-  MeetingsPanel,
-  CreateMeetingPage,
-  MeetingDetailPage,
-  MeetingDocumentEditPage,
-  TemplatesPanel,
-  TemplateDetailPage,
-  BylawsPage,
-  RobertsRulesPage,
-  OldBusinessPanel,
-  MotionsPanel,
-  CommitteesPanel,
-  CommitteeDetailPage,
-  CreateCommitteePage,
-  CreateCommitteeMeetingPage,
-  CommitteeMeetingDetailPage,
-  CommitteeMeetingDocumentEditPage,
   LoginPage,
   RegisterPage,
   SignupPage,
   ForgotPasswordPage,
   ResetPasswordPage,
-  PrintView,
-  EmailView,
-  WebsitePagesPanel,
-  WebsiteBlogPanel,
-  WebsiteEventsFeedPanel,
-  WebsiteMemberProfilesPanel,
-  WebsiteGalleriesPanel,
-  WebsiteMenusPanel,
-  WebsiteContactSubmissionsPanel,
-  WebsiteSettingsPanel,
-  UsersPanel,
-  UserDetailPage,
-} from "@/pages";
+} from "@/components/auth";
+
+// Lazy-loaded pages — split into separate chunks
+const MembersDashboard = lazy(() =>
+  import("@/components/members-section").then((m) => ({ default: m.MembersDashboard })),
+);
+const RosterPage = lazy(() =>
+  import("@/components/members-section").then((m) => ({ default: m.RosterPage })),
+);
+const ProfilePage = lazy(() =>
+  import("@/components/members-section").then((m) => ({ default: m.ProfilePage })),
+);
+const MemberProfilePage = lazy(() =>
+  import("@/components/members-section").then((m) => ({ default: m.MemberProfilePage })),
+);
+const MemberEventsPage = lazy(() =>
+  import("@/components/members-section").then((m) => ({ default: m.MemberEventsPage })),
+);
+const MemberEventDetailPage = lazy(() =>
+  import("@/components/members-section").then((m) => ({ default: m.MemberEventDetailPage })),
+);
+
+const ProfileSettingsPage = lazy(() =>
+  import("@/components/settings").then((m) => ({ default: m.ProfileSettingsPage })),
+);
+const GarageSettingsPage = lazy(() =>
+  import("@/components/settings").then((m) => ({ default: m.GarageSettingsPage })),
+);
+const AccountSettingsPage = lazy(() =>
+  import("@/components/settings").then((m) => ({ default: m.AccountSettingsPage })),
+);
+const NotificationSettingsPage = lazy(() =>
+  import("@/components/settings").then((m) => ({ default: m.NotificationSettingsPage })),
+);
+
+const HomePage = lazy(() =>
+  import("@/components/layout/HomePage").then((m) => ({ default: m.HomePage })),
+);
+const NotFoundPage = lazy(() =>
+  import("@/components/layout/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
+);
+const EventsPage = lazy(() =>
+  import("@/pages/EventsPage").then((m) => ({ default: m.EventsPage })),
+);
+const EventDetailPage = lazy(() =>
+  import("@/components/events/EventDetailPage").then((m) => ({ default: m.EventDetailPage })),
+);
+const EventAttendeesPage = lazy(() =>
+  import("@/components/events/EventAttendeesPage").then((m) => ({ default: m.EventAttendeesPage })),
+);
+const IncidentsPanel = lazy(() =>
+  import("@/components/events/IncidentsPanel").then((m) => ({ default: m.IncidentsPanel })),
+);
+const MembersPanel = lazy(() =>
+  import("@/components/members/MembersPanel").then((m) => ({ default: m.MembersPanel })),
+);
+const MemberDetailPage = lazy(() =>
+  import("@/components/members/MemberDetailPage").then((m) => ({ default: m.MemberDetailPage })),
+);
+const ContactsPanel = lazy(() =>
+  import("@/components/contacts/ContactsPanel").then((m) => ({ default: m.ContactsPanel })),
+);
+const ContactDetailPage = lazy(() =>
+  import("@/components/contacts/ContactDetailPage").then((m) => ({ default: m.ContactDetailPage })),
+);
+const MailingListsPanel = lazy(() =>
+  import("@/components/contacts/MailingListsPanel").then((m) => ({ default: m.MailingListsPanel })),
+);
+const QrCodesPanel = lazy(() =>
+  import("@/components/contacts/QrCodesPanel").then((m) => ({ default: m.QrCodesPanel })),
+);
+const QrCodeDetailPage = lazy(() =>
+  import("@/components/contacts/QrCodeDetailPage").then((m) => ({ default: m.QrCodeDetailPage })),
+);
+const MailingPanel = lazy(() =>
+  import("@/components/contacts/MailingPanel").then((m) => ({ default: m.MailingPanel })),
+);
+const EmailPanel = lazy(() =>
+  import("@/components/contacts/EmailPanel").then((m) => ({ default: m.EmailPanel })),
+);
+const AssetsPanel = lazy(() =>
+  import("@/components/contacts/AssetsPanel").then((m) => ({ default: m.AssetsPanel })),
+);
+const HellenicsPanel = lazy(() =>
+  import("@/components/contacts/HellenicsPanel").then((m) => ({ default: m.HellenicsPanel })),
+);
+const VendorsPanel = lazy(() =>
+  import("@/components/contacts/VendorsPanel").then((m) => ({ default: m.VendorsPanel })),
+);
+const ActualSpendPanel = lazy(() =>
+  import("@/components/budget/ActualSpendPanel").then((m) => ({ default: m.ActualSpendPanel })),
+);
+const MeetingsPanel = lazy(() =>
+  import("@/components/meetings/MeetingsPanel").then((m) => ({ default: m.MeetingsPanel })),
+);
+const CreateMeetingPage = lazy(() =>
+  import("@/components/meetings/CreateMeetingPage").then((m) => ({ default: m.CreateMeetingPage })),
+);
+const MeetingDetailPage = lazy(() =>
+  import("@/components/meetings/MeetingDetailPage").then((m) => ({ default: m.MeetingDetailPage })),
+);
+const MeetingDocumentEditPage = lazy(() =>
+  import("@/components/meetings/MeetingDocumentEditPage").then((m) => ({
+    default: m.MeetingDocumentEditPage,
+  })),
+);
+const TemplatesPanel = lazy(() =>
+  import("@/components/meetings/TemplatesPanel").then((m) => ({ default: m.TemplatesPanel })),
+);
+const TemplateDetailPage = lazy(() =>
+  import("@/components/meetings/TemplateDetailPage").then((m) => ({
+    default: m.TemplateDetailPage,
+  })),
+);
+const BylawsPage = lazy(() =>
+  import("@/components/meetings/BylawsPage").then((m) => ({ default: m.BylawsPage })),
+);
+const RobertsRulesPage = lazy(() =>
+  import("@/components/meetings/RobertsRulesPage").then((m) => ({ default: m.RobertsRulesPage })),
+);
+const OldBusinessPanel = lazy(() =>
+  import("@/components/meetings/OldBusinessPanel").then((m) => ({ default: m.OldBusinessPanel })),
+);
+const MotionsPanel = lazy(() =>
+  import("@/components/meetings/MotionsPanel").then((m) => ({ default: m.MotionsPanel })),
+);
+const CommitteesPanel = lazy(() =>
+  import("@/components/committees").then((m) => ({ default: m.CommitteesPanel })),
+);
+const CommitteeDetailPage = lazy(() =>
+  import("@/components/committees").then((m) => ({ default: m.CommitteeDetailPage })),
+);
+const CreateCommitteePage = lazy(() =>
+  import("@/components/committees").then((m) => ({ default: m.CreateCommitteePage })),
+);
+const CreateCommitteeMeetingPage = lazy(() =>
+  import("@/components/committees").then((m) => ({ default: m.CreateCommitteeMeetingPage })),
+);
+const CommitteeMeetingDetailPage = lazy(() =>
+  import("@/components/committees").then((m) => ({ default: m.CommitteeMeetingDetailPage })),
+);
+const CommitteeMeetingDocumentEditPage = lazy(() =>
+  import("@/components/committees").then((m) => ({ default: m.CommitteeMeetingDocumentEditPage })),
+);
+const PrintView = lazy(() =>
+  import("@/components/export/PrintView").then((m) => ({ default: m.PrintView })),
+);
+const EmailView = lazy(() =>
+  import("@/components/export/EmailView").then((m) => ({ default: m.EmailView })),
+);
+const WebsitePagesPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsitePagesPanel })),
+);
+const WebsiteBlogPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteBlogPanel })),
+);
+const WebsiteEventsFeedPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteEventsFeedPanel })),
+);
+const WebsiteMemberProfilesPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteMemberProfilesPanel })),
+);
+const WebsiteGalleriesPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteGalleriesPanel })),
+);
+const WebsiteMenusPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteMenusPanel })),
+);
+const WebsiteContactSubmissionsPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteContactSubmissionsPanel })),
+);
+const WebsiteSettingsPanel = lazy(() =>
+  import("@/components/website").then((m) => ({ default: m.WebsiteSettingsPanel })),
+);
+const UsersPanel = lazy(() =>
+  import("@/components/users").then((m) => ({ default: m.UsersPanel })),
+);
+const UserDetailPage = lazy(() =>
+  import("@/components/users").then((m) => ({ default: m.UserDetailPage })),
+);
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Printer } from "lucide-react";
