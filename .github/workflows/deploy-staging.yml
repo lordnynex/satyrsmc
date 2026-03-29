@@ -130,7 +130,7 @@ jobs:
           printf '/trpc/*  /.netlify/functions/api/trpc/:splat  200\n/api/*  /.netlify/functions/api/api/:splat  200\n' > packages/api/netlify/publish/_redirects
 
       - name: Deploy API to Netlify
-        run: netlify deploy --dir packages/api/netlify/publish --functions packages/api/netlify/functions --prod --no-build --filter @satyrsmc/api
+        run: netlify deploy --dir $GITHUB_WORKSPACE/packages/api/netlify/publish --functions $GITHUB_WORKSPACE/packages/api/netlify/functions --prod --no-build --filter @satyrsmc/api
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 6f89cce9-a3d1-4618-a361-c69752d5b69e
