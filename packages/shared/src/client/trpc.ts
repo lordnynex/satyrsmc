@@ -8,7 +8,7 @@ function getTrpcUrlDefault(): string {
   const apiOrigin = import.meta.env.VITE_API_ORIGIN;
   if (apiOrigin) return apiOrigin;
   if (typeof window === "undefined") return "http://localhost:4000";
-  return window.location.origin;
+  return "";
 }
 
 export type TrpcClient = ReturnType<typeof trpc.createClient>;
