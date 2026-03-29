@@ -125,7 +125,7 @@ jobs:
         run: pnpm --filter @satyrsmc/api build:function
 
       - name: Deploy API to Netlify
-        run: netlify deploy --dir packages/api/netlify/functions --functions packages/api/netlify/functions --prod --no-build
+        run: netlify deploy --dir packages/api/netlify/functions --functions packages/api/netlify/functions --prod --no-build --filter @satyrsmc/api
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 6f89cce9-a3d1-4618-a361-c69752d5b69e
