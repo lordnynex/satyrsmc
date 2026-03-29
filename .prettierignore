@@ -7,3 +7,4 @@ bun.lock
 pnpm-lock.yaml
 pnpm-workspace.yaml
 storybook-static
+packages/api/netlify
