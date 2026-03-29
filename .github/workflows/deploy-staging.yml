@@ -97,19 +97,25 @@ jobs:
 
       - name: Build public UI
         run: pnpm --filter @satyrsmc/app-public build
+        env:
+          VITE_API_ORIGIN: https://staging-satyrsmc-api.netlify.app
+          VITE_MEMBERS_URL: https://staging-satyrsmc-members.netlify.app
+          VITE_RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
 
       - name: Deploy public UI to Netlify
-        run: netlify deploy --site 39a6c996-6feb-469a-a932-06422fea42ad --dir dist --prod
-        working-directory: packages/app-public
+        run: netlify deploy --site 4b0befb9-2474-4e81-8e67-8cf407f29e44 --dir packages/app-public/dist --prod --no-build --filter @satyrsmc/app-public
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
       - name: Build members UI
         run: pnpm --filter @satyrsmc/app-members build
+        env:
+          VITE_API_ORIGIN: https://staging-satyrsmc-api.netlify.app
+          VITE_RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
       - name: Deploy members UI to Netlify
-        run: netlify deploy --site c9d20c1d-f0a4-4ea6-9dde-5df19445dfae --dir dist --prod
-        working-directory: packages/app-members
+        run: netlify deploy --site 9821c2ad-3032-40c0-9b5e-90791ff296f7 --dir packages/app-members/dist --prod --no-build --filter @satyrsmc/app-members
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
@@ -117,7 +123,6 @@ jobs:
         run: pnpm --filter @satyrsmc/api build:function
 
       - name: Deploy API to Netlify
-        run: netlify deploy --site 599fbf0e-306d-49e0-bbcc-4f382ae23337 --dir netlify/publish --functions netlify/functions --prod
-        working-directory: packages/api
+        run: netlify deploy --site 6f89cce9-a3d1-4618-a361-c69752d5b69e --dir packages/api/netlify/publish --functions packages/api/netlify/functions --prod --no-build --filter @satyrsmc/api
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
