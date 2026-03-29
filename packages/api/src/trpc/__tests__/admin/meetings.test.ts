@@ -6,7 +6,7 @@
  */
 
 import type { TRPCError } from "@trpc/server";
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll } from "vitest";
 import { MotionResult } from "@satyrsmc/shared/lib/enums";
 import type { TrpcTestHarness } from "../../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../../test/trpcHarness";

@@ -10,7 +10,12 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client"]
   },
-  "include": ["src/**/*", "build.ts"]
+  "include": ["src/**/*", "vite.config.ts"]
 }

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { ProfileSettingsPage } from "./ProfileSettingsPage";

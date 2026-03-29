@@ -1,9 +1,9 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { navLinkClass } from "@satyrsmc/shared/lib/nav";
+import { MEMBERS_URL } from "@/lib/constants";
 
-declare const __BUILD_MEMBERS_URL__: string;
-const LOGIN_URL = (__BUILD_MEMBERS_URL__ || "") + "/login";
+const LOGIN_URL = MEMBERS_URL + "/login";
 
 const linkClass = ({ isActive }: { isActive: boolean }) => navLinkClass({ isActive });
 

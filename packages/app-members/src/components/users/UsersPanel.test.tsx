@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { UsersPanel } from "./UsersPanel";
@@ -37,7 +37,7 @@ describe("UsersPanel", () => {
   test("renders user list", async () => {
     renderWithProviders(<UsersPanel />, {
       handlers: createHandlers(),
-      initialEntries: ["/admin/users"],
+      initialEntries: ["/users"],
     });
 
     await waitFor(() => {
@@ -49,7 +49,7 @@ describe("UsersPanel", () => {
   test("search input updates immediately", async () => {
     renderWithProviders(<UsersPanel />, {
       handlers: createHandlers(),
-      initialEntries: ["/admin/users"],
+      initialEntries: ["/users"],
     });
 
     const { default: userEvent } = await import("@testing-library/user-event");
@@ -66,7 +66,7 @@ describe("UsersPanel", () => {
     const tracker = { count: 0 };
     renderWithProviders(<UsersPanel />, {
       handlers: createHandlers(tracker),
-      initialEntries: ["/admin/users"],
+      initialEntries: ["/users"],
     });
 
     // Wait for initial query to fire

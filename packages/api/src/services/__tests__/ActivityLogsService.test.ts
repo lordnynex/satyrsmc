@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll } from "vitest";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import { ActivityMessageCode } from "@satyrsmc/shared/lib/enums";

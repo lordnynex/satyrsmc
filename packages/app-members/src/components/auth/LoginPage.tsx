@@ -10,9 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-declare const __BUILD_RECAPTCHA_SITE_KEY__: string;
-const RECAPTCHA_SITE_KEY = __BUILD_RECAPTCHA_SITE_KEY__ || "";
+import { RECAPTCHA_SITE_KEY } from "@/lib/constants";
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();

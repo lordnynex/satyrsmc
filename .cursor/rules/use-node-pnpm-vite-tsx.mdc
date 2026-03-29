@@ -1,0 +1,43 @@
+---
+description: Node.js/pnpm/Vite/tsx toolchain rules — never use Bun
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.json"]
+alwaysApply: true
+---
+
+# Toolchain: Node.js + pnpm + Vite + tsx
+
+This project uses Node.js with pnpm workspaces. **Never introduce Bun, Deno, or other runtimes.**
+
+## Package Manager
+- Use `pnpm install` — never `bun install`, `npm install`, or `yarn install`
+- Use `pnpm exec <tool>` to run local binaries
+- Use `pnpm --filter @satyrsmc/<package> <script>` to run a script in a specific package
+- Use `pnpm -r <script>` to run a script across all packages
+
+## Running Scripts/Files
+- Use `tsx <file>` for one-off TypeScript scripts — never `bun <file>` or `node <file>` directly
+- Scripts that need `.env` must start with `import "dotenv/config"` — Node.js does not auto-load `.env`
+
+## Testing
+- Use `vitest` for all tests — never `bun test` or `jest`
+- Run tests: `pnpm test` (all packages) or `pnpm --filter @satyrsmc/<package> test`
+
+## Frontend Bundling (app-public, app-members)
+- Use Vite for dev server and production builds
+- Dev: `pnpm --filter @satyrsmc/app-public dev` (Vite on port 5173)
+- Build: `pnpm --filter @satyrsmc/app-public build`
+- Use `@tailwindcss/vite` plugin — never `bun-plugin-tailwind`
+
+## API Bundling
+- Use `tsx` for local development (no bundler): `pnpm --filter @satyrsmc/api dev`
+- Use `tsup` for production Netlify Function bundle only: `pnpm --filter @satyrsmc/api build:function`
+- **No Vite in the API package** — only tsup for production output
+
+## HTTP Server
+- Use Express — never `Bun.serve()`
+- Use `node:fs` (`existsSync`, `readFileSync`, etc.) — never `Bun.file()`
+- Cookie manipulation uses `res.append("Set-Cookie", ...)` — not `Headers.append()`
+
+## Environment Variables
+- Node.js does NOT auto-load `.env` — always add `import "dotenv/config"` as the first import in server entry points and scripts
+- Never rely on Bun's automatic `.env` loading

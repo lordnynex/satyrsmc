@@ -1,0 +1,31 @@
+{
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#094479",
+    "activityBar.background": "#0b4f8a",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#000000",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#0b4f8a",
+    "statusBar.background": "#0b4f8a",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#225a8b",
+    "statusBarItem.remoteBackground": "#0b4f8a",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#0b4f8a",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#094479",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#4f054b",
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "typescript.preferences.exclude": ["**/specs/**", "**/server/prisma/generated/**"],
+  "files.exclude": {
+    "**/specs": false,
+    "**/server/prisma/generated": false
+  },
+  "files.watcherExclude": {
+    "**/server/prisma/generated/**": true
+  }
+}

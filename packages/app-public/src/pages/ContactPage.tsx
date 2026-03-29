@@ -6,9 +6,7 @@ import { SubmitContactInputSchema } from "@satyrsmc/shared/dto/website";
 import type { z } from "zod";
 import { Hero } from "../components/Hero";
 import { trpc } from "@satyrsmc/shared/client";
-
-declare const __BUILD_RECAPTCHA_SITE_KEY__: string;
-const RECAPTCHA_SITE_KEY = __BUILD_RECAPTCHA_SITE_KEY__ || "";
+import { RECAPTCHA_SITE_KEY } from "@/lib/constants";
 
 type ContactFormValues = z.infer<typeof SubmitContactInputSchema>;
 

@@ -61,11 +61,11 @@ export const authRouter = t.router({
         const sameSite = isProduction ? "Strict" : "Lax";
         const secure = isProduction ? "; Secure" : "";
 
-        ctx.resHeaders.append(
+        ctx.res.append(
           "Set-Cookie",
           `satyrs_access=${result.accessToken}; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=900`,
         );
-        ctx.resHeaders.append(
+        ctx.res.append(
           "Set-Cookie",
           `satyrs_refresh=${result.refreshToken}; HttpOnly; Path=/trpc/auth.refresh; SameSite=${sameSite}${secure}; Max-Age=604800`,
         );
@@ -89,7 +89,7 @@ export const authRouter = t.router({
   refresh: t.procedure
     .meta({ description: "Refresh access token using refresh cookie." })
     .mutation(async ({ ctx }) => {
-      const cookieHeader = ctx.req.headers.get("cookie");
+      const cookieHeader = ctx.req.headers["cookie"] ?? null;
       const refreshToken = cookieHeader
         ?.split(";")
         .map((c) => c.trim())
@@ -109,11 +109,11 @@ export const authRouter = t.router({
         const sameSite = isProduction ? "Strict" : "Lax";
         const secure = isProduction ? "; Secure" : "";
 
-        ctx.resHeaders.append(
+        ctx.res.append(
           "Set-Cookie",
           `satyrs_access=${result.accessToken}; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=900`,
         );
-        ctx.resHeaders.append(
+        ctx.res.append(
           "Set-Cookie",
           `satyrs_refresh=${result.refreshToken}; HttpOnly; Path=/trpc/auth.refresh; SameSite=${sameSite}${secure}; Max-Age=604800`,
         );
@@ -132,11 +132,11 @@ export const authRouter = t.router({
       const isProduction = process.env.NODE_ENV === "production";
       const sameSite = isProduction ? "Strict" : "Lax";
       const secure = isProduction ? "; Secure" : "";
-      ctx.resHeaders.append(
+      ctx.res.append(
         "Set-Cookie",
         `satyrs_access=; HttpOnly; Path=/; SameSite=${sameSite}${secure}; Max-Age=0`,
       );
-      ctx.resHeaders.append(
+      ctx.res.append(
         "Set-Cookie",
         `satyrs_refresh=; HttpOnly; Path=/trpc/auth.refresh; SameSite=${sameSite}${secure}; Max-Age=0`,
       );

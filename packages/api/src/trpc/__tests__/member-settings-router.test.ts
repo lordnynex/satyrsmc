@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll } from "vitest";
 import { hash } from "bcryptjs";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";

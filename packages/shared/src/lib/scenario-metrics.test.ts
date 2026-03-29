@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import { computeScenarioMetrics } from "./scenario-metrics";
 import type { Inputs, LineItem } from "../client/budget-state";
 

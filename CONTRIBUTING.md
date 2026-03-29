@@ -4,13 +4,13 @@
 
 ```mermaid
 graph TB
-    subgraph "Frontend (Static SPAs)"
-        PUB[app-public<br/>React 19 Public Site]
-        ADM[app-members<br/>React 19 Admin CMS]
+    subgraph "Frontend (Static SPAs on Netlify)"
+        PUB[app-public<br/>React 19 Public Site<br/>satyrsmc.org]
+        ADM[app-members<br/>React 19 Member Portal + Admin<br/>members.satyrsmc.org]
     end
 
-    subgraph "Backend (Bun.serve)"
-        API[API Server<br/>Bun.serve + tRPC 11]
+    subgraph "Backend (Netlify Function)"
+        API[API Server<br/>Express + tRPC 11]
     end
 
     subgraph "Data"
@@ -31,74 +31,68 @@ graph TB
 
 **Packages:**
 
-| Package                 | Purpose                                                                                              |
-| ----------------------- | ---------------------------------------------------------------------------------------------------- |
-| `@satyrsmc/api`         | Bun HTTP server, tRPC 11 routers, TypeORM entities, services, Postgres database                      |
-| `@satyrsmc/app-members` | React 19 admin panel for club management (members, contacts, events, budgets, meetings, website CMS) |
-| `@satyrsmc/app-public`  | React 19 public website (home, about, events, gallery, members)                                      |
-| `@satyrsmc/shared`      | Zod DTO schemas and derived TypeScript types shared across all packages                              |
+| Package                 | Purpose                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `@satyrsmc/api`         | Express + tRPC 11 server, TypeORM entities, services, Postgres database. Deployed as Netlify Function. |
+| `@satyrsmc/app-members` | React 19 member portal and admin panel (members, contacts, events, budgets, meetings, website CMS)     |
+| `@satyrsmc/app-public`  | React 19 public website (home, about, events, gallery, members)                                        |
+| `@satyrsmc/shared`      | Zod DTO schemas and derived TypeScript types shared across all packages                                |
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) v1.x
-- [PostgreSQL](https://www.postgresql.org/) via Docker (`bun run db:start`) or set `USE_PGLITE=1` in `packages/api/.env` for in-memory PGlite
-- [Docker](https://docker.com) (optional — for local Postgres or running the API as a container)
+- [Node.js](https://nodejs.org) 22 LTS
+- [pnpm](https://pnpm.io) 9+
+- [Docker](https://docker.com) (for local Postgres — started automatically by `pnpm dev`)
+
+**PGlite** is used automatically for all tests — no setup required.
 
 ## Local Development
 
 1. Copy the env template: `cp packages/api/.env.example packages/api/.env`
-2. Choose a database mode:
-   - **Postgres (recommended):** Run `bun run db:start` to start a local Postgres container, or set `DATABASE_URL` to an existing instance.
-   - **PGlite (no Postgres needed):** Uncomment `USE_PGLITE=1` in `packages/api/.env`. Data is in-memory and lost on restart.
-3. Start the dev server:
+2. Set `DATABASE_URL` in `packages/api/.env` to your local Postgres instance.
+3. Start services (each in its own terminal):
 
 ```bash
-bun run dev
+pnpm --filter @satyrsmc/api dev              # API on http://localhost:4000
+pnpm --filter @satyrsmc/app-public dev       # app-public on http://localhost:3000
+pnpm --filter @satyrsmc/app-members dev      # app-members on http://localhost:3001
 ```
 
-**API only** (no frontend serving):
-
-```bash
-bun run start:api-only
-```
-
-**Docker** (API container with DATABASE_URL):
-
-```bash
-make docker-api       # Build image
-make docker-api-run   # Run on :3000 with DATABASE_URL
-```
+Vite dev servers proxy `/trpc` and `/api` requests to the API at `localhost:4000` automatically.
 
 **Storybook** (component development):
 
 ```bash
-bun run storybook     # Dev server on :6006
+pnpm storybook    # Dev server on :6006
 ```
 
 ## Key Commands
 
 ```bash
 # Root (from repo root)
-bun run dev              # Build frontends + start API dev server
-bun run db:start         # Start local Postgres in Docker
-bun run db:stop          # Stop local Postgres
-bun run build            # Build both SPAs (app-public + app-members)
-bun run start            # Start API server (production mode)
-bun run start:api-only   # Start API without serving static files
-bun run test             # Run API tests
-bun run migrate          # Run TypeORM migrations
-bun run seed             # Seed sample users for manual testing
-bun run storybook        # Storybook dev server
+pnpm build            # Build both SPAs (app-public + app-members)
+pnpm test             # Run tests across all packages
+pnpm typecheck        # Type-check all packages
+pnpm lint             # Lint all packages
+pnpm storybook        # Storybook dev server
 
-# Static site build + deploy
-make build-static        # Build unified static site into dist/
-make deploy-static       # Sync dist/ to S3
-make deploy-static-dry   # Dry-run deploy
+# Package-level — dev servers (each in its own terminal)
+pnpm --filter @satyrsmc/api dev                # API dev server (port 4000)
+pnpm --filter @satyrsmc/app-public dev         # app-public Vite dev server (port 3000)
+pnpm --filter @satyrsmc/app-members dev        # app-members Vite dev server (port 3001)
+
+# Package-level — other
+pnpm --filter @satyrsmc/api migrate            # Run TypeORM migrations
+pnpm --filter @satyrsmc/api seed               # Seed sample users for manual testing
+pnpm --filter @satyrsmc/api build:function     # Bundle API as Netlify Function
+pnpm --filter @satyrsmc/api test               # Run API tests only
+pnpm --filter @satyrsmc/app-public build       # Build app-public
+pnpm --filter @satyrsmc/app-members build      # Build app-members
 ```
 
 ## Seed Data
 
-Run `bun run seed` to create sample user accounts for manual testing. The script is idempotent — it skips users that already exist. Configure `DATABASE_URL` or `USE_PGLITE=1` in `packages/api/.env`.
+Run `pnpm --filter @satyrsmc/api seed` to create sample user accounts for manual testing. The script is idempotent — it skips users that already exist. Configure `DATABASE_URL` in `packages/api/.env`.
 
 All seed accounts use the password: **`Password1!`**
 
@@ -114,20 +108,24 @@ All seed accounts use the password: **`Password1!`**
 ## Running Tests
 
 ```bash
-bun test                            # All API tests
-bun test packages/api/src/          # API tests (explicit path)
+pnpm test                                    # All packages
+pnpm --filter @satyrsmc/api test             # API tests only
+pnpm --filter @satyrsmc/app-members test     # app-members tests only
+pnpm --filter @satyrsmc/app-public test      # app-public tests only
 ```
+
+Tests always use PGlite (embedded Postgres) — no local database needed for testing.
 
 ## Project Structure
 
 ```
 satyrsmc/
   packages/
-    api/                    # Backend: Bun.serve + tRPC + TypeORM
+    api/                    # Backend: Express + tRPC + TypeORM
       src/
-        index.ts            # Bun.serve() entry point (:3000)
-        api-only.ts         # API-only entry (no static serving)
-        server.ts           # Route handler (tRPC, health, photos, SPA fallback)
+        index.ts            # Local dev entry — app.listen(:4000)
+        server.ts           # Express app factory (createExpressApp)
+        netlify-handler.ts  # Netlify Function entry (serverless-http wrapper)
         db/
           dataSource.ts     # TypeORM DataSource config (postgres driver)
           dbAdapter.ts      # DbLike interface for raw SQL
@@ -135,42 +133,45 @@ satyrsmc/
         entities/           # TypeORM @Entity classes (~50 entities)
         services/           # Service classes (one per domain)
         trpc/
-          root.ts           # appRouter = { website, admin }
+          root.ts           # appRouter = { website, admin, members, auth }
           routers/
             website.ts      # Public website router
             admin/          # Admin routers (15+ resource routers)
+            members/        # Member portal routers
+      tsup.config.ts        # Production bundle → netlify/functions/api.mjs
+      netlify.toml          # Netlify Function routing (/trpc/*, /api/*)
       scripts/
         migrate.ts          # Migration runner CLI
-      Dockerfile            # Docker image for API
-    app-members/              # Admin SPA: React 19 + TanStack Query + tRPC
+    app-members/            # Member portal + admin SPA: React 19 + TanStack Query + tRPC
       src/
         App.tsx             # Routes + layout
         entry.tsx           # Bootstrap (BrowserRouter, tRPC, ReactQuery)
         trpc.ts             # createTRPCReact<AppRouter>()
         data/api/           # ApiClient classes per resource
         queries/            # React Query hooks
-      build.ts              # Bun.build() script
+      vite.config.ts        # Vite config (base: "/")
+      netlify.toml          # SPA fallback redirect
     app-public/             # Public website SPA: React 19
       src/
         App.tsx             # Routes
         trpc.ts             # createTRPCReact<AppRouter>()
         content/            # Static content (events)
         data/               # Static data (members.json)
-      build.ts              # Bun.build() script
+      vite.config.ts        # Vite config (base: "/")
+      netlify.toml          # SPA fallback redirect
     shared/                 # Zod DTO schemas, derived types, and utilities
       src/
         dto/                # DTO schemas and inferred types (admin/, website/)
         client/             # tRPC client, React providers, re-exports
         lib/                # Constants, enums, and utilities
   .storybook/               # Storybook config
-  Makefile                  # Build and deploy targets
 ```
 
 ## Database
 
 ### Current: Postgres via TypeORM
 
-The database is Postgres, accessed via TypeORM's `postgres` driver. In production, the project uses [Neon](https://neon.tech) serverless Postgres. For tests, PGlite provides an embedded Postgres instance. Connection is configured via the `DATABASE_URL` environment variable.
+The database is Postgres, accessed via TypeORM's `postgres` driver. In production, the project uses [Neon](https://neon.tech) serverless Postgres. For tests, PGlite provides an embedded Postgres instance (always used — hardcoded in `src/test/setup.ts`). Connection is configured via the `DATABASE_URL` environment variable.
 
 ### TypeORM Migration Workflow
 
@@ -210,7 +211,7 @@ export class AddNewFeature1740000021000 implements MigrationInterface {
 # 3. Register in dataSource.ts (add import + add to migrations array)
 
 # 4. Run migrations
-bun run migrate
+pnpm --filter @satyrsmc/api migrate
 
 # 5. If you added a new table, create a matching:
 #    - Entity class in packages/api/src/entities/
@@ -223,41 +224,48 @@ Migrations run automatically on server startup (`migrationsRun: true`).
 
 ## CI/CD
 
-> **TODO:** CI/CD pipelines are not yet configured. When set up, they should include:
->
-> - Lint, typecheck, and test jobs per package
-> - Coverage enforcement
-> - Deploy previews for PRs
-> - Production deploy on merge to `main`
+GitHub Actions runs lint, typecheck, and tests on every pull request. Netlify auto-deploys on merge to `main`:
+
+- API deploys as a Netlify Function
+- app-public deploys as a static site to `satyrsmc.org`
+- app-members deploys as a static site to `members.satyrsmc.org`
 
 ## Environment Variables
 
-| Variable           | Location              | Description                                                                 |
-| ------------------ | --------------------- | --------------------------------------------------------------------------- |
-| `DATABASE_URL`     | `packages/api/.env`   | Postgres connection string (required unless `USE_PGLITE=1`)                 |
-| `JWT_SECRET`       | `packages/api/.env`   | JWT signing secret (required)                                               |
-| `USE_PGLITE`       | `packages/api/.env`   | Set to `1` to use in-memory PGlite instead of Postgres (local dev only)     |
-| `SQLITE_SEED_PATH` | `packages/api/.env`   | Path to legacy SQLite file for PGlite auto-seed (default: `data/badger.db`) |
-| `PORT`             | `packages/api/.env`   | API server port (default: 3000)                                             |
-| `BUILD_DEV`        | inline in `bun dev`   | Set to `1` for dev builds (set automatically by `bun run dev`)              |
-| `NODE_ENV`         | inline in `bun start` | `production` for production mode                                            |
+| Variable       | Location            | Description                                         |
+| -------------- | ------------------- | --------------------------------------------------- |
+| `DATABASE_URL` | `packages/api/.env` | Postgres connection string (required for local dev) |
+| `JWT_SECRET`   | `packages/api/.env` | JWT signing secret (required)                       |
+| `PORT`         | `packages/api/.env` | API server port (default: 4000)                     |
+| `NODE_ENV`     | set by scripts      | `production` for production mode                    |
 
-Bun automatically loads `.env` files from the working directory — do not use `dotenv`. See `packages/api/.env.example` for a template.
+Node.js does **not** auto-load `.env` files — `import "dotenv/config"` is added to all server entry points and scripts. See `packages/api/.env.example` for a template.
 
 ---
 
 # Development Conventions
 
-## Bun-First
+## Node.js + pnpm
 
-This project uses Bun exclusively. Do not introduce Node.js, npm, Vite, or other runtimes.
+This project uses Node.js with pnpm workspaces. Do not introduce Bun, Deno, or other runtimes.
 
-- `bun run <script>` — not `npm run`
-- `bun test` — not jest or vitest
-- `Bun.build()` — not webpack, esbuild, or Vite
-- `Bun.serve()` — not Express
-- `pg` via TypeORM — not raw `pg` or `postgres.js` directly in application code
-- Bun auto-loads `.env` — do not use dotenv
+- `pnpm <script>` — not `npm run` or `bun run`
+- `vitest` — not jest or `bun test`
+- `Vite` — for frontend builds (app-public, app-members)
+- `tsup` — for API Netlify Function production bundle only
+- `tsx` — for running scripts and local API dev server
+- `Express` — not `Bun.serve()`
+- `import "dotenv/config"` — required in server entry points; Node.js does not auto-load `.env`
+- `node:fs` (`existsSync`, `readFileSync`, etc.) — not `Bun.file()`
+
+## pnpm Overrides
+
+The root `package.json` contains a `pnpm.overrides` section to work around stale peer dependency constraints in upstream packages. These overrides should be removed once the relevant packages release updated versions.
+
+| Override                                                    | Reason                                                                                                                                                                                | Remove when                                                                               |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `@joshwooding/vite-plugin-react-docgen-typescript: "0.7.0"` | `@storybook/react-vite` pins `^0.6.4`, which doesn't declare Vite 8 support. Version 0.7.0 does.                                                                                      | Storybook updates its own peer pin to `^0.7.0` or higher                                  |
+| `peerDependencyRules.allowedVersions.typescript: "*"`       | `typescript-eslint@8.57.2` and `@eslint-react/eslint-plugin` declare `typescript: ">=4.8.4 <6.0.0"` but work correctly with TypeScript 6. This suppresses the false-positive warning. | `typescript-eslint` releases a version that declares `typescript: ">=4.8.4"` (or similar) |
 
 ## TypeScript Configuration
 
@@ -425,7 +433,7 @@ import { Link, useNavigate } from "react-router-dom";
 ### Tailwind CSS 4
 
 - No `postcss.config.js` or `tailwind.config.js`
-- Use `bun-plugin-tailwind` for builds
+- Use `@tailwindcss/vite` plugin for Vite builds
 - Theme tokens in `@theme` blocks in CSS
 - Custom utilities via `@utility` blocks
 
@@ -519,9 +527,9 @@ Store SHA-256 hashes of tokens in database. Send raw tokens in emails/links. Nev
 
 ## Linting & Formatting
 
-> **TODO:** ESLint flat config and Prettier are not yet configured in this repo. When set up:
->
-> - Use ESLint flat config with `@eslint-react/eslint-plugin`
-> - Prettier: double quotes, semicolons, trailing commas
-> - Pre-commit hook: lint-staged (ESLint + Prettier)
-> - Pre-push hook: coverage enforcement
+ESLint flat config and Prettier are configured in this repo:
+
+- ESLint: flat config with `@eslint-react/eslint-plugin`
+- Prettier: double quotes, semicolons, trailing commas
+- Pre-commit hook: lint-staged (ESLint + Prettier on staged files)
+- Run `pnpm lint` and `pnpm typecheck` before committing

@@ -1,5 +1,5 @@
 # Single stage: install only API + shared deps, run source (no bundle). Small image.
-# Build context: repo root. Env: NODE_ENV, DATABASE_URL, LOG_LEVEL, PORT (default 3000).
+# Build context: repo root. Env: NODE_ENV, DATABASE_URL, LOG_LEVEL, PORT (default 4000).
 
 FROM oven/bun:1-slim
 WORKDIR /app
@@ -19,9 +19,9 @@ RUN set -- $(echo "$TARGETPLATFORM" | tr '/' ' ') && \
   bun install --production --os="$BUN_OS" --cpu="$BUN_CPU"
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=4000
 
-EXPOSE 3000
+EXPOSE 4000
 
 # Run source directly so sharp and other natives resolve from node_modules.
 ENTRYPOINT ["bun", "run", "packages/api/src/api-only.ts"]

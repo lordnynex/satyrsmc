@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "bun:test";
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { setupTestDb, teardownTestDb, resetTestDb } from "../../test/setup";
 import { createApi } from "../api";
 import type { Api } from "../api";

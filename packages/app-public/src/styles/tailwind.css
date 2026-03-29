@@ -1,3 +1,6 @@
 @import "tailwindcss";
 @import "@satyrsmc/shared/styles/brand.css";
 @import "@satyrsmc/shared/styles/theme-dark.css";
+
+/* Scan shared components for Tailwind classes */
+@source "../../../shared/src";

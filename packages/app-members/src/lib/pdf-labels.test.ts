@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { AVERY_5161, AVERY_5162, AVERY_5163, AVERY_5164, generatePdfLabels } from "./pdf-labels";
 import type { LabelRecipient } from "./pdf-labels";
 

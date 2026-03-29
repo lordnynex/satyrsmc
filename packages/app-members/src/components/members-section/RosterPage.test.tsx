@@ -1,4 +1,4 @@
-import { describe, test, expect, afterEach } from "bun:test";
+import { describe, test, expect, afterEach } from "vitest";
 import { waitFor, within, fireEvent, cleanup } from "@testing-library/react";
 import { render } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";

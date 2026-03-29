@@ -21,6 +21,7 @@
  *     so protected procedures receive a session.
  */
 
+import type { Request, Response } from "express";
 import type { Context, Session } from "../trpc/context";
 import { appRouter } from "../trpc/root";
 import { t } from "../trpc/trpc";
@@ -54,8 +55,8 @@ async function createTrpcTestHarnessInner(options?: CreateTrpcTestHarnessOptions
    */
   function buildHarness(session: Session | null) {
     const context: Context = {
-      req: new Request("http://test"),
-      resHeaders: new Headers(),
+      req: { headers: {} } as unknown as Request,
+      res: { setHeader: () => undefined, getHeader: () => undefined } as unknown as Response,
       api,
       session,
     };

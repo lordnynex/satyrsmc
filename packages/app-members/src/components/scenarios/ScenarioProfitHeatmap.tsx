@@ -67,8 +67,7 @@ export function ScenarioProfitHeatmap({ metrics, profitTarget = 0 }: ScenarioPro
     theme: { mode: "dark" },
     dataLabels: {
       enabled: true,
-      formatter: (_, opts) => {
-        const val = opts.w.config.series[opts.seriesIndex]?.data[opts.dataPointIndex]?.y;
+      formatter: (val) => {
         return typeof val === "number" ? `$${Math.round(val).toLocaleString()}` : "";
       },
     },

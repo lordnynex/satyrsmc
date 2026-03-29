@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env tsx
 /**
  * Seed script — creates sample users, mailing lists, and events for manual testing.
  *
@@ -23,6 +23,7 @@
  *
  * The script is idempotent — it skips records that already exist.
  */
+import "dotenv/config";
 import "reflect-metadata";
 import { DataSource, type DataSourceOptions } from "typeorm";
 import { hash } from "bcryptjs";

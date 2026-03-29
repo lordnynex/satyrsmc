@@ -1,5 +1,5 @@
 import Chart from "react-apexcharts";
-import type { ApexOptions } from "apexcharts";
+import type { ApexOptions, ApexFormatterOpts } from "apexcharts";
 import { ChartCard } from "./ChartCard";
 import type { LineItem } from "@satyrsmc/shared/client";
 
@@ -32,10 +32,10 @@ export function CostPerCategoryChart({ lineItems }: CostPerCategoryChartProps) {
     colors: ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"],
     dataLabels: {
       enabled: true,
-      formatter: (val, opts) => {
-        const total = opts.w.config.series.reduce((a: number, b: number) => a + b, 0);
-        const pct =
-          total > 0 ? ((opts.w.config.series[opts.seriesIndex] as number) / total) * 100 : 0;
+      formatter: (val, opts?: ApexFormatterOpts) => {
+        const series = (opts?.w.series ?? []) as number[];
+        const total = series.reduce((a: number, b: number) => a + b, 0);
+        const pct = total > 0 ? ((series[opts?.seriesIndex ?? 0] ?? 0) / total) * 100 : 0;
         return `${pct.toFixed(0)}%`;
       },
     },

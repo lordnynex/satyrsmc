@@ -46,9 +46,14 @@
     "./styles/*": "./styles/*",
     "./components": "./src/components/index.ts"
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
   "devDependencies": {
     "@satyrsmc/api": "workspace:*",
-    "@types/bun": "latest"
+    "@vitest/coverage-v8": "^4.1.2",
+    "vitest": "^4.1.2"
   },
   "peerDependencies": {
     "@satyrsmc/api": "workspace:*"

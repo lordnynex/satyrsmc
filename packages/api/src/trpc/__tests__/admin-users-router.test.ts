@@ -1,6 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import type { TRPCError } from "@trpc/server";
 import type { DataSource } from "typeorm";
+import type { Request, Response } from "express";
 import type { Api } from "../../services/api";
 import type { EmailService } from "../../services/EmailService";
 import { UserType, UserStatus } from "@satyrsmc/shared/lib/enums";
@@ -46,8 +47,8 @@ type Caller = ReturnType<typeof createCaller>;
 
 function makeCaller(api: Api, session: Session | null): Caller {
   const context: Context = {
-    req: new Request("http://test"),
-    resHeaders: new Headers(),
+    req: { headers: {} } as unknown as Request,
+    res: { setHeader: () => undefined, getHeader: () => undefined } as unknown as Response,
     api,
     session,
   };

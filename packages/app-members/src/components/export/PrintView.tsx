@@ -123,8 +123,7 @@ export function PrintView({ state, metrics }: PrintViewProps) {
     theme: { mode: "light" },
     dataLabels: {
       enabled: true,
-      formatter: (_, opts) => {
-        const val = opts.w.config.series[opts.seriesIndex]?.data[opts.dataPointIndex]?.y;
+      formatter: (val) => {
         return typeof val === "number" ? `$${Math.round(val).toLocaleString()}` : "";
       },
     },

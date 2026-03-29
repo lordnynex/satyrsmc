@@ -64,9 +64,11 @@ export const registrationRouter = t.router({
       const waiverContentHash = waiver?.contentHash ?? "";
 
       const rawIp =
-        ctx.req.headers.get("x-forwarded-for") ?? ctx.req.headers.get("x-real-ip") ?? "unknown";
+        (ctx.req.headers["x-forwarded-for"] as string | undefined) ??
+        (ctx.req.headers["x-real-ip"] as string | undefined) ??
+        "unknown";
       const ip = rawIp.split(",")[0].trim();
-      const userAgent = ctx.req.headers.get("user-agent") ?? null;
+      const userAgent = (ctx.req.headers["user-agent"] as string | undefined) ?? null;
 
       const paymentAmountCents = event.ga_ticket_cost
         ? Math.round(event.ga_ticket_cost * 100)

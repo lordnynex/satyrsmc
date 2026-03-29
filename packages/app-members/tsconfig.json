@@ -22,7 +22,8 @@
       "@/lib/*": ["./src/lib/*"],
       "@/export/*": ["./src/export/*"],
       "@/trpc": ["./src/trpc.ts"]
-    }
+    },
+    "types": ["vite/client"]
   },
-  "include": ["src/**/*", "build.ts"]
+  "include": ["src/**/*", "vite.config.ts"]
 }

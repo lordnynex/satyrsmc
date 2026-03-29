@@ -17,7 +17,7 @@ services:
     environment:
       DATABASE_URL: postgres://satyrs:satyrs@postgres:5432/satyrsmc
     ports:
-      - "3000:3000"
+      - "4000:3000"
     depends_on:
       - postgres
 

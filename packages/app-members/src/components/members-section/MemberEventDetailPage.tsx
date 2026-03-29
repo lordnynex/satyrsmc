@@ -49,9 +49,7 @@ import {
   SheetBody,
 } from "@/components/ui/sheet";
 
-declare const __BUILD_GOOGLE_MAPS_API_KEY__: string;
-const GOOGLE_MAPS_API_KEY: string | undefined =
-  typeof __BUILD_GOOGLE_MAPS_API_KEY__ !== "undefined" ? __BUILD_GOOGLE_MAPS_API_KEY__ : undefined;
+import { GOOGLE_MAPS_API_KEY } from "@/lib/constants";
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -498,7 +496,7 @@ export function MemberEventDetailPage() {
       host_ids: event.host_ids.length > 0 ? event.host_ids : undefined,
     } as Record<string, unknown>);
     setDuplicateOpen(false);
-    navigate(`/admin/events/${newEvent.id}`);
+    navigate(`/events/${newEvent.id}`);
   };
 
   if (isLoading) return <DetailSkeleton />;
@@ -569,7 +567,7 @@ export function MemberEventDetailPage() {
         {isAdmin && (
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
-              <Link to={`/admin/events/${id}`}>
+              <Link to={`/events/${id}`}>
                 <Pencil className="size-3.5" />
                 Edit
               </Link>

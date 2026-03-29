@@ -14,7 +14,7 @@ export class ConsoleEmailService implements EmailService {
   private appUrl: string;
 
   constructor(appUrl?: string) {
-    this.appUrl = appUrl ?? process.env.APP_URL ?? "http://localhost:3000";
+    this.appUrl = appUrl ?? process.env.APP_URL ?? "http://localhost:4000";
   }
 
   async sendRegistrationEmail(to: string, token: string, name: string): Promise<void> {

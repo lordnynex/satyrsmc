@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { parseVCardFile, contactToVCard4, parsedToContactPayload } from "./vcard";
 import { ContactType, ContactStatus, ConsentStatus } from "@satyrsmc/shared/client";
 import type { Contact } from "@satyrsmc/shared/client";

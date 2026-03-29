@@ -1,0 +1,21 @@
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm build:function"
+  publish = "netlify/publish"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "none"
+
+[context.production.environment]
+  NODE_ENV = "production"
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/trpc/*"
+  to = "/.netlify/functions/api/trpc/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/api/:splat"
+  status = 200

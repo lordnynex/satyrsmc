@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start",
+      "detail": "Start All",
+      "dependsOn": ["Start Public UI", "Start Members UI", "Start API"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Public UI",
+      "type": "shell",
+      "command": "pnpm dev",
+      "problemMatcher": [],
+      "detail": "Run the Vite Development Server",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/app-public"
+      }
+    },
+    {
+      "label": "Start Members UI",
+      "type": "shell",
+      "command": "pnpm dev",
+      "problemMatcher": [],
+      "detail": "Run the Vite Development Server",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/app-members"
+      }
+    },
+    {
+      "label": "Start API",
+      "type": "shell",
+      "command": "pnpm dev",
+      "problemMatcher": [],
+      "detail": "Start the Express Server",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/api"
+      }
+    },
+    {
+      "label": "DB Start",
+      "type": "shell",
+      "command": "pnpm db:start",
+      "problemMatcher": [],
+      "detail": "Start local Postgres via Docker",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/api"
+      }
+    },
+    {
+      "label": "DB Stop",
+      "type": "shell",
+      "command": "pnpm db:stop",
+      "problemMatcher": [],
+      "detail": "Stop local Postgres",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/api"
+      }
+    },
+    {
+      "label": "DB Migrate",
+      "type": "shell",
+      "command": "pnpm db:migrate",
+      "problemMatcher": [],
+      "detail": "Run database migrations",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/api"
+      }
+    },
+    {
+      "label": "DB Seed",
+      "type": "shell",
+      "command": "pnpm db:seed",
+      "problemMatcher": [],
+      "detail": "Seed the database with initial users",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/api"
+      }
+    }
+  ]
+}

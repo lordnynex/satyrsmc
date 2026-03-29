@@ -1,6 +1,8 @@
 import { DataSource } from "typeorm";
 import type { DataSourceOptions } from "typeorm";
 import { join } from "path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 import {
   Document,
   DocumentVersion,
@@ -80,7 +82,8 @@ import { AddBikePhotos1800000013000 } from "./migrations/1800000013000-AddBikePh
 import { CreateEventRsvpSystem1800000014000 } from "./migrations/1800000014000-CreateEventRsvpSystem.ts";
 
 export function getProjectRoot(): string {
-  return process.env.DATA_DIR ?? join(import.meta.dir, "../../../..");
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  return process.env.DATA_DIR ?? join(__dirname, "../../../..");
 }
 
 const entities = [

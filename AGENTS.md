@@ -4,40 +4,44 @@ Read and follow all conventions in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Project Overview
 
-Satyrs Motorcycle Club management system and public website — a Bun monorepo with four packages.
+Satyrs Motorcycle Club management system and public website — a Node.js/pnpm monorepo with four packages.
 
 ## Architecture
 
-- **Monorepo**: Bun workspaces (`packages/api`, `packages/app-members`, `packages/app-public`, `packages/shared`)
-- **API**: Bun.serve() + tRPC 11 — serves both SPAs and the API on port 3000
-- **App-Admin**: React 19 + TanStack Query + tRPC — admin panel for club management and website CMS (served at `/admin`)
-- **App-Public**: React 19 + tRPC — public website (served at `/`)
+- **Monorepo**: pnpm workspaces (`packages/api`, `packages/app-members`, `packages/app-public`, `packages/shared`)
+- **API**: Express + tRPC 11 — deployed as a Netlify Function; serves tRPC at `/trpc` and REST at `/api`
+- **App-Members**: React 19 + TanStack Query + tRPC — member portal and admin panel (deployed to `members.satyrsmc.org`)
+- **App-Public**: React 19 + tRPC — public website (deployed to `satyrsmc.org`)
 - **Shared**: Zod DTO schemas and derived TypeScript types shared across all packages
 - **Database**: Postgres via TypeORM + pg (Neon serverless in production, PGlite for tests)
-- **Build**: `Bun.build()` for both SPAs (no Vite, no webpack)
+- **Build**: Vite for both SPAs (app-public, app-members); tsup/esbuild for API Netlify Function bundle
 
 ## Key Commands
 
 ```bash
 # Root
-bun run dev              # Build frontends + start API with HMR
-bun run build            # Build both SPAs
-bun run start            # Start API (production)
-bun run start:api-only   # Start API without static serving
-bun run test             # Run API tests
-bun run migrate          # Run TypeORM migrations
-bun run seed             # Seed sample users for manual testing (password: Password1!)
-bun run storybook        # Storybook on :6006
+pnpm test             # Run tests across all packages
+pnpm build            # Build both SPAs for production (pnpm -r build)
+pnpm typecheck        # Type-check all packages
+pnpm lint             # Lint all packages
 
-# Build & Deploy
-make build-static        # Build unified static site into dist/
-make docker-api          # Build API Docker image
-make docker-api-run      # Run API container on :3000
+# Package-level — dev servers (run each in its own terminal)
+pnpm --filter @satyrsmc/api dev              # API dev server (tsx watch, port 4000)
+pnpm --filter @satyrsmc/app-public dev       # app-public Vite dev server (port 3000)
+pnpm --filter @satyrsmc/app-members dev      # app-members Vite dev server (port 3001)
+
+# Package-level — other
+pnpm --filter @satyrsmc/api migrate          # Run TypeORM migrations
+pnpm --filter @satyrsmc/api seed             # Seed sample users (password: Password1!)
+pnpm --filter @satyrsmc/api build:function   # Bundle API as Netlify Function
+pnpm --filter @satyrsmc/api test             # Run API tests
+pnpm --filter @satyrsmc/app-public build     # Build app-public
+pnpm --filter @satyrsmc/app-members build    # Build app-members
 ```
 
 ## Critical Rules
 
-1. **Bun only** — never use Node.js, npm, Vite, Express, or dotenv. See [CONTRIBUTING.md](CONTRIBUTING.md) for full Bun conventions.
+1. **Node.js + pnpm only** — never use Bun, Deno, npm, or yarn. Use `pnpm` for package management, `tsx` for running scripts, `vitest` for tests, `Vite` for frontend builds, `tsup` for the API Netlify Function bundle, and `Express` for the HTTP server. See [CONTRIBUTING.md](CONTRIBUTING.md) for full conventions.
 
 2. **No suppression comments** — never use `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, or `@ts-nocheck` (including inline JSX `{/* eslint-disable-next-line */}` variants). Fix root causes. Only add a suppression comment if the user explicitly approves it.
 
@@ -49,11 +53,11 @@ make docker-api-run      # Run API container on :3000
 
 6. **No unsafe type casts** — never use `as never`, `as any`, or `as Record<string, unknown>` to bypass tRPC's inferred types.
 
-7. **Test coverage required** — every new feature, service, migration, router, and component must include corresponding unit and/or integration tests. Use PGlite for backend integration tests and `bun:test` for all tests. **All tests must pass before merging — no exceptions.** Run `bun run test` (not bare `bun test`) from the repo root to run the full suite. Do not pass the buck on pre-existing failures: fix them. Do not merge code with failing tests, regardless of whether you introduced the failure.
+7. **Test coverage required** — every new feature, service, migration, router, and component must include corresponding unit and/or integration tests. Use PGlite for backend integration tests and `vitest` for all tests. **All tests must pass before merging — no exceptions.** Run `pnpm test` from the repo root to run the full suite. Do not pass the buck on pre-existing failures: fix them. Do not merge code with failing tests, regardless of whether you introduced the failure.
 
-   **bcrypt in tests** — test fixtures that set up password hashes must use cost `4` (not `12`). The services use `BCRYPT_COST` which is auto-lowered to `4` when `NODE_ENV=test` (set by the `test:api` script). High bcrypt costs cause timeouts in the full suite due to parallelism.
+   **bcrypt in tests** — test fixtures that set up password hashes must use cost `4` (not `12`). The services use `BCRYPT_COST` which is auto-lowered to `4` when `NODE_ENV=test`. High bcrypt costs cause timeouts in the full suite due to parallelism.
 
-8. **Zero lint warnings and type errors** — run `bun run typecheck` and `bunx eslint .` before committing. All TypeScript errors and ESLint warnings must be fixed — including pre-existing ones in files you didn't touch. CI fails on any warning or error. Do not leave them for later.
+8. **Zero lint warnings and type errors** — run `pnpm typecheck` and `pnpm exec eslint .` before committing. All TypeScript errors and ESLint warnings must be fixed — including pre-existing ones in files you didn't touch. CI fails on any warning or error. Do not leave them for later.
 
 ## Type Safety Chain
 
@@ -113,43 +117,46 @@ The `@satyrsmc/shared` package contains Zod DTO schemas, derived TypeScript type
 ```
 satyrsmc/
   packages/
-    api/                    # Bun.serve + tRPC + TypeORM
+    api/                    # Express + tRPC + TypeORM
       src/
-        index.ts            # Server entry (:3000)
-        server.ts           # Route handler
+        index.ts            # Local dev entry — app.listen(:4000)
+        server.ts           # Express app factory (createExpressApp)
+        netlify-handler.ts  # Netlify Function entry (serverless-http wrapper)
         db/
           dataSource.ts     # TypeORM config (entities + migrations)
           migrations/       # MigrationInterface classes
         entities/           # @Entity classes (~50)
         services/           # Service classes (one per domain)
         trpc/
-          root.ts           # appRouter = { website, admin }
+          root.ts           # appRouter = { website, admin, members, auth }
           routers/          # tRPC procedure definitions
-      Dockerfile
-    app-members/              # Admin SPA
+      tsup.config.ts        # Production bundle config → netlify/functions/api.mjs
+      netlify.toml          # Netlify Function redirects
+    app-members/            # Member portal + admin panel SPA
       src/
         App.tsx             # Routes
         entry.tsx           # Bootstrap
         trpc.ts             # createTRPCReact<AppRouter>()
         data/api/           # ApiClient classes
         queries/            # React Query hooks
-      build.ts              # Bun.build() script
+      vite.config.ts        # Vite config
+      netlify.toml          # SPA fallback redirect
     app-public/             # Public website SPA
       src/
         App.tsx             # Routes
         trpc.ts             # createTRPCReact<AppRouter>()
-      build.ts              # Bun.build() script
+      vite.config.ts        # Vite config
+      netlify.toml          # SPA fallback redirect
     shared/                 # Zod DTO schemas, derived types, and utilities
       src/
         dto/                # DTO schemas and inferred types (admin/, website/)
         client/             # tRPC client, React providers, re-exports
         lib/                # Constants, enums, and utilities
-  Makefile                  # Build + deploy targets
 ```
 
 ## Database
 
-**Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var (or in-memory PGlite when `USE_PGLITE=1` for local dev). Migrations auto-run on startup.
+**Current:** Postgres via TypeORM's `postgres` driver. Uses Neon serverless in production, PGlite for tests. Connection configured via `DATABASE_URL` env var. Docker Postgres is the default for local development. Tests always use PGlite (hardcoded in `src/test/setup.ts` — no env var needed). Migrations auto-run on startup.
 
 **Adding a schema change:**
 
@@ -157,7 +164,7 @@ satyrsmc/
 2. Register it in `dataSource.ts` migrations array
 3. If new table: create entity, register in `dataSource.ts` entities array
 4. Create matching shared DTO in `packages/shared/src/dto/admin/`
-5. Run `bun run migrate`
+5. Run `pnpm --filter @satyrsmc/api migrate`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 
@@ -172,8 +179,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for migration code examples.
 ## Local Development
 
 ```bash
-bun run dev        # Primary — builds frontends + starts API with HMR (requires DATABASE_URL)
-bun run dev:pglite # In-memory PGlite, no Postgres; optionally seeds from data/badger.db at startup
+pnpm --filter @satyrsmc/api dev              # API (tsx watch, port 4000) — requires DATABASE_URL
+pnpm --filter @satyrsmc/app-public dev       # app-public Vite dev server (port 3000)
+pnpm --filter @satyrsmc/app-members dev      # app-members Vite dev server (port 3001)
 ```
 
-The API serves app-public at `/` and app-members at `/admin`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.
+Run each in its own terminal. Vite dev servers proxy `/trpc` and `/api` requests to the API at `localhost:4000`. Images are stored as BYTEA in Postgres and served via `sharp` for resizing.
+
+**Note:** The API does not serve the frontend SPAs. Each app is deployed independently to Netlify: the API as a Netlify Function, app-public and app-members as separate static sites.

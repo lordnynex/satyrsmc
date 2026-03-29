@@ -1,5 +1,6 @@
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll } from "vitest";
 import type { TRPCError } from "@trpc/server";
+import type { Request, Response } from "express";
 import { t, protectedProcedure, adminProcedure, memberProcedure } from "../trpc";
 import type { Context, Session } from "../context";
 import { UserType } from "@satyrsmc/shared/lib/enums";
@@ -8,8 +9,8 @@ import type { Api } from "../../services/api";
 
 function makeContext(session: Session | null, api: Api): Context {
   return {
-    req: new Request("http://test"),
-    resHeaders: new Headers(),
+    req: { headers: {} } as unknown as Request,
+    res: { setHeader: () => undefined, getHeader: () => undefined } as unknown as Response,
     api,
     session,
   };

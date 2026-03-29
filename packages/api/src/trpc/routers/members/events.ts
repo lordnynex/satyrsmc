@@ -46,11 +46,17 @@ export const memberEventsRouter = t.router({
         ? ((await ctx.api.rsvps.getCurrentWaiver())?.contentHash ?? "")
         : undefined;
       const waiverIp = input.waiver_signed
-        ? (ctx.req.headers.get("x-forwarded-for") ?? ctx.req.headers.get("x-real-ip") ?? "unknown")
+        ? (
+            (ctx.req.headers["x-forwarded-for"] as string | undefined) ??
+            (ctx.req.headers["x-real-ip"] as string | undefined) ??
+            "unknown"
+          )
             .split(",")[0]
             .trim()
         : undefined;
-      const waiverUserAgent = input.waiver_signed ? ctx.req.headers.get("user-agent") : undefined;
+      const waiverUserAgent = input.waiver_signed
+        ? (ctx.req.headers["user-agent"] as string | undefined)
+        : undefined;
 
       return ctx.api.memberEvents.rsvp({
         contactId: ctx.session.contactId,

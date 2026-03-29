@@ -1,5 +1,6 @@
-import { describe, test, expect, beforeAll, beforeEach } from "bun:test";
+import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import type { DataSource } from "typeorm";
+import type { Request, Response } from "express";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { resetTestDb } from "../../test/setup";
@@ -60,8 +61,8 @@ describe("members.events tRPC router", () => {
     authedHarness = {
       ...harness,
       caller: createCaller({
-        req: new Request("http://test"),
-        resHeaders: new Headers(),
+        req: { headers: {} } as unknown as Request,
+        res: { setHeader: () => undefined, getHeader: () => undefined } as unknown as Response,
         api,
         session: {
           userId,

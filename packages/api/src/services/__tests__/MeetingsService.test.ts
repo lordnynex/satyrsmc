@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll } from "vitest";
 import { setupTestDb } from "../../test/setup";
 import type { Api } from "../api";
 import type { DataSource } from "typeorm";
@@ -41,9 +41,9 @@ describe("MeetingsService", () => {
       expect(got).not.toBeNull();
       expect(got!.id).toBe(m.id);
       const dateVal = new Date(String(got!.date));
-      expect(dateVal.getFullYear()).toBe(2025);
-      expect(dateVal.getMonth()).toBe(2);
-      expect(dateVal.getDate()).toBe(1);
+      expect(dateVal.getUTCFullYear()).toBe(2025);
+      expect(dateVal.getUTCMonth()).toBe(2);
+      expect(dateVal.getUTCDate()).toBe(1);
       expect(got!.meeting_number).toBe(102);
     });
 
@@ -59,9 +59,9 @@ describe("MeetingsService", () => {
       if (!m) throw new Error("createMeeting failed");
       expect(m.id).toBeDefined();
       const dateVal = new Date(m.date);
-      expect(dateVal.getFullYear()).toBe(2025);
-      expect(dateVal.getMonth()).toBe(3);
-      expect(dateVal.getDate()).toBe(1);
+      expect(dateVal.getUTCFullYear()).toBe(2025);
+      expect(dateVal.getUTCMonth()).toBe(3);
+      expect(dateVal.getUTCDate()).toBe(1);
       expect(m.meeting_number).toBe(103);
     });
   });

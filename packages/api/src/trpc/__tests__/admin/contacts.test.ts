@@ -4,7 +4,7 @@
  */
 
 import type { TRPCError } from "@trpc/server";
-import { describe, test, expect, beforeAll } from "bun:test";
+import { describe, test, expect, beforeAll } from "vitest";
 import {
   ContactStatus,
   ContactStatusFilter,

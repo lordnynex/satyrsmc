@@ -5,7 +5,7 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { describe, test, expect, beforeAll, mock } from "bun:test";
+import { describe, test, expect, beforeAll, vi } from "vitest";
 import type { TrpcTestHarness } from "../../test/trpcHarness";
 import { createTrpcTestHarness } from "../../test/trpcHarness";
 import {
@@ -162,7 +162,7 @@ describe("website router", () => {
 
     test("rejects when reCAPTCHA verification fails", async () => {
       const original = harness.api.recaptcha.verify;
-      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      harness.api.recaptcha.verify = vi.fn(() => Promise.resolve(false));
       try {
         await expect(
           harness.caller.website.submitContact({
@@ -230,7 +230,7 @@ describe("website router", () => {
     test("rejects when reCAPTCHA verification fails", async () => {
       const member = await createMember(harness.api, { name: "Captcha Test Member" });
       const original = harness.api.recaptcha.verify;
-      harness.api.recaptcha.verify = mock(() => Promise.resolve(false));
+      harness.api.recaptcha.verify = vi.fn(() => Promise.resolve(false));
       try {
         await harness.caller.website.submitContactMember({
           member_id: member.id,

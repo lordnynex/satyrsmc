@@ -1,8 +1,9 @@
-#!/usr/bin/env bun
+#!/usr/bin/env tsx
 /**
  * Run database migrations.
  * Uses TypeORM's MigrationExecutor to run each pending migration with verbose logging.
  */
+import "dotenv/config";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { MigrationExecutor } from "typeorm";

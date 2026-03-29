@@ -1,4 +1,5 @@
-import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+import type { Request, Response } from "express";
 import type { Api } from "../services/api";
 import type { UserType } from "@satyrsmc/shared/lib/enums";
 
@@ -25,10 +26,10 @@ function parseCookie(header: string | null, name: string): string | null {
  */
 export function createContextFn(options: ContextOptions) {
   const { api } = options;
-  return async function createContext({ req, resHeaders }: FetchCreateContextFnOptions) {
+  return async function createContext({ req, res }: CreateExpressContextOptions) {
     let session: Session | null = null;
 
-    const cookieHeader = req.headers.get("cookie");
+    const cookieHeader = req.headers["cookie"] ?? null;
     const accessToken = parseCookie(cookieHeader, "satyrs_access");
 
     if (accessToken) {
@@ -45,7 +46,7 @@ export function createContextFn(options: ContextOptions) {
 
     return {
       req,
-      resHeaders,
+      res,
       api,
       session,
     };
@@ -54,7 +55,7 @@ export function createContextFn(options: ContextOptions) {
 
 export type Context = {
   req: Request;
-  resHeaders: Headers;
+  res: Response;
   api: Api;
   session: Session | null;
 };
