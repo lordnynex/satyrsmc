@@ -8,8 +8,9 @@ export default defineConfig({
   target: "node22",
   platform: "node",
   bundle: true,
+  splitting: false,
   sourcemap: true,
   clean: true,
   noExternal: ["@satyrsmc/shared"],
-  external: [/^@electric-sql/, "pg", "sharp"],
+  external: [/^@electric-sql/, "pg", "sharp", "pino-pretty", "typeorm-pglite"],
 });
