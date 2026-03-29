@@ -2,11 +2,13 @@
  * One-time data migration: SQLite (badger.db) → Postgres.
  *
  * Usage:
- *   DATABASE_URL=postgres://... bun run packages/api/scripts/migrate-sqlite-to-postgres.ts [path-to-badger.db]
+ *   DATABASE_URL=postgres://... npx tsx packages/api/scripts/migrate-sqlite-to-postgres.ts [path-to-badger.db]
  *
  * Prerequisite: Postgres baseline migration must have already run (tables exist).
  */
-import { Database } from "bun:sqlite";
+import "dotenv/config";
+import { DatabaseSync } from "node:sqlite";
+import pg from "pg";
 import { TABLES, convertValue } from "./lib/sqlite-to-postgres.ts";
 
 const dbPath = process.argv[2] ?? "data/badger.db";
@@ -17,13 +19,11 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const sqlite = new Database(dbPath, { readonly: true });
-
-// Use Bun.sql for Postgres as per project conventions
-const sql = new Bun.SQL(databaseUrl);
+const sqlite = new DatabaseSync(dbPath);
+const pool = new pg.Pool({ connectionString: databaseUrl });
 
 async function migrateTable(table: string): Promise<number> {
-  const rows = sqlite.query(`SELECT * FROM ${table}`).all() as Record<string, unknown>[];
+  const rows = sqlite.prepare(`SELECT * FROM ${table}`).all() as Record<string, unknown>[];
 
   if (rows.length === 0) {
     console.info(`  ${table}: 0 rows (empty)`);
@@ -37,7 +37,7 @@ async function migrateTable(table: string): Promise<number> {
     const placeholders = columns.map((_, i) => `$${i + 1}`).join(", ");
     const colNames = columns.map((c) => `"${c}"`).join(", ");
 
-    await sql.unsafe(
+    await pool.query(
       `INSERT INTO "${table}" (${colNames}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
       values,
     );
@@ -64,7 +64,7 @@ async function main() {
   console.info(`Done. ${totalRows} total rows migrated.`);
 
   sqlite.close();
-  await sql.close();
+  await pool.end();
 }
 
 main().catch((error) => {

@@ -143,14 +143,14 @@ export function convertValue(column: string, value: unknown): unknown {
  * Skips tables that don't exist in SQLite or have no rows.
  */
 export async function seedPgliteFromSqlite(ds: DataSource, sqlitePath: string): Promise<number> {
-  const { Database } = await import("bun:sqlite");
-  const sqlite = new Database(sqlitePath, { readonly: true });
+  const { DatabaseSync } = await import("node:sqlite");
+  const sqlite = new DatabaseSync(sqlitePath);
   let totalRows = 0;
 
   try {
     for (const table of TABLES) {
       try {
-        const rows = sqlite.query(`SELECT * FROM ${table}`).all() as Record<string, unknown>[];
+        const rows = sqlite.prepare(`SELECT * FROM ${table}`).all() as Record<string, unknown>[];
         if (rows.length === 0) continue;
 
         const rawColumns = Object.keys(rows[0] as Record<string, unknown>);
@@ -178,7 +178,7 @@ export async function seedPgliteFromSqlite(ds: DataSource, sqlitePath: string): 
     // (The migration moved birthday from members to contacts, so we seed it separately)
     try {
       const memberRows = sqlite
-        .query(`SELECT contact_id, birthday FROM members WHERE birthday IS NOT NULL`)
+        .prepare(`SELECT contact_id, birthday FROM members WHERE birthday IS NOT NULL`)
         .all() as { contact_id: string; birthday: string }[];
       for (const row of memberRows) {
         const birthday = convertValue("birthday", row.birthday);

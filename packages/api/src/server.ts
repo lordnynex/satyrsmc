@@ -21,7 +21,7 @@ export function createExpressApp({ api }: CreateExpressAppOptions) {
     cors({
       origin: isDev
         ? true
-        : [process.env.PUBLIC_SITE_URL, process.env.MEMBERS_SITE_URL].filter(Boolean),
+        : ([process.env.PUBLIC_SITE_URL, process.env.MEMBERS_SITE_URL].filter(Boolean) as string[]),
       credentials: true,
     }),
   );
