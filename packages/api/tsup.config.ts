@@ -11,6 +11,6 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  noExternal: ["@satyrsmc/shared", "reflect-metadata"],
+  noExternal: ["@satyrsmc/shared", "reflect-metadata", "serverless-http"],
   external: [/^@electric-sql/, "pg", "sharp", "pino-pretty", "typeorm-pglite"],
 });

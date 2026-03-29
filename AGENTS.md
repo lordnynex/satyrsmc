@@ -231,6 +231,7 @@ Everything else is **bundled into `api.mjs`**. Do not add packages to the extern
 
 - `@satyrsmc/shared` — workspace package; must be inlined since it's not installed in the Netlify Function environment.
 - `reflect-metadata` — side-effect-only import required by TypeORM decorators. Despite not being in the `external` list, esbuild can fail to inline it due to its `exports` map. Explicitly listed in `noExternal` to guarantee it's bundled.
+- `serverless-http` — same `exports` map issue; esbuild leaves it unbundled without explicit `noExternal`.
 
 ### UI deploys
 
