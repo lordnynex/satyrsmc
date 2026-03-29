@@ -219,7 +219,13 @@ This is generated in CI by the "Prepare API publish dir" step. The `netlify.toml
 
 ### tsup externals
 
-`packages/api/tsup.config.ts` only externalizes `pg` and `sharp` (native addons). Everything else — including `typeorm`, `reflect-metadata`, `bcryptjs`, `pino`, `jose`, etc. — is **bundled into `api.mjs`**. Do not add packages back to the external list unless they have native `.node` bindings that cannot be bundled.
+`packages/api/tsup.config.ts` externalizes the following packages:
+
+- `pg`, `sharp` — native addons that cannot be bundled
+- `pino-pretty` — dev-only pretty printer; loaded via dynamic `import()` in `logger.ts` and gracefully skipped in production (falls back to JSON stdout). Must be external to prevent esbuild from splitting the bundle into multiple chunks.
+- `typeorm-pglite` — test-only PGlite driver; loaded via dynamic `import()` in `dataSource.ts` only when `USE_PGLITE=1`. Must be external for the same reason.
+
+Everything else — `typeorm`, `reflect-metadata`, `bcryptjs`, `pino`, `jose`, `express`, `serverless-http`, etc. — is **bundled into `api.mjs`**. Do not add packages to the external list unless they either have native `.node` bindings or use dynamic `import()` that would force esbuild to create chunk files.
 
 ### UI deploys
 
