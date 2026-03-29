@@ -121,7 +121,7 @@ satyrsmc/
       src/
         index.ts            # Local dev entry — app.listen(:4000)
         server.ts           # Express app factory (createExpressApp)
-        netlify-handler.ts  # Netlify Function entry (serverless-http wrapper)
+        netlify-handler.ts  # Netlify Function entry (@vendia/serverless-express wrapper)
         db/
           dataSource.ts     # TypeORM config (entities + migrations)
           migrations/       # MigrationInterface classes
@@ -227,7 +227,9 @@ This is generated in CI by the "Prepare API publish dir" step. The `netlify.toml
 
 Everything else is **bundled into `api.mjs`**. Do not add packages to the external list unless they either have native `.node` bindings or use dynamic `import()` that would force esbuild to create chunk files.
 
-`noExternal: [/.*/]` forces tsup to bundle **everything** by default. Without this, esbuild silently leaves packages with complex `exports` maps (e.g. `typeorm`, `reflect-metadata`, `serverless-http`) unbundled, causing `Cannot find package` errors at runtime in the Netlify Function environment where `node_modules` does not exist. The `external` list still takes precedence for packages that must remain external.
+`noExternal: [/.*/]` forces tsup to bundle **everything** by default. Without this, esbuild silently leaves packages with complex `exports` maps (e.g. `typeorm`, `reflect-metadata`) unbundled, causing `Cannot find package` errors at runtime in the Netlify Function environment where `node_modules` does not exist. The `external` list still takes precedence for packages that must remain external.
+
+`@vendia/serverless-express` is the ESM-native adapter wrapping the Express app for Lambda/Netlify Function invocation. It replaced `serverless-http` which is CJS-only and cannot be bundled into an ESM output without a `createRequire` shim.
 
 ### UI deploys
 
