@@ -8,7 +8,7 @@
  */
 import "dotenv/config";
 import { DatabaseSync } from "node:sqlite";
-import pg from "pg";
+import { Pool } from "pg";
 import { TABLES, convertValue } from "./lib/sqlite-to-postgres.ts";
 
 const dbPath = process.argv[2] ?? "data/badger.db";
@@ -20,7 +20,7 @@ if (!databaseUrl) {
 }
 
 const sqlite = new DatabaseSync(dbPath);
-const pool = new pg.Pool({ connectionString: databaseUrl });
+const pool = new Pool({ connectionString: databaseUrl });
 
 async function migrateTable(table: string): Promise<number> {
   const rows = sqlite.prepare(`SELECT * FROM ${table}`).all() as Record<string, unknown>[];
