@@ -109,7 +109,9 @@ All seed accounts use the password: **`Password1!`**
 
 ```bash
 pnpm test                                    # All packages
+pnpm test:coverage                           # All packages with coverage (Istanbul, 80% threshold)
 pnpm --filter @satyrsmc/api test             # API tests only
+pnpm --filter @satyrsmc/api test:coverage    # API tests with coverage
 pnpm --filter @satyrsmc/app-members test     # app-members tests only
 pnpm --filter @satyrsmc/app-public test      # app-public tests only
 ```
@@ -465,7 +467,7 @@ Fix root causes instead of suppressing warnings.
 
 ### Coverage Requirements
 
-Target **90% coverage thresholds** for statements, branches, functions, and lines.
+Minimum **80% coverage** required for statements, branches, functions, and lines (enforced via Istanbul on every push). Target **90%** when writing new code.
 
 ### Two-Layer Strategy
 

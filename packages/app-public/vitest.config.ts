@@ -18,5 +18,11 @@ export default defineConfig({
       VITE_MEMBERS_URL: "",
       VITE_RECAPTCHA_SITE_KEY: "",
     },
+    coverage: {
+      provider: "istanbul",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/test/**", "src/**/*.test.{ts,tsx}"],
+      thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
+    },
   },
 });
