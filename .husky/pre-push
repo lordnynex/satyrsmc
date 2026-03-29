@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 set -e
-bun run typecheck
-bun run test:coverage
+pnpm -r typecheck
+pnpm test

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "format": "prettier --write .",
@@ -83,6 +84,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^11.0.0",
+    "@vitest/coverage-istanbul": "^4.1.2",
     "concurrently": "^9.1.2",
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
